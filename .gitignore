@@ -14,5 +14,25 @@ START_PROMPT.md
 
 # Written by next dev
 /AGENTS.md
+/AGENTS.original.md
 dist/
 dist*/
+
+# Local output and tool folders, never part of the project
+promo/
+coverage/
+playwright-report/
+test-results/
+backups/
+*.db
+*.db-wal
+*.db-shm
+*.log
+!docs/benchmarks/**/*.log
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.codex/
+.opencode/
+.cursor/

@@ -4,4 +4,14 @@ data/
 .env*
 *.ged
 START_PROMPT.md
-dist/
+dist*/
+node_modules/
+promo/
+npm/
+plugins/
+skills/
+.claude/
+.codex/
+.opencode/
+.cursor/
+*.tsbuildinfo
