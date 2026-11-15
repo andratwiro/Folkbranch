@@ -35,7 +35,7 @@ The lines in `lib/agent/lines.ts` are marked `tested` once their run is recorded
 service's cheap default as chosen by hand, not a tested recommendation.
 
 Run of 9 November 2026: all 97 scenarios of `scripts/agent-check.sh`, each model on a fresh instance with the invented family, through
-OpenRouter, a stop at $0.40 each (counted from tokens). Raw logs are in `docs/benchmarks/2026-11-09/`.
+OpenRouter, a stop at $0.40 each (counted from tokens). The table below gives each model's score and cost.
 
 | Line (floor) | Passed | Cost of all 97 | Notes |
 |---|---|---|---|
