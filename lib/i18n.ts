@@ -653,6 +653,7 @@ const en: Record<string, string> = {
   'Цены сервисов меняются: смотрите их страницы.': 'Service prices change: see their pages.',
   'Этот месяц': 'This month',
   'бесплатно': 'free',
+  'в час': 'per hour',
   'запросов': 'requests',
   'ключ ассистента': 'assistant\'s key',
   'мин': 'min',

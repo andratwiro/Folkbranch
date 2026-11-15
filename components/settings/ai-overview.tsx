@@ -21,7 +21,7 @@ export function AiOverview({ onGo }: { onGo: (to: 'assistant' | 'speech' | 'smar
 
   const assistant = data?.assistant
   const speech = data?.speech
-  const speechName = speech ? `${sttPreset(speech.provider as never)?.label ?? speech.provider}${speech.model && speech.model !== 'auto' ? `, ${speech.model}` : ''}` : null
+  const speechName = speech ? `${t(sttPreset(speech.provider as never)?.label ?? speech.provider)}${speech.model && speech.model !== 'auto' ? `, ${speech.model}` : ''}` : null
 
   const download = () => {
     if (!data) return
@@ -59,7 +59,7 @@ export function AiOverview({ onGo }: { onGo: (to: 'assistant' | 'speech' | 'smar
           />
           <ListRow
             title={t('Лица и голос на этом устройстве')}
-            meta={`${chosen('faces').name} · ${chosen('recognize').name} · ${chosen('speech').name}`}
+            meta={`${t(chosen('faces').name)} · ${t(chosen('recognize').name)} · ${t(chosen('speech').name)}`}
             actions={<Button type="button" variant="outline" size="sm" onClick={() => onGo('smart')}>{t('Настроить')}</Button>}
           />
           <ListRow
