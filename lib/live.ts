@@ -56,6 +56,11 @@ function sendPresence() {
 
 export const isFull = () => hub.clients.size >= MAX_CLIENTS
 
+/** Ends every open line, so a server told to stop is not held up by pages left open; they reconnect by themselves. */
+export function closeAll() {
+  for (const c of [...hub.clients]) { try { c.close() } catch {} }
+}
+
 export function join(client: LiveClient) {
   hub.clients.add(client)
   hub.ping ??= setInterval(() => sendAll(() => message('ping', {})), PING_MS).unref()

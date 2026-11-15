@@ -5,6 +5,7 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 ## Unreleased
 
 ### Added
+- **Update now**: on an install without Docker, one button updates the app. It saves and checks a copy of the database first, runs the installer of the new release, and the page comes back by itself; other installs are shown their one command or step. A dot on Settings says a new version is out.
 - The owner sees on the setup screen when a newer release is out, with a link to what changed and how to update. The server asks GitHub at most twice a day and sends nothing about the archive; `FOLKBRANCH_UPDATE_CHECK=off` turns it off.
 - **Settings → AI and models**: one screen that shows what is connected (the assistant, cloud transcription, faces and voice on the device, stories by link), and one settings file for all of it. Download it, or load it into another archive: it holds no keys, says what it applied and what it could not and why.
 - `OWNER_EMAIL` in the server's environment puts the owner's address on their account, so "Sign in with Google" opens it with no link to open first. No other Google account gets in.
@@ -19,6 +20,7 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 - `OWNER_EMAIL` sets the owner's address only over a stand-in or its own earlier value, so an address the owner chose in the app stays.
 
 ### Fixed
+- Stopping or updating the app no longer hangs while a page is open: the server closes its live lines when told to stop, and the launcher ends a server that has not stopped within 10 seconds. Before, an update with a page open could swap the program under a server that was still running, and the app stayed down afterwards.
 - Dependencies with known vulnerabilities: nodemailer 10.5 and a newer esbuild for drizzle-kit.
 
 ## 1.5.1 - 2026-11-09

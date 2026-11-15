@@ -9,8 +9,8 @@ import { ProviderForm } from '../assistant-setup'
 import { Brand, type BrandName } from '../brand-icons'
 import { Access } from './access'
 import { TokensTab } from './tokens'
+import { UpdateNotice } from './update-notice'
 
-interface Update { latest: string | null; url?: string; newer: boolean }
 interface Status { address: string; addressWrong: string | null; insecure: boolean; dataDir: string; freeBytes: number | null; lowDisk: boolean; people: number; users: number; agents: number; assistant: string | null; assistantOn: boolean; signIn: boolean; mcpUrl: string }
 
 type State = 'done' | 'todo' | 'problem' | 'optional'
@@ -40,7 +40,6 @@ export function SetupGuide({ onImport, onFirstPerson, onGo }: { onImport?: () =>
   const { t, lang } = useApp()
   const qc = useQueryClient()
   const { data: s } = useQuery({ queryKey: ['setup'], queryFn: () => api<Status>('setup/status') })
-  const { data: update } = useQuery({ queryKey: ['update'], queryFn: () => api<Update>('update'), staleTime: 3_600_000 })
   const [open, setOpen] = useState<string | null>(null)
   if (!s) return <div className="h-40" />
   const toggle = (id: string) => () => setOpen(open === id ? null : id)
@@ -50,7 +49,7 @@ export function SetupGuide({ onImport, onFirstPerson, onGo }: { onImport?: () =>
   const gb = s.freeBytes === null ? null : new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(s.freeBytes / 1024 ** 3)
   return (
     <div className="flex min-w-0 flex-col gap-2 text-sm">
-      {update?.newer && <a href={update.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-white px-3 py-2 underline break-anywhere">{t('Вышла версия')} {update.latest}. {t('Что нового и как обновиться')}</a>}
+      <UpdateNotice />
       <Step title="Ваша семья" state={s.people ? 'done' : 'todo'} open={open === 'family'} onToggle={toggle('family')}>
         <p className="text-ink-soft">{s.people ? `${t('Людей в архиве')}: ${s.people}.` : t('Добавьте первого человека или загрузите файл GEDCOM, Excel, CSV либо обычный текст.')}</p>
         <div className="flex flex-wrap gap-2">

@@ -144,6 +144,8 @@ Run the install command again, in any kind of install. From a clone with Docker:
 
 Settings and data are kept, and the database migrates on start. Take a backup first. If an update without Docker fails to start, the previous version stays next to it in `app.old`.
 
+When a new release is out, the owner sees a dot on **Settings** and the notice on **Getting started**. On an install without Docker on one's own computer it has an **Update now** button. The button first saves a copy of the database to `backups/before-update/` in the data folder, opens it again and checks it (`integrity_check` and the number of people), and does not start without a good copy. It then runs the installer of that release, which stops the app, swaps only the program folder and starts it again; the data folder is not touched. The page comes back by itself on the new version. Elsewhere the notice shows the one command or step that updates that kind of install. `FOLKBRANCH_SELF_UPDATE=off` hides the button; `FOLKBRANCH_UPDATE_CHECK=off` stops the check altogether.
+
 ## Limits
 
 Measured in Chrome on a desktop:

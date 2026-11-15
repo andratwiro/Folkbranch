@@ -18,6 +18,9 @@ export async function register() {
     setTimeout(tick, 5 * 60 * 1000).unref()
     setInterval(tick, 60 * 60 * 1000).unref()
   }
+  // An open page keeps a live line, and the server would wait for it before stopping: an update or a restart would hang.
+  const { closeAll } = await import('./lib/live')
+  for (const signal of ['SIGTERM', 'SIGINT'] as const) process.on(signal, closeAll)
   if (hasUsers()) return
   const code = setupCode()
   const { publicOrigins, publicUrl } = await import('./lib/public-url')

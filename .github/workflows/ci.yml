@@ -76,6 +76,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: node tests/e2e/data-survives.mjs
+      - name: The update button installs another build over this one, with a checked copy first and nothing entered lost
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo danarkhipov/folkbranch --pattern "folkbranch-linux-x64.tar.xz" --dir "$RUNNER_TEMP/next"
+          FG_NEXT_BUNDLE="$RUNNER_TEMP/next/folkbranch-linux-x64.tar.xz" node tests/e2e/self-update.mjs
 
   server-install:
     runs-on: ubuntu-latest

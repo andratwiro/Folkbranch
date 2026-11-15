@@ -45,7 +45,8 @@ running() {
 # So does a crash, up to a point: one that keeps failing at once stops here, and the log says why.
 supervise() {
   child=""
-  trap '[ -n "$child" ] && kill "$child" 2>/dev/null; wait "$child" 2>/dev/null; exit 0' TERM INT
+  # A server that has not stopped within 10 seconds is ended: SQLite keeps every confirmed write through that.
+  trap 'if [ -n "$child" ]; then kill "$child" 2>/dev/null; n=0; while kill -0 "$child" 2>/dev/null && [ "$n" -lt 20 ]; do sleep 0.5; n=$((n + 1)); done; kill -9 "$child" 2>/dev/null; fi; wait "$child" 2>/dev/null; exit 0' TERM INT
   fails=0
   while :; do
     began=$(date +%s)

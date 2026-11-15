@@ -1,7 +1,8 @@
 import pkg from '../package.json'
 import { requireRole, type Actor } from './ops/core'
 
-const URL = 'https://api.github.com/repos/danarkhipov/folkbranch/releases/latest'
+// FOLKBRANCH_RELEASES_API points the check at another source, for a mirror or a test.
+const URL = () => process.env.FOLKBRANCH_RELEASES_API ?? 'https://api.github.com/repos/danarkhipov/folkbranch/releases/latest'
 const HOUR = 3_600_000
 let cached: { at: number; ttl: number; release: { tag: string; url: string } | null } | null = null
 
@@ -13,7 +14,7 @@ async function latestRelease() {
   if (cached && Date.now() - cached.at < cached.ttl) return cached.release
   let release: { tag: string; url: string } | null = null
   try {
-    const res = await fetch(URL, { headers: { 'User-Agent': 'folkbranch' }, signal: AbortSignal.timeout(5000) })
+    const res = await fetch(URL(), { headers: { 'User-Agent': 'folkbranch' }, signal: AbortSignal.timeout(5000) })
     if (res.ok) {
       const b = await res.json() as { tag_name?: unknown; html_url?: unknown }
       if (typeof b.tag_name === 'string' && typeof b.html_url === 'string') release = { tag: b.tag_name, url: b.html_url }
