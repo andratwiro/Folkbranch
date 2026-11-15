@@ -38,7 +38,7 @@
     "db:generate": "drizzle-kit generate",
     "predev": "node scripts/copy-wasm.mjs",
     "prebuild": "node scripts/copy-wasm.mjs",
-    "check": "pnpm lint && vitest run && pnpm audit --audit-level high && npx --yes madge --circular --extensions ts,tsx --ts-config tsconfig.json app components lib",
+    "check": "pnpm lint && vitest run && pnpm audit --audit-level high && madge --circular --extensions ts,tsx --ts-config tsconfig.json app components lib",
     "check:full": "sh tests/run-all.sh"
   },
   "pnpm": {
@@ -49,7 +49,11 @@
     ],
     "overrides": {
       "@esbuild-kit/core-utils>esbuild": "^0.25.0"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "onnxruntime-node",
+      "protobufjs"
+    ]
   },
   "dependencies": {
     "@ai-sdk/anthropic": "4",
@@ -118,6 +122,7 @@
     "drizzle-kit": "^0.31.11",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
+    "madge": "^8.0.0",
     "playwright-core": "^1.64.1",
     "railway": "3.16.0",
     "tailwindcss": "^4.3.4",

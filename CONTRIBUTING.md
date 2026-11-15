@@ -4,7 +4,7 @@ Thanks for helping. Bugs, ideas and pull requests are all welcome. For a larger 
 
 ## Run it
 
-You need Node 24 and [pnpm](https://pnpm.io).
+You need Node 24 and [pnpm](https://pnpm.io) 9: `corepack enable` gives you the version `package.json` names.
 
 ```bash
 pnpm install

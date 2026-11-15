@@ -40,7 +40,7 @@ jobs:
       - name: No dependency with a known high or critical vulnerability
         run: pnpm audit --audit-level high
       - name: No circular imports
-        run: npx --yes madge --circular --extensions ts,tsx --ts-config tsconfig.json app components lib
+        run: pnpm exec madge --circular --extensions ts,tsx --ts-config tsconfig.json app components lib
 
   dependency-review:
     if: github.event_name == 'pull_request'
