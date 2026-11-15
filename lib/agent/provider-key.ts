@@ -219,7 +219,8 @@ export function providerFailure(e: unknown): string | null {
   if (status === 404) void replaceMissingModel(true)
   if (status === 401 || status === 403) return say('Провайдер не принял ключ. Замените его в настройках, вкладка «Нейросеть»')
   if (status === 402) return say('На счёте провайдера закончились деньги. Пополните его, и ассистент снова заработает')
-  if (status === 404) return say('Провайдер не нашёл эту модель. Мы подобрали другую, повторите вопрос')
+  // A model set in the server's environment is the admin's to change: the app replaces only one chosen in the app.
+  if (status === 404) return activeProvider(process.env) ? say('Провайдер не нашёл модель из настроек сервера. Укажите другую в AGENT_MODEL и перезапустите сервер') : say('Провайдер не нашёл эту модель. Мы подобрали другую, повторите вопрос')
   if (status === 400) return say('Провайдер не принял запрос, возможно, он изменил свой API. Подробности в журнале сервера')
   if (status === 429) return say('Провайдер просит подождать: слишком много запросов. Попробуйте через минуту')
   if (status && status >= 500) return say('У провайдера сбой. Попробуйте через несколько минут')

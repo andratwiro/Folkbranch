@@ -211,6 +211,13 @@ describe('when the provider fails during a conversation', () => {
     expect(providerFailure(failing(status))).toMatch(words)
     expect(providerFailure({ lastError: failing(status) })).toMatch(words)
   })
+  it('a missing model set on the server is not said to be replaced: the admin is told what to change', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    process.env.OPENROUTER_API_KEY = KEY
+    expect(providerFailure(failing(404))).toMatch(/AGENT_MODEL/)
+    delete process.env.OPENROUTER_API_KEY
+    expect(providerFailure(failing(404))).toMatch(/подобрали другую/)
+  })
   it('the person gets those words, and never the details', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const m = new MockLanguageModelV4({ doStream: async () => { throw failing(402) } })

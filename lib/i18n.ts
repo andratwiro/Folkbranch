@@ -524,6 +524,7 @@ const en: Record<string, string> = {
   'Китайский сервис с бесплатными моделями': 'A Chinese service with free models',
   'Ваш собственный сервер: запись не покидает вашу сеть': 'Your own server: the recording never leaves your network',
   'Cloud.ru (GigaChat)': 'Cloud.ru (GigaChat)',
+  'Провайдер не нашёл модель из настроек сервера. Укажите другую в AGENT_MODEL и перезапустите сервер': 'The provider could not find the model set on the server. Set another in AGENT_MODEL and restart the server',
   'Провайдер не нашёл эту модель. Мы подобрали другую, повторите вопрос': 'The provider did not find this model. We picked another, ask again',
   'Провайдер не принял запрос, возможно, он изменил свой API. Подробности в журнале сервера': 'The provider refused the request, perhaps it changed its API. Details are in the server log',
   'Российский сервис: оплата в рублях, здесь же модели GigaChat от Сбера': 'A Russian service: pay in roubles, and Sber’s GigaChat models are here',
