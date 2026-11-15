@@ -103,8 +103,8 @@ export const PersonCard = memo(function PersonCard({ p, left, top, wait, classNa
       <div className={cn('cap', canEdit && 'movable')} onPointerDown={canEdit ? (e) => acts.current.move(e, p.id) : undefined}>
         <div className="nm" title={p.hidden ? undefined : personName(p) || undefined}>{p.hidden ? t('Живой родственник') : personName(p) || t('Без названия')}</div>
         {!p.hidden && <div className="yr">{lifeYears(p)}</div>}
-        {label && <div className="rel kin">{label}</div>}
-        {mine && <div className="rel me">{mine}</div>}
+        {label && <div className="rel kin" title={label}>{label}</div>}
+        {mine && <div className="rel me" title={mine}>{mine}</div>}
       </div>
       </div>
       {folded !== undefined && <button className="folded" onClick={(e) => { e.stopPropagation(); acts.current.unfold(p.id) }}>{t('Показать потомков')}: {folded}</button>}
