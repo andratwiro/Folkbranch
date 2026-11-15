@@ -40,7 +40,7 @@ describe('Google, with the owner\'s address set on the server', () => {
     await methods.saveMethod(owner, 'google', KEYS)
     // The owner as setup makes them: a stand-in address, because a first visit asks for none.
     const r = await auth.getAuth().handler(new Request(`${ORIGIN}/api/auth/family/setup`, {
-      method: 'POST', headers: { 'content-type': 'application/json', origin: ORIGIN }, body: JSON.stringify({ name: 'Даниил', familyName: 'Тест', language: 'ru' }),
+      method: 'POST', headers: { 'content-type': 'application/json', origin: ORIGIN }, body: JSON.stringify({ name: 'Анна', familyName: 'Тест', language: 'ru' }),
     }))
     expect(r.status).toBe(200)
   })
