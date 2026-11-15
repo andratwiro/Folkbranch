@@ -86,6 +86,8 @@ jobs:
         run: node tests/e2e/concurrent-people.mjs
       - name: Live updates reach other pages, and confirmed writes survive the server being killed mid-write
         run: node tests/e2e/concurrent-live.mjs
+      - name: A person, the assistant and an outside agent over MCP change the same archive, and nothing is lost or overwritten
+        run: node tests/e2e/concurrent-agents.mjs
 
   server-install:
     runs-on: ubuntu-latest
