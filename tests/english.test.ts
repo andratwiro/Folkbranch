@@ -63,7 +63,7 @@ export function cyrillicOutsideStrings(text: string) {
     }
     if (c === '`') { i++; skipTemplate(); last = 'x'; continue }
     if (c === '"' || c === "'") { i++; skipTo(c); last = 'x'; continue }
-    // A Russian word as an object key is data too: { отец: 'father' }.
+    // A Russian word as an object key is data too: `{ отец: 'father' }`.
     const key = /^[\u0400-\u04FF][\u0400-\u04FF\w]*(?=\s*:)/.exec(text.slice(i, i + 40))
     if (key) { i += key[0].length; last = 'x'; continue }
     if (c === '/' && regexBefore.test(last.trimEnd())) {
