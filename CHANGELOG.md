@@ -4,6 +4,8 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ## Unreleased
 
+## 1.6.0 - 2026-11-16
+
 ### Added
 - **Update now**: on an install without Docker, one button updates the app. It saves and checks a copy of the database first, runs the installer of the new release, and the page comes back by itself; other installs are shown their one command or step. A dot on Settings says a new version is out.
 - The owner sees on the setup screen when a newer release is out, with a link to what changed and how to update. The server asks GitHub at most twice a day and sends nothing about the archive; `FOLKBRANCH_UPDATE_CHECK=off` turns it off.
@@ -16,12 +18,15 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 - A child with one parent on record is no longer called a stepchild of that parent's partner, since the partner may be the other parent: the chart says "husband's son" or "father's wife" instead. With the other parent on record as someone else, "stepson" and "stepfather" stay.
 - The check asks for a second parent when a brother or sister through the same parent has both on record.
 - In an English archive the years of a living person end in "now" on the server too (search, exports, the sheet), as on the screen.
-- Long relation labels on the chart wrap onto two lines within the card instead of running into the neighbours; the chart rows are a little taller for it.
+- Long relation labels on the chart wrap onto up to three lines within the card instead of running into the neighbours, and show whole under the cursor; the chart rows are a little taller for it.
+- A new archive opens straight on the chart with its first actions; what to set up next stays in Settings instead of a window over the first screen.
 - The connection check every 15 seconds runs only while the live line to the server is down.
 - `OWNER_EMAIL` sets the owner's address only over a stand-in or its own earlier value, so an address the owner chose in the app stays.
 
 ### Fixed
 - Stopping or updating the app no longer hangs while a page is open: the server closes its live lines when told to stop, and the launcher ends a server that has not stopped within 10 seconds. Before, an update with a page open could swap the program under a server that was still running, and the app stayed down afterwards.
+- An agent's draft accepted after someone changed the same field no longer writes over that change: the draft waits with the reason, and facts and tags from both are kept.
+- English labels: the button that rejects a face guess reads "No", the card picker "Choose a card", and the assistant's hint names its button as it is.
 - Dependencies with known vulnerabilities: nodemailer 10.5 and a newer esbuild for drizzle-kit.
 
 ## 1.5.1 - 2026-11-09
