@@ -2,7 +2,7 @@
 import type { Graph, Lang, Sex } from './types'
 
 export interface Kin {
-  /** Term for `to` as seen from `from`, e.g. "дед". */
+  /** Term for `to` as seen from `from`, e.g. "дед" (grandfather). */
   label: string
   /** Person ids from `from` to `to`. */
   path: string[]
@@ -232,7 +232,7 @@ const EN = {
   kinSpouse: (term: string, s: Sex) => `${term}'s ${pick(s, 'husband', 'wife', 'spouse')}`,
 }
 
-/** "ваш прадед" / "ваша бабушка". */
+/** Russian forms: "ваш прадед" (your great-grandfather) / "ваша бабушка" (your grandmother). */
 export function yourTerm(label: string, sex: Sex, lang: Lang) {
   if (lang === 'en') return `your ${label}`
   if (/^(муж|жена|супруг) /.test(label)) return label

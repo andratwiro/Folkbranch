@@ -213,7 +213,7 @@ export function lifeYears(p: Person, unknown = '?', open: string = openEnd()): s
   return `${b || unknown} – ${d || unknown}`
 }
 
-/** First number that looks like a year: "~1876" → 1876, "1883 или 1886" → 1883. */
+/** First number that looks like a year: "~1876" → 1876, "1883 или 1886" (1883 or 1886) → 1883. */
 export function yearOf(date: string): number | null {
   const m = date.match(/\b(\d{4})\b/) ?? date.match(/(\d{3,4})/)
   return m ? Number(m[1]) : null

@@ -96,7 +96,7 @@ export const persons = sqliteTable('persons', {
   avatarMediaId: text('avatar_media_id'),
   avatarCrop: text('avatar_crop'),
   updatedAt: integer('updated_at').notNull().default(0),
-  // Labels that group people ("Соколовы", "Фронт"), and dated facts (job, move, service).
+  // Labels that group people ("Соколовы", the Sokolovs; "Фронт", Front), and dated facts (job, move, service).
   tags: text('tags').notNull().default('[]'),
   facts: text('facts').notNull().default('[]'),
   // Where the record comes from: archive, file reference, sheet, link.

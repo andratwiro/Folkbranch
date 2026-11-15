@@ -125,7 +125,7 @@ function bestQuality(person: GedLine) {
   return quays.length ? Math.max(...quays) : null
 }
 
-/** PAGE holds "ref, л. 12" here: a reference and a sheet, split where we can tell them apart. */
+/** PAGE holds "ref, л. 12" (a reference and a sheet; "л." stands for sheet) here, split where we can tell them apart. */
 function pageOf(v: string) {
   const m = v.match(/^(.*?)(?:,\s*)?(?:л\.|лист|p\.|page)\s*(\S+)$/i)
   return m ? { ref: m[1], page: m[2] } : { ref: v, page: '' }

@@ -57,7 +57,7 @@ function wordsFor(index: SearchIndex, token: string, factor = 1) {
   return found
 }
 
-/** Вологодская and Вологда: a long shared start, where endings alone do not explain the difference. */
+/** "Вологодская" and "Вологда": a long shared start, where endings alone do not explain the difference. */
 const sharesRoot = (a: string, b: string) => {
   let same = 0
   while (same < a.length && a[same] === b[same]) same++

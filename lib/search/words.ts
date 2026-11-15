@@ -5,7 +5,7 @@ export const normal = (s: string) => s.toLowerCase().replace(/ё/g, 'е')
 const CASE_ENDINGS = ['ого', 'его', 'ому', 'ему', 'ыми', 'ими', 'ами', 'ями', 'ая', 'яя', 'ую', 'юю', 'ой', 'ей', 'ий', 'ый', 'ое', 'ее', 'ые', 'ие', 'ых', 'их', 'ым', 'им', 'ам', 'ям', 'ах', 'ях', 'ом', 'ем', 'ию', 'ия', 'ии', 'ью', 'а', 'я', 'ы', 'и', 'у', 'ю', 'е', 'о', 'ь', 'й']
 const MIN_STEM = 3
 
-/** A word without its Russian case ending: Соколовой and Соколова both give соколов, Туле and Тула both тул. */
+/** A word without its Russian case ending: "Соколовой" and "Соколова" both give "соколов", "Туле" and "Тула" both "тул". */
 export function stem(word: string) {
   if (!/[а-я]/.test(word)) return word
   for (const end of CASE_ENDINGS) if (word.endsWith(end) && word.length - end.length >= MIN_STEM) return word.slice(0, -end.length)
@@ -14,7 +14,7 @@ export function stem(word: string) {
 
 const SOUNDS: Record<string, string> = { о: 'а', е: 'и', э: 'и', я: 'а', ю: 'у', ы: 'и', й: 'и', б: 'п', в: 'ф', г: 'к', д: 'т', ж: 'ш', з: 'с', ц: 'с', щ: 'ш', ь: '', ъ: '' }
 
-/** How a word sounds: Саколов and Соколов, Иваноф and Иванов, Коган and Каган come out alike. */
+/** How a word sounds: "Саколов" and "Соколов", "Иваноф" and "Иванов", "Коган" and "Каган" come out alike. */
 export function sound(word: string) {
   let out = ''
   for (const ch of word) {
@@ -26,7 +26,7 @@ export function sound(word: string) {
 
 const LATIN: [string, string][] = [['shch', 'щ'], ['sch', 'щ'], ['zh', 'ж'], ['kh', 'х'], ['ts', 'ц'], ['ch', 'ч'], ['sh', 'ш'], ['yu', 'ю'], ['ya', 'я'], ['yo', 'е'], ['ye', 'е'], ['ia', 'я'], ['iu', 'ю'], ['a', 'а'], ['b', 'б'], ['c', 'к'], ['d', 'д'], ['e', 'е'], ['f', 'ф'], ['g', 'г'], ['h', 'х'], ['i', 'и'], ['j', 'й'], ['k', 'к'], ['l', 'л'], ['m', 'м'], ['n', 'н'], ['o', 'о'], ['p', 'п'], ['q', 'к'], ['r', 'р'], ['s', 'с'], ['t', 'т'], ['u', 'у'], ['v', 'в'], ['w', 'в'], ['x', 'кс'], ['y', 'и'], ['z', 'з']]
 
-/** Sokolov as Соколов. */
+/** Sokolov as "Соколов". */
 export function toCyrillic(word: string) {
   let out = ''
   for (let i = 0; i < word.length;) {
@@ -40,7 +40,7 @@ export function toCyrillic(word: string) {
 const EN_KEYS = 'qwertyuiop[]asdfghjkl;\'zxcvbnm,.`'
 const RU_KEYS = 'йцукенгшщзхъфывапролджэячсмитьбюе'
 
-/** Typed with the wrong keyboard layout: bdfy is иван, and ыщлщдщм is sokolov. */
+/** Typed with the wrong keyboard layout: bdfy is "иван", and "ыщлщдщм" is sokolov. */
 export function otherLayout(word: string) {
   const swap = (from: string, to: string) => [...word].map((c) => { const i = from.indexOf(c); return i < 0 ? c : to[i] }).join('')
   return /[а-я]/.test(word) ? swap(RU_KEYS, EN_KEYS) : swap(EN_KEYS, RU_KEYS)

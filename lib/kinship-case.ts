@@ -41,7 +41,7 @@ const rows = (text = ''): Row[] => {
 }
 const list = (s: string) => s.split(/[;,|]/).map((x) => x.trim()).filter(Boolean)
 
-/** Russian word order varies: the patronymic says which word is the given name. Surnames like Рабинович look like one, so the middle word goes first. */
+/** Russian word order varies: the patronymic says which word is the given name. Surnames like "Рабинович" look like one, so the middle word goes first. */
 function splitName(label: string) {
   const w = label.split(/\s+/).filter(Boolean)
   const isPatronymic = (s = '') => /(вич|ьич|[кмт]ич|ична|овна|евна)$/i.test(s)
@@ -80,7 +80,7 @@ const sourceOf = (a: Row): Source => ({
   url: /^https?:\/\//i.test(a.source_url_or_path) ? a.source_url_or_path : '',
 })
 
-// Only a patronymic says this; a surname ending can mislead (Щербина, Дурново).
+// Only a patronymic says this; a surname ending can mislead ("Щербина", "Дурново").
 const sexOf = (patronymic: string): Sex => (/(вич|ьич|[кмт]ич)$/i.test(patronymic) ? 'M' : /(овна|евна|ична)$/i.test(patronymic) ? 'F' : 'U')
 
 /**
