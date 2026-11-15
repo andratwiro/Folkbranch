@@ -94,6 +94,8 @@ The logs print the link that claims the empty archive. Open it and create the ow
 
 Any platform that runs a Dockerfile and gives you a persistent `/data` works the same way; set `BETTER_AUTH_URL` there. The container starts as root only to hand the volume to the `node` user, then runs the app as `node`.
 
+Steps, rough costs, updates and backups for each host are in [DEPLOY.md](DEPLOY.md): Railway, Render, Fly.io, a VPS with Docker Compose, and panels such as Coolify and Dokploy.
+
 ## The first person
 
 An empty instance can be claimed only with a code, so a stranger who finds it first cannot take it. `install.sh` prints a link with the code. Otherwise it is in the logs (`docker compose logs folkbranch`) and in `setup-code` in the data folder. After the first person signs up, the code stops mattering.

@@ -53,7 +53,7 @@ Add `--domain family.example.com` for your own domain. It is tested on Ubuntu, D
 
 </details>
 
-Backups, updates, servers and Railway: the [self-hosting guide](docs/SELF_HOSTING.md).
+Backups, updates, servers and Railway: the [self-hosting guide](docs/SELF_HOSTING.md). Railway, Render, Fly.io and other hosts, one page each: [deploying](docs/DEPLOY.md).
 
 ## Features
 

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: folkbranch
+    runtime: docker
+    plan: starter # 0.5 CPU, 512 MB; also written 0.5c-512mb
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: BETTER_AUTH_URL
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+    disk:
+      name: folkbranch-data
+      mountPath: /data
+      sizeGB: 1
