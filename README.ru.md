@@ -1,19 +1,68 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/brand/logo-dark.svg">
-    <img src="docs/brand/logo.svg" alt="" width="96" height="96">
+    <img src="docs/brand/logo.svg" alt="Folkbranch logo" width="96" height="96">
   </picture>
 </p>
 
-# Folkbranch
+# Folkbranch: бесплатная программа для семейного древа на своём сервере
 
-**История вашей семьи. Сохранённая вместе.**
+**Семейное дерево, старые фотографии и голоса родных вместе, на вашем компьютере или сервере.**
 
-Folkbranch — бесплатная программа с открытым кодом для семейного дерева, которую вы ставите у себя. Соберите дерево, старые фотографии и голоса родных в одном семейном архиве, приглашайте близких по ссылке и сохраняйте истории, которые хочется передать детям. Архив хранит один человек на своём компьютере или сервере, остальным нужен только браузер.
+Folkbranch — бесплатная программа с открытым кодом для генеалогического древа и семейного архива, которую вы ставите у себя. В одном месте хранятся дерево, сканы фотографий и документов и рассказы родных голосом. Родные заходят по ссылке, без регистрации и без установки. Импорт GEDCOM 5.5.1 и 7.0 и экспорт GEDCOM: дерево из MyHeritage, Ancestry, Gramps или webtrees переезжает с вами. Ваш ИИ (Claude, Codex, Cursor) может поставить программу и работать в архиве по MCP, а каждое его изменение ждёт вашего согласия.
 
-Ставится одной командой без Docker и занимает около 70 МБ памяти. Умеет импорт и экспорт GEDCOM, так что уже собранное дерево переезжает с вами.
+[![CI](https://github.com/danarkhipov/folkbranch/actions/workflows/ci.yml/badge.svg)](https://github.com/danarkhipov/folkbranch/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/danarkhipov/folkbranch)](https://github.com/danarkhipov/folkbranch/releases) [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
-[English version](README.md)
+**Сайт: [folkbranch.com/ru](https://folkbranch.com/ru/)** · [Установка](#установка) · [Что умеет](#что-умеет) · [Сравнение](#сравнение) · [Чего в нём нет](#чего-в-нём-нет) · [ИИ-агенты](#ии-агенты) · [Вопросы](#вопросы) · [English](README.md)
+
+## Установка
+
+Архив ставит и хранит один человек в семье. Родным ничего ставить не нужно. Выберите один способ:
+
+### 1. Попросите ИИ установить (Claude Code, Codex, Cursor)
+
+Вставьте эту строку агенту:
+
+```text
+Установи Folkbranch по инструкции https://github.com/danarkhipov/folkbranch/blob/main/skills/folkbranch/SKILL.md
+```
+
+Агент прочитает открытую инструкцию в этом репозитории, спросит, ставить на этот компьютер или на сервер, установит, откроет архив и подключится сам. Перед всем, что требует пароля или денег, он остановится.
+
+В **Claude Code** можно также добавить плагин и попросить *«Установи Folkbranch»*:
+
+```text
+/plugin marketplace add danarkhipov/folkbranch
+/plugin install folkbranch@folkbranch
+```
+
+### 2. Одна команда на Mac или Linux
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh
+```
+
+Ни Docker, ни Node не нужны: свой Node она принесёт сама. Команда напишет ссылку. Откройте её, назовите семью и, если хотите сначала осмотреться, загрузите вымышленную демо-семью.
+
+### 3. Одна команда на Linux-сервере
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sudo sh -s -- --server
+```
+
+HTTPS настроится сам, приложение запускается вместе с сервером. Для своего домена добавьте `--domain family.example.com`. Проверено на Ubuntu, Debian, AlmaLinux, Rocky, Fedora и Amazon Linux с перезагрузкой и 512 МБ памяти.
+
+<details>
+<summary>Другие способы: npx, Docker, Windows, Railway и другие хостинги</summary>
+
+- Если есть Node: `npx folkbranch`. Повторный запуск откроет приложение.
+- Если на сервере есть Docker: `curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh -s -- --domain family.example.com` запустит образ с автоматическим HTTPS.
+- Windows: архив и установщик `install.ps1` при каждом выпуске собираются и запускаются на сервере сборки с Windows, но на настоящем компьютере с Windows их ещё никто не пробовал. Надёжный путь там Docker.
+- Railway, Render, Fly.io и другие хостинги, по странице на каждый: [развёртывание](docs/DEPLOY.md) (на английском).
+
+</details>
+
+Копии, обновления и серверы описаны в [руководстве на английском](docs/SELF_HOSTING.md). Программа занимает около 70 МБ памяти.
 
 ![Открываем страницу родственника, добавляем сына на схеме и видим изменение в истории](docs/images/demo.gif)
 
@@ -24,36 +73,6 @@ Folkbranch — бесплатная программа с открытым ко�
 - **Родным можно отправить файл, которому ничего не нужно.** В одном файле схема, карточки и фото. Он открывается в любом браузере без сервера и интернета, а живые родственники в нём скрыты.
 - **Живые остаются в тайне.** Читатели, гости и агенты с ключом только для чтения не видят живых родственников, а также людей и рассказы, которые вы решили скрыть. Это проверяет сервер, а не страница.
 - **Ничего не теряется.** Каждое изменение есть в истории и откатывается. Разные версии даты хранятся рядом, каждая со своим источником.
-
-## Установка
-
-На Mac или Linux одной командой. Больше ничего не нужно: ни Docker, ни Node, свой Node она принесёт сама.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh
-```
-
-Команда напишет ссылку. Откройте её, назовите семью и, если хотите сначала осмотреться, загрузите вымышленную демо-семью.
-
-На любом Linux-сервере, с HTTPS, который настроится сам, и запуском вместе с сервером. Docker и домен не нужны:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sudo sh -s -- --server
-```
-
-Для своего домена добавьте `--domain family.example.com`. Проверено на Ubuntu, Debian, AlmaLinux, Rocky, Fedora и Amazon Linux с перезагрузкой и 512 МБ памяти.
-
-<details>
-<summary>Другие способы: npx, Docker, ИИ-агент, Windows</summary>
-
-- Если есть Node: `npx folkbranch`. Повторный запуск откроет приложение.
-- Если на сервере есть Docker: `... | sh -s -- --domain family.example.com` запустит образ с автоматическим HTTPS.
-- В Claude Code: `/plugin marketplace add danarkhipov/folkbranch`, затем `/plugin install folkbranch@folkbranch`, и попросите установить Folkbranch. Codex или другому агенту: *«Установи Folkbranch по инструкции https://raw.githubusercontent.com/danarkhipov/folkbranch/main/skills/folkbranch/SKILL.md»*.
-- Windows: архив и установщик `install.ps1` при каждом выпуске собираются и запускаются на сервере сборки с Windows, но на настоящем компьютере с Windows их ещё никто не пробовал. Надёжный путь там Docker.
-
-</details>
-
-Копии, обновления, серверы и Railway описаны в [руководстве на английском](docs/SELF_HOSTING.md).
 
 ## Что умеет
 
@@ -138,6 +157,9 @@ cd ~/folkbranch && ./folkbranch connect
 
 **Это бесплатно?**
 Да, по лицензии AGPL-3.0. Платите только за свой сервер, если он нужен. Ассистент и облачная расшифровка речи работают на ваших ключах, за них вы платите сервисам напрямую.
+
+**Нужен ли свой сервер или технические знания?**
+Нет. ИИ поставит программу на компьютер, которым вы уже пользуетесь, или это сделает одна команда, а открываете вы её в браузере. Сервер нужен, только если родные должны заходить в архив откуда угодно, и его настроит та же команда или ваш ИИ.
 
 **Можно перенести дерево из Ancestry, MyHeritage или Gramps?**
 Да, если сервис выгружает GEDCOM. Folkbranch покажет, что в файле, до любых изменений. В GEDCOM есть люди, связи и события, но нет страниц и самих фото: фото бросьте вместе с файлом, и они привяжутся к нужным людям. Полная копия архива Folkbranch содержит всё.

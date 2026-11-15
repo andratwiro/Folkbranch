@@ -1,21 +1,68 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/brand/logo-dark.svg">
-    <img src="docs/brand/logo.svg" alt="" width="96" height="96">
+    <img src="docs/brand/logo.svg" alt="Folkbranch logo" width="96" height="96">
   </picture>
 </p>
 
-# Folkbranch
+# Folkbranch: free, self-hosted family tree software
 
-**Your family tree, photos and stories. Kept together.**
+**Your family tree, old photos and relatives' voice stories, kept together on your own computer or server.**
 
-Folkbranch is free, open-source family tree software you host yourself. Collect the tree, old photos and relatives' voice stories in one family archive, invite relatives by link, and keep what you want to pass on to your children. One person keeps the archive on their own computer or server; everyone else only needs a browser.
-
-One command installs it, with no Docker, and it runs in about 70 MB of memory. It imports and exports GEDCOM, so a tree you already have comes with you.
+Folkbranch is free, open-source genealogy software you run yourself. It keeps a private family archive in one place: the tree, scanned photos, documents and the stories relatives tell by voice. Relatives join by link, with no account and nothing to install. It imports GEDCOM 5.5.1 and 7.0 and exports GEDCOM, so a tree from Ancestry, MyHeritage, Gramps or webtrees comes with you, and your AI (Claude, Codex, Cursor) can install it and work in the archive over MCP, with every edit waiting for your approval.
 
 [![CI](https://github.com/danarkhipov/folkbranch/actions/workflows/ci.yml/badge.svg)](https://github.com/danarkhipov/folkbranch/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/danarkhipov/folkbranch)](https://github.com/danarkhipov/folkbranch/releases) [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
-[Install](#install) · [Features](#features) · [Compare](#how-it-compares) · [What it does not do](#what-it-does-not-do) · [AI agents](#ai-agents) · [FAQ](#faq) · [На русском](README.ru.md)
+**Website: [folkbranch.com](https://folkbranch.com)** · [Install](#install) · [Features](#features) · [Compare](#how-it-compares) · [What it does not do](#what-it-does-not-do) · [AI agents](#ai-agents) · [FAQ](#faq) · [На русском](README.ru.md)
+
+## Install
+
+One person in the family keeps the archive and installs it. Relatives never install anything. Pick one way:
+
+### 1. Ask your AI to install it (Claude Code, Codex, Cursor)
+
+Paste this line into your agent:
+
+```text
+Install Folkbranch for me by following https://github.com/danarkhipov/folkbranch/blob/main/skills/folkbranch/SKILL.md
+```
+
+It reads the open install guide in this repository, asks whether to install on this computer or on a server, installs, opens the archive and connects itself. It stops before anything that needs your password or money.
+
+In **Claude Code** you can also add the plugin, then ask *"Install Folkbranch"*:
+
+```text
+/plugin marketplace add danarkhipov/folkbranch
+/plugin install folkbranch@folkbranch
+```
+
+### 2. One command on a Mac or Linux computer
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh
+```
+
+No Docker and no Node needed: it brings its own. It prints a link; open it, name your family, and load the invented demo family if you want to look around first.
+
+### 3. One command on a Linux server
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sudo sh -s -- --server
+```
+
+HTTPS sets itself up and the app starts with the server. Add `--domain family.example.com` for your own domain. Tested on Ubuntu, Debian, AlmaLinux, Rocky, Fedora and Amazon Linux, through a reboot, with 512 MB of memory.
+
+<details>
+<summary>Other ways: npx, Docker, Windows, Railway and other hosts</summary>
+
+- With Node at hand: `npx folkbranch`. Run it again to open the app.
+- With Docker on a server: `curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh -s -- --domain family.example.com` runs the image with automatic HTTPS.
+- Windows: an archive and an installer, `install.ps1`, are built and started on a Windows build server with every release, but nobody has tried them on a real Windows computer yet. Docker is the sure way there.
+- Railway, Render, Fly.io and other hosts, one page each: [deploying](docs/DEPLOY.md).
+
+</details>
+
+Backups, updates and servers: the [self-hosting guide](docs/SELF_HOSTING.md). It runs in about 70 MB of memory.
 
 ![Opening a relative's page, adding a son on the chart, and seeing the change in history](docs/images/demo.gif)
 
@@ -26,38 +73,6 @@ One command installs it, with no Docker, and it runs in about 70 MB of memory. I
 - **Relatives get a copy that needs nothing.** One file with the chart, cards and photos opens in any browser, with no server and no internet, and the living stay hidden.
 - **The living stay private.** Readers, guests and read-only agents never see living relatives, or anyone and any story you choose to keep private. The server enforces it, not the page.
 - **Nothing is lost.** Every change is in the history and can be rolled back. Disagreeing dates keep their sources side by side.
-
-## Install
-
-One person in the family becomes the keeper of the archive: they install it, invite the others and make the copies. Relatives never install anything.
-
-On a Mac or Linux computer, one command. It needs nothing else: no Docker, and no Node either, since it brings its own.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh
-```
-
-It prints a link. Open it, name your family, and load the invented demo family if you want to look around first.
-
-On any Linux server, with HTTPS that sets itself up and an app that starts with the server. No Docker, and no domain needed:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sudo sh -s -- --server
-```
-
-Add `--domain family.example.com` for your own domain. It is tested on Ubuntu, Debian, AlmaLinux, Rocky, Fedora and Amazon Linux, through a reboot, with 512 MB of memory.
-
-<details>
-<summary>Other ways: npx, Docker, an AI agent, Windows</summary>
-
-- With Node at hand: `npx folkbranch`. Run it again to open the app.
-- With Docker on a server: `... | sh -s -- --domain family.example.com` runs the image with automatic HTTPS.
-- In Claude Code: `/plugin marketplace add danarkhipov/folkbranch`, then `/plugin install folkbranch@folkbranch`, and ask it to install Folkbranch. Codex or another agent: *"Install Folkbranch following https://raw.githubusercontent.com/danarkhipov/folkbranch/main/skills/folkbranch/SKILL.md"*.
-- Windows: an archive and an installer, `install.ps1`, are built and started on a Windows build server with every release, but nobody has tried them on a real Windows computer yet. Docker is the sure way there.
-
-</details>
-
-Backups, updates, servers and Railway: the [self-hosting guide](docs/SELF_HOSTING.md). Railway, Render, Fly.io and other hosts, one page each: [deploying](docs/DEPLOY.md).
 
 ## Features
 
@@ -180,6 +195,9 @@ Then ask your agent something like *"Find what is missing in the archive and sug
 
 **Is it free?**
 Yes, under AGPL-3.0. You pay only for your own server, if you use one. The optional assistant and cloud speech use your own keys with their providers, which you pay directly.
+
+**Do I need my own server or technical skills?**
+No. Your AI can install it on the computer you already use, or one command does it, and you open it in the browser. A server is only needed if relatives should reach the archive from anywhere, and the same command or your AI sets that up too.
 
 **Can I move my tree from Ancestry, MyHeritage or Gramps?**
 Yes, if the service exports GEDCOM. Folkbranch shows what the file holds before anything changes. GEDCOM carries people, links, events and sources, but not the photos themselves: drop the pictures together with the file and they are attached to the right people. See [moving from Gramps or webtrees](docs/MOVING.md).
