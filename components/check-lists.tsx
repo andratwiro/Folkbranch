@@ -38,7 +38,7 @@ export function SameList() {
   )
 }
 
-const MISSING: Record<string, string> = { birthDate: 'дата рождения', birthPlace: 'место рождения', deathDate: 'дата смерти', deathPlace: 'место смерти', parents: 'родители', sex: 'пол' }
+const MISSING: Record<string, string> = { birthDate: 'дата рождения', birthPlace: 'место рождения', deathDate: 'дата смерти', deathPlace: 'место смерти', secondParent: 'второй родитель (у отца или матери есть жена или муж, но он не записан родителем)', parents: 'родители', sex: 'пол' }
 
 /** People whose record is unfinished, those with conflicting versions first. */
 export function GapsList() {
