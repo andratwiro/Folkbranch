@@ -9,10 +9,10 @@ const script = path.resolve(__dirname, '../scripts/authorship.sh')
 let repo = ''
 const git = (...a: string[]) => execFileSync('git', a, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
 const check = (...a: string[]) => spawnSync('sh', [script, ...a], { cwd: repo, encoding: 'utf8' })
-const commit = (message: string, author = 'Daniel Arkhipov <olga@example.org>') => {
+const commit = (message: string, author = 'Anna Testova <anna@example.org>') => {
   fs.writeFileSync(path.join(repo, 'f.txt'), `${Math.random()}`)
   git('add', 'f.txt')
-  git('-c', 'user.name=Daniel Arkhipov', '-c', 'user.email=olga@example.org', 'commit', '-q', '--author', author, '-m', message)
+  git('-c', 'user.name=Anna Testova', '-c', 'user.email=anna@example.org', 'commit', '-q', '--author', author, '-m', message)
 }
 
 beforeAll(() => {
