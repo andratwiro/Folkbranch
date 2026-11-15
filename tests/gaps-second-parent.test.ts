@@ -12,8 +12,14 @@ describe('the second parent', () => {
   linkPeople(owner, 'spouse', pavel.id, elena.id)
   linkPeople(owner, 'son', pavel.id, danil.id, elena.id)
   linkPeople(owner, 'son', pavel.id, ilya.id)
-  it('is asked for when the partner of the only parent is not a parent', () => expect(missingOf(ilya.id)).toContain('secondParent'))
+  it('is asked for when a brother through the same parent has both parents', () => expect(missingOf(ilya.id)).toContain('secondParent'))
   it('is not asked for when both parents are recorded', () => expect(missingOf(danil.id)).not.toContain('secondParent'))
+  it('is not asked for on a stepchild alone: a partner of the only parent is no evidence', () => {
+    const anton = add('Антон', 'M'), vera = add('Вера', 'F'), step = add('Пасынок', 'M')
+    linkPeople(owner, 'spouse', anton.id, vera.id)
+    linkPeople(owner, 'son', anton.id, step.id)
+    expect(missingOf(step.id)).not.toContain('secondParent')
+  })
   it('is not asked for when the only parent has no partner', () => {
     linkPeople(owner, 'son', anna.id, kid.id)
     expect(missingOf(kid.id)).not.toContain('secondParent')

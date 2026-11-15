@@ -438,7 +438,7 @@ const en: Record<string, string> = {
   'Нет': 'Missing',
   'Без источника': 'No source',
   'родители': 'parents',
-  'второй родитель (у отца или матери есть жена или муж, но он не записан родителем)': 'second parent (the mother or father has a partner who is not recorded as a parent)',
+  'второй родитель (у брата или сестры от того же родителя он записан)': 'second parent (a brother or sister through the same parent has one recorded)',
   'Не перенесётся': 'Will not be imported',
   'ссылки на файлы': 'links to files',
   'связи с другими людьми': 'links to other people',
