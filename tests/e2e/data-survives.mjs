@@ -81,7 +81,11 @@ async function snapshot() {
     photos[m.id] = { ...m, bytes: sha(Buffer.from(await file.arrayBuffer())) }
   }
   const settings = await api('GET', 'settings')
-  return { persons: byId(g.persons), unions: byId(g.unions), parentChild: byId(g.parentChild), pages, photos, familyName: settings.familyName, language: settings.language }
+  // Kept encrypted with the server's secret: a key that no longer opens would switch the way off.
+  const signIn = (await api('GET', 'sign-in-methods')).methods.map((m) => ({ id: m.id, on: m.on, values: m.values }))
+  const invites = (await api('GET', 'invites')).map((i) => ({ id: i.id, name: i.name, role: i.role }))
+  const users = (await api('GET', 'users')).map((u) => ({ id: u.id, name: u.name, role: u.role }))
+  return { signIn, invites, users, persons: byId(g.persons), unions: byId(g.unions), parentChild: byId(g.parentChild), pages, photos, familyName: settings.familyName, language: settings.language }
 }
 
 /** The newer version may add fields; it may not lose or change any that were there. */
@@ -110,8 +114,10 @@ const addedId = added.id ?? added.person?.id ?? added.result?.id
 await api('POST', 'pages', { personId: someone.id, title: 'Воспоминания', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Текст, который нельзя потерять. 😊' }] }] })
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP4z8Dwn4GBgYGJgYEBAB0EAgFVZ3G9AAAAAElFTkSuQmCC', 'base64')
 await api('POST', 'media', { base64: png.toString('base64'), filename: 'семья.png', personId: someone.id })
+await api('PUT', 'sign-in-methods/google', { clientId: '1-survive.apps.googleusercontent.com', clientSecret: 'GOCSPX-survive-1234' })
+await api('POST', 'invites', { name: 'Бабушка Вера', role: 'editor' })
 const before = await snapshot()
-ok('the archive holds what was entered', before.persons.length > 3 && Object.keys(before.photos).length > 0 && Object.keys(before.pages).length > 0, JSON.stringify({ persons: before.persons.length, photos: Object.keys(before.photos).length }))
+ok('the archive holds what was entered', before.persons.length > 3 && Object.keys(before.photos).length > 0 && Object.keys(before.pages).length > 0 && before.invites.length > 0 && before.signIn.some((m) => m.on), JSON.stringify({ persons: before.persons.length, photos: Object.keys(before.photos).length }))
 await stop()
 
 // ---------- this version on the same data ----------
