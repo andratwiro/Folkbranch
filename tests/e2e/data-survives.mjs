@@ -2,6 +2,7 @@
 // then this version opens the same data folder: everything is still there, the same, and stays after restarts.
 // FG_OLD_BUNDLE: the released archive to start from (a .tar.xz). Without it the latest release for this system is
 //   downloaded with `gh`. FG_BUNDLE: this version's archive, from `pnpm build && node scripts/make-bundle.mjs`.
+// FG_LANG: the archive's language at setup (ru by default), so an archive kept in another language is checked too.
 import { spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'
@@ -103,7 +104,7 @@ function missing(before, after, at = '') {
 
 // ---------- the released version fills the archive ----------
 await start(OLD)
-const setup = await fetch(`${B}/api/auth/family/setup`, { method: 'POST', headers: { 'content-type': 'application/json', origin: B }, body: JSON.stringify({ name: 'Анна', familyName: 'Проверка обновления', language: 'ru', demo: true, code: 'survive' }) })
+const setup = await fetch(`${B}/api/auth/family/setup`, { method: 'POST', headers: { 'content-type': 'application/json', origin: B }, body: JSON.stringify({ name: 'Анна', familyName: 'Проверка обновления', language: process.env.FG_LANG ?? 'ru', demo: true, code: 'survive' }) })
 ok('the released version sets up an archive', setup.ok, String(setup.status))
 cookie = setup.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ')
 const g0 = await api('GET', 'graph')

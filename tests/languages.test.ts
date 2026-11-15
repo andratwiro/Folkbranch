@@ -127,7 +127,7 @@ describe('GEDCOM and the assistant in Spanish and Catalan', () => {
 describe("the assistant's instructions", () => {
   const owner: Actor = { userId: 'u-owner', name: 'Ольга', role: 'owner', personId: null }
   const reader: Actor = { userId: 'u-reader', name: 'Роман', role: 'reader', personId: null }
-  const parts = (who: Actor, opts: { focusId?: string; sees?: boolean } = {}) => (buildAgent(who, { model: new MockLanguageModelV4(), ...opts }) as any).settings.instructions.map((i: { content: string }) => i.content) as [string, string]
+  const parts = (who: Actor, opts: { focusId?: string; sees?: boolean } = {}) => (buildAgent(who, { model: new MockLanguageModelV4(), ...opts }) as unknown as { settings: { instructions: { content: string }[] } }).settings.instructions.map((i: { content: string }) => i.content) as [string, string]
   const SEES = 'The model answering cannot see pictures. Say so when asked to read a scan or photo, and suggest the owner choose a model that can under Settings.'
 
   it('are exactly what they always were in a Russian or English archive', () => {
