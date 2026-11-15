@@ -41,7 +41,6 @@ const PrintDialog = dynamic(() => import('./print-dialog').then((m) => m.PrintDi
 // The card opens on a press, so its tabs need not come with the first screen.
 const PersonPanel = dynamic(() => import('./person-panel').then((m) => m.PersonPanel), { ssr: false })
 const FeatureTour = dynamic(() => import('./feature-tour').then((m) => m.FeatureTour), { ssr: false })
-const Onboarding = dynamic(() => import('./onboarding').then((m) => m.Onboarding), { ssr: false })
 const TextDialog = dynamic(() => import('./text-dialog').then((m) => m.TextDialog), { ssr: false })
 
 /** Below this, the chat and the card do not fit side by side. */
@@ -114,14 +113,10 @@ export function FamilyApp({ me, lang, familyName, providers, assistant }: Props)
   const [groups, setGroups] = useState<string[]>([])
   const [importing, setImporting] = useState(false)
   const [printing, setPrinting] = useState(false)
-  // Only straight after the archive is made: it says so in the address, once.
-  const [welcome, setWelcome] = useState(() => typeof location !== 'undefined' && me.role === 'owner' && new URLSearchParams(location.search).has('welcome'))
-  const endWelcome = () => { setWelcome(false); const url = new URL(location.href); url.searchParams.delete('welcome'); history.replaceState(null, '', url) }
   const [dropped, setDropped] = useState<File[] | null>(null)
   // The windows a person is likely to open next are fetched while they look at the chart, so one replaces another with no empty moment between.
   useEffect(() => {
-    const warm = () => { performance.mark('folkbranch-warm'); void import('./import-dialog'); void import('./onboarding'); void import('./quick-add'); void import('./settings/settings-dialog'); void import('./text-dialog'); void import('./person-panel'); void import('./person-pickers') }
-    if (welcome) warm()
+    const warm = () => { performance.mark('folkbranch-warm'); void import('./import-dialog'); void import('./quick-add'); void import('./settings/settings-dialog'); void import('./text-dialog'); void import('./person-panel'); void import('./person-pickers') }
     const id = typeof requestIdleCallback === 'function' ? requestIdleCallback(warm, { timeout: 2500 }) : (setTimeout(warm, 800) as unknown as number)
     return () => { if (typeof cancelIdleCallback === 'function') cancelIdleCallback(id); else clearTimeout(id) }
   }, [])
@@ -374,8 +369,7 @@ export function FamilyApp({ me, lang, familyName, providers, assistant }: Props)
       {overview && <FamilyOverview onClose={() => setOverview(false)} />}
       {textOpen && <TextDialog open onOpenChange={setTextOpen} />}
       {importing && <ImportDialog open files={dropped} onOpenChange={setImporting} />}
-      {tour && !welcome && <FeatureTour onClose={endTour} onGo={(s) => { endTour(); openSettings(s) }} />}
-      {welcome && <Onboarding onGo={(s) => { endWelcome(); openSettings(s) }} onClose={endWelcome} onImport={() => { setDropped(null); setImporting(true) }} onFirstPerson={() => setQuick({ type: null, to: null })} />}
+      {tour && <FeatureTour onClose={endTour} onGo={(s) => { endTour(); openSettings(s) }} />}
       {printing && <PrintDialog graph={scope.shown ?? ctx.graph} onClose={() => setPrinting(false)} />}
       <ConfirmDialog state={confirmState} onClose={() => setConfirm(null)} />
       {settings && <SettingsDialog open initial={settingsAt} onOpenChange={setSettings} familyName={familyName} providers={providers} onText={() => setTextOpen(true)} />}

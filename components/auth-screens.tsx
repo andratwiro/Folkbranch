@@ -35,7 +35,7 @@ export function SetupScreen({ needsCode, initialCode = '', initialLang, wrongAdd
         e.preventDefault()
         setBusy(true)
         const r = await post('/api/auth/family/setup', { name, familyName, language: lang, demo, code })
-        if (r.ok) location.href = '/?welcome=1'
+        if (r.ok) location.href = '/'
         else { setBusy(false); setError((await r.json().catch(() => null))?.message ?? 'error') }
       }}>
         <div className="flex items-center gap-2 font-serif text-lg font-medium"><Logo size={32} /> Folkbranch</div>
