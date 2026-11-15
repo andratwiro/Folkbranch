@@ -24,6 +24,7 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 - `OWNER_EMAIL` sets the owner's address only over a stand-in or its own earlier value, so an address the owner chose in the app stays.
 
 ### Fixed
+- Updating from 1.5.1 or older with the install command while a page of the app is open: the old version did not stop, the new one landed beside it, and the app was down once the page closed. The installer now ends a version that has not stopped in 30 seconds before it swaps the program.
 - Stopping or updating the app no longer hangs while a page is open: the server closes its live lines when told to stop, and the launcher ends a server that has not stopped within 10 seconds. Before, an update with a page open could swap the program under a server that was still running, and the app stayed down afterwards.
 - An agent's draft accepted after someone changed the same field no longer writes over that change: the draft waits with the reason, and facts and tags from both are kept.
 - English labels: the button that rejects a face guess reads "No", the card picker "Choose a card", and the assistant's hint names its button as it is.

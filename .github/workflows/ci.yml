@@ -76,6 +76,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: node tests/e2e/data-survives.mjs
+      - name: The install command updates the last release to this one while a page is open, and nothing is lost
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tests/e2e/upgrade-install.mjs
       - name: The update button installs another build over this one, with a checked copy first and nothing entered lost
         env:
           GH_TOKEN: ${{ github.token }}

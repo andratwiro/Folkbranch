@@ -155,6 +155,23 @@ cd "$DIR"
 # A finite read: with a pipe that is closed early, BSD tr never stops when the shell ignores SIGPIPE, as on a CI runner.
 random() { head -c 2048 /dev/urandom | LC_ALL=C tr -dc 'A-Za-z0-9' | head -c "$1"; }
 value() { sed -n "s/^$1=//p" .env | head -n 1; }
+
+# Stops the running app before its files change. A version before 1.6.0 does not stop while a page is open and keeps
+# waiting for it, so after its own 30 seconds it is ended here, with the server it runs: otherwise the new program
+# would land beside a server that is still running, and the app would be down once that page closed. SQLite keeps
+# every confirmed write through that.
+stop_app() {
+  [ -x ./folkbranch ] || return 0
+  ./folkbranch stop </dev/null >/dev/null 2>&1 && return 0
+  [ -f .server ] && return 0
+  pid=$(cat folkbranch.pid 2>/dev/null || true)
+  [ -n "$pid" ] || return 0
+  for c in $(ps -A -o pid= -o ppid= | awk -v p="$pid" '$2 == p { print $1 }'); do kill -9 "$c" 2>/dev/null || true; done
+  kill -9 "$pid" 2>/dev/null || true
+  i=0
+  while ps -p "$pid" >/dev/null 2>&1 && [ "$i" -lt 10 ]; do sleep 1; i=$((i + 1)); done
+  rm -f folkbranch.pid
+}
 is_address() { case "$1" in *[!0-9.]*) return 1 ;; *) return 0 ;; esac; }
 
 # With no domain of its own, a server still gets a real certificate: Let's Encrypt issues them for an address too.
@@ -176,7 +193,7 @@ if [ -n "$SERVER" ]; then
   case "$DOMAIN" in *[!A-Za-z0-9.-]*) echo "This does not look like a domain: $DOMAIN"; exit 1 ;; esac
   if [ -f .env ] && [ "$(value BETTER_AUTH_URL)" != "https://$DOMAIN" ]; then
     # An address in a running app's settings changes only when it starts.
-    [ -x ./folkbranch ] && ./folkbranch stop </dev/null >/dev/null 2>&1 || true
+    stop_app
     sed -e "s|^BETTER_AUTH_URL=.*|BETTER_AUTH_URL=https://$DOMAIN|" -e "s|^DOMAIN=.*|DOMAIN=$DOMAIN|" .env > .env.new && cat .env.new > .env && rm -f .env.new
   fi
 fi
@@ -379,7 +396,7 @@ wait_https() {
 install_local() {
   # Stopping first matters: the running app must not have its files swapped under it.
   if [ -n "$PORT_GIVEN" ] && [ "$(value PORT)" != "$PORT" ]; then
-    [ -x ./folkbranch ] && ./folkbranch stop </dev/null >/dev/null 2>&1 || true
+    stop_app
     sed "s|^PORT=.*|PORT=$PORT|" .env > .env.new && mv .env.new .env
     case "$(value BETTER_AUTH_URL)" in
       http://localhost:*) sed "s|^BETTER_AUTH_URL=.*|BETTER_AUTH_URL=http://localhost:$PORT|" .env > .env.new && mv .env.new .env ;;
@@ -394,7 +411,7 @@ install_local() {
     if [ -x runtime/node ] && [ "$(runtime/node -v </dev/null 2>/dev/null || true)" != "v$NODE_VERSION" ]; then fetch_node; fi
     # A service does not see the Node of the person installing it, say from nvm.
     if [ ! -x runtime/node ] && { [ -n "$SERVER" ] || ! command -v node >/dev/null 2>&1 || ! node_fits "$(command -v node)" app.new; }; then fetch_node; fi
-    [ -x ./folkbranch ] && ./folkbranch stop </dev/null >/dev/null 2>&1 || true
+    stop_app
     if [ -d app ]; then mv app app.old; fi
     mv app.new app
     cp app/folkbranch ./folkbranch
