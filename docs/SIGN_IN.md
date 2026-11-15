@@ -52,7 +52,7 @@ Telegram draws its own button on the page. It works only at the domain the bot w
 
 ### The owner, with no link
 
-The owner's account is made with no email, so Google does not know it yet. Set `OWNER_EMAIL` to the owner's Google address in the server's environment and restart: the account takes that address, and **Sign in with Google** opens it at once. Nothing else changes: any other Google account is still refused. A server setting wins over an address the owner set themselves.
+The owner's account is made with no email, so Google does not know it yet. Set `OWNER_EMAIL` to the owner's Google address in the server's environment and restart: the account takes that address, and **Sign in with Google** opens it at once. Nothing else changes: any other Google account is still refused. An address the owner later sets in the app themselves is kept; a new `OWNER_EMAIL` replaces an old one.
 
 ## A code by mail
 

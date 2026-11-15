@@ -10,6 +10,17 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 - `OWNER_EMAIL` in the server's environment puts the owner's address on their account, so "Sign in with Google" opens it with no link to open first. No other Google account gets in.
 - A check that no commit names an AI assistant as author or co-author: a `commit-msg` and a `pre-push` hook in `.githooks`, and a CI job.
 
+### Changed
+- A child with one parent on record is no longer called a stepchild of that parent's partner, since the partner may be the other parent: the chart says "husband's son" or "father's wife" instead. With the other parent on record as someone else, "stepson" and "stepfather" stay.
+- The check asks for a second parent when a brother or sister through the same parent has both on record.
+- In an English archive the years of a living person end in "now" on the server too (search, exports, the sheet), as on the screen.
+- Long relation labels on the chart wrap onto two lines within the card instead of running into the neighbours; the chart rows are a little taller for it.
+- The connection check every 15 seconds runs only while the live line to the server is down.
+- `OWNER_EMAIL` sets the owner's address only over a stand-in or its own earlier value, so an address the owner chose in the app stays.
+
+### Fixed
+- Dependencies with known vulnerabilities: nodemailer 10.5 and a newer esbuild for drizzle-kit.
+
 ## 1.5.1 - 2026-11-09
 
 The archives for installing without Docker now build and start on every system. Versions 1.2.0 to 1.5.0 came out without the archives for macOS and Windows; this is the first release that has all of them.

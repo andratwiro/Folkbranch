@@ -75,6 +75,20 @@ describe('Google, with the owner\'s address set on the server', () => {
     expect(r.signedIn).toBe(false)
   })
 
+  it('keeps an address the owner set in the app, and still takes a new OWNER_EMAIL over its own old one', async () => {
+    const { applyOwnerEmail } = await import('../lib/owner-email')
+    const ctx = await auth.getAuth().$context
+    const id = settings.findOwnerId()!
+    vi.stubEnv('OWNER_EMAIL', 'olga@example.org')
+    applyOwnerEmail()
+    vi.stubEnv('OWNER_EMAIL', 'olga.new@example.org')
+    applyOwnerEmail()
+    expect((await ctx.internalAdapter.findUserById(id))?.email).toBe('olga.new@example.org')
+    await ctx.internalAdapter.updateUser(id, { email: 'chosen@example.org' })
+    applyOwnerEmail()
+    expect((await ctx.internalAdapter.findUserById(id))?.email).toBe('chosen@example.org')
+    await ctx.internalAdapter.updateUser(id, { email: 'olga.new@example.org' })
+  })
   it('leaves the owner their address when it already belongs to another account', async () => {
     const ctx = await auth.getAuth().$context
     const create = ctx.internalAdapter.createUser as unknown as (u: object) => Promise<{ id: string }>
