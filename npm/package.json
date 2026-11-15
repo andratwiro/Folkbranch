@@ -1,13 +1,32 @@
 {
   "name": "folkbranch",
   "version": "1.5.1",
-  "description": "A family archive that stays on your own computer. npx folkbranch installs and opens it.",
+  "description": "Your family tree, photos and voice stories, kept together. Installs Folkbranch, open-source family tree software, on your own computer.",
   "homepage": "https://github.com/danarkhipov/Folkbranch",
-  "repository": { "type": "git", "url": "git+https://github.com/danarkhipov/Folkbranch.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danarkhipov/Folkbranch.git"
+  },
   "license": "AGPL-3.0-only",
-  "keywords": ["genealogy", "family-tree", "self-hosted", "local-first", "mcp", "gedcom"],
+  "keywords": [
+    "family-tree",
+    "genealogy",
+    "family-history",
+    "family-archive",
+    "self-hosted",
+    "local-first",
+    "gedcom",
+    "mcp"
+  ],
   "type": "module",
-  "bin": { "folkbranch": "bin.mjs" },
-  "files": ["bin.mjs", "install.sh"],
-  "engines": { "node": ">=18" }
+  "bin": {
+    "folkbranch": "bin.mjs"
+  },
+  "files": [
+    "bin.mjs",
+    "install.sh"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
 }

@@ -7,9 +7,11 @@
 
 # Folkbranch
 
-**Your family's tree, photos and stories on a small server of your own, where relatives join from their phones with a link.**
+**Your family tree, photos and stories. Kept together.**
 
-Free and open source. One command installs it, with no Docker, and it runs in about 70 MB of memory.
+Folkbranch is free, open-source family tree software you host yourself. Collect the tree, old photos and relatives' voice stories in one family archive, invite relatives by link, and keep what you want to pass on to your children. One person keeps the archive on their own computer or server; everyone else only needs a browser.
+
+One command installs it, with no Docker, and it runs in about 70 MB of memory. It imports and exports GEDCOM, so a tree you already have comes with you.
 
 [![CI](https://github.com/danarkhipov/folkbranch/actions/workflows/ci.yml/badge.svg)](https://github.com/danarkhipov/folkbranch/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/danarkhipov/folkbranch)](https://github.com/danarkhipov/folkbranch/releases) [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
@@ -26,6 +28,8 @@ Free and open source. One command installs it, with no Docker, and it runs in ab
 - **Nothing is lost.** Every change is in the history and can be rolled back. Disagreeing dates keep their sources side by side.
 
 ## Install
+
+One person in the family becomes the keeper of the archive: they install it, invite the others and make the copies. Relatives never install anything.
 
 On a Mac or Linux computer, one command. It needs nothing else: no Docker, and no Node either, since it brings its own.
 
