@@ -7,6 +7,7 @@ import * as settings from '@/lib/ops/settings'
 import { createShare, listShares, revokeShare } from '@/lib/ops/share'
 import { setupStatus } from '@/lib/ops/setup-status'
 import { suggest } from '@/lib/ops/suggest'
+import { updateStatus } from '@/lib/update-check'
 import * as tokens from '@/lib/ops/tokens'
 import { get, human, role, type Route } from '../router'
 import { backupNow, backupStatus } from '@/lib/ops/auto-backup'
@@ -30,6 +31,8 @@ export const accessRoutes: Route[] = [
   human('GET', 'backups/status', 'When the server last copied the database by itself', ({ actor }) => backupStatus(actor)),
   human('POST', 'backups/now', 'Copy the database on the server now', ({ actor }) => backupNow(actor)),
   human('GET', 'setup/status', 'What is set up and what is missing', ({ actor, req }) => setupStatus(actor, req.headers)),
+
+  human('GET', 'update', 'Whether a newer release exists, for the owner', ({ actor }) => updateStatus(actor)),
 
   human('GET', 'tokens', 'API tokens', ({ actor }) => tokens.listTokens(actor)),
   human('POST', 'tokens', 'Issue an API token', async ({ actor, body }) => tokens.createToken(actor, z.object({ expiresInDays: z.number().int().min(1).max(3650).nullish(), name: z.string().min(1), role: z.enum(['reader', 'editor']), review: z.boolean().default(true) }).parse(await body()))),

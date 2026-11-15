@@ -86,7 +86,7 @@ Backups, updates, servers and Railway: the [self-hosting guide](docs/SELF_HOSTIN
 - Works in a browser on a phone or a computer, in English or Russian. A short guide shows a new person what the app can do on the first visit.
 
 **Your data stays yours**
-- One SQLite file and a folder of photos on your server. No telemetry, and closed to search engines.
+- One SQLite file and a folder of photos on your server. No telemetry, and closed to search engines. The one call the server makes by itself asks GitHub whether a newer release exists, at most twice a day and with nothing about your archive; `FOLKBRANCH_UPDATE_CHECK=off` stops it.
 - Import GEDCOM 5.5.1 and 7.0, Excel, CSV, JSON and plain text: add to the family, merge with the people already there, or replace it all, and bring the photos together with the file. Export GEDCOM or a full copy of the archive. [Moving from Gramps or webtrees](docs/MOVING.md) is checked on their own kind of files.
 - The server copies the database each day by itself, and the settings say when it last did.
 - Bring in a research case from the [ex-USSR kinship skill](https://github.com/DenisSergeevitch/ex-ussr-kinship-research): what was proved goes on the chart, the rest stays a note.
