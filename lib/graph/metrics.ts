@@ -18,8 +18,8 @@ const YEAR_CHARS = 17
 // All at the largest size captions reach when the chart is zoomed out.
 const TEXT_LINE = 24
 const YEAR_LINE = 24
-/** A relation label such as "ваша троюродная прабабушка" wraps within the card, onto two lines at most, so it never runs into a neighbour. */
-const LABEL_LINE = 57
+/** A relation label such as "ваша троюродная прабабушка" wraps within its column, onto three lines at most (the font grows as the chart zooms out), so it never runs into a neighbour. */
+const LABEL_LINE = 84
 
 /** How many lines a text takes when it wraps by words. */
 function wrappedLines(text: string, width: number) {

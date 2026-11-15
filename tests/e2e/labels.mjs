@@ -27,6 +27,7 @@ const measure = () => p.evaluate(() => {
 const near = await measure()
 ok('long labels are there to test', near.long > 0, JSON.stringify(near))
 ok('labels do not overlap each other or another card', near.overlaps === 0 && near.intoCards === 0, JSON.stringify(near))
+ok('none is cut short', await p.evaluate(() => [...document.querySelectorAll('.pcard .rel')].every((e) => e.scrollHeight <= e.clientHeight + 1)))
 for (let i = 0; i < 3; i++) { await p.keyboard.press('-'); await p.waitForTimeout(300) }
 await p.waitForTimeout(800)
 const far = await measure()
@@ -35,7 +36,7 @@ const cut = await p.evaluateHandle(() => [...document.querySelectorAll('.pcard .
 if (await cut.evaluate((c) => !!c)) {
   const at = await cut.evaluate((c) => { const r = c.querySelector('.ava').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 } })
   await p.mouse.move(at.x, at.y); await p.waitForTimeout(400)
-  ok('a label cut at two lines shows whole under the cursor', await cut.evaluate((c) => { const e = c.querySelector('.rel'); return e.scrollHeight <= e.clientHeight + 1 }))
+  ok('a label cut at three lines shows whole under the cursor', await cut.evaluate((c) => { const e = c.querySelector('.rel'); return e.scrollHeight <= e.clientHeight + 1 }))
 }
 await b.close()
 sh('docker rm -fv fg-labels'); try { sh('docker volume rm fg-labels-data') } catch {}
