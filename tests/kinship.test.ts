@@ -45,3 +45,26 @@ describe('kinship (en)', () => {
   it.each([['kuz', 'first cousin'], ['kuz2', 'first cousin once removed'], ['pra', 'great-grandmother'], ['tes', 'father-in-law'], ['mach', 'stepmother']])('%s → %s', (to, label) =>
     expect(f.relation('ya', to, 'en')?.label).toBe(label))
 })
+
+describe('a child with one parent on record', () => {
+  const g = (links: [string, string][]) => new Family({
+    persons: [P('pavel', 'M'), P('elena', 'F'), P('ilya', 'M')],
+    parentChild: links.map(([parentId, childId], i) => ({ id: `${i}`, parentId, childId, kind: 'birth' })),
+    unions: [{ id: 'u', aId: 'pavel', bId: 'elena' }],
+  } as unknown as Graph)
+  it('is no one\'s stepchild: the partner of the only parent may be the other parent', () => {
+    const one = g([['pavel', 'ilya']])
+    expect(one.relation('elena', 'ilya')?.label).toBe('сын мужа')
+    expect(one.relation('ilya', 'elena')?.label).toBe('жена отца')
+    expect(one.relation('elena', 'ilya', 'en')?.label).toBe("husband's son")
+  })
+  it('is a stepchild only when the other parent is on record as someone else', () => {
+    const both = new Family({
+      persons: [P('pavel', 'M'), P('elena', 'F'), P('ilya', 'M'), P('other', 'F')],
+      parentChild: [['pavel', 'ilya'], ['other', 'ilya']].map(([parentId, childId], i) => ({ id: `${i}`, parentId, childId, kind: 'birth' })),
+      unions: [{ id: 'u', aId: 'pavel', bId: 'elena' }],
+    } as unknown as Graph)
+    expect(both.relation('elena', 'ilya')?.label).toBe('пасынок')
+  })
+  it('is a son once the mother is on record', () => expect(g([['pavel', 'ilya'], ['elena', 'ilya']]).relation('elena', 'ilya')?.label).toBe('сын'))
+})

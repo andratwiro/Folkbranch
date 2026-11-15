@@ -92,10 +92,14 @@ export class Family {
     if (spouses.includes(to)) return { label: T.spouse(s), path: [from, to], blood: false }
 
     // A parent's spouse who is not a parent: stepparent. A spouse's child: stepchild.
-    for (const p of this.parents.get(from) ?? [])
-      if ((this.spouses.get(p) ?? []).includes(to)) return { label: T.stepParent(s), path: [from, p, to], blood: false }
-    for (const sp of spouses)
-      if ((this.parents.get(to) ?? []).includes(sp)) return { label: T.stepChild(s), path: [from, sp, to], blood: false }
+    // Only when the other parent is on record as someone else: with one parent on record, the partner may well be the other parent.
+    const mine = this.parents.get(from) ?? []
+    for (const p of mine)
+      if ((this.spouses.get(p) ?? []).includes(to)) return { label: mine.length === 1 ? T.parentsPartner(s, this.sex.get(p) ?? 'U') : T.stepParent(s), path: [from, p, to], blood: false }
+    for (const sp of spouses) {
+      const theirs = this.parents.get(to) ?? []
+      if (theirs.includes(sp)) return { label: theirs.length === 1 ? T.partnersChild(s, this.sex.get(sp) ?? 'U') : T.stepChild(s), path: [from, sp, to], blood: false }
+    }
 
     // Through my spouse: their parents and siblings.
     for (const sp of spouses) {
@@ -178,6 +182,9 @@ const RU = {
   spouse: (s: Sex) => g(s, 'муж', 'жена', 'супруг'),
   stepParent: (s: Sex) => g(s, 'отчим', 'мачеха'),
   stepChild: (s: Sex) => g(s, 'пасынок', 'падчерица'),
+  // The other parent is not on record, so no one is called a step-relative.
+  partnersChild: (s: Sex, partner: Sex) => `${g(s, 'сын', 'дочь', 'ребёнок')} ${partner === 'M' ? 'мужа' : partner === 'F' ? 'жены' : 'супруга'}`,
+  parentsPartner: (s: Sex, parent: Sex) => `${g(s, 'муж', 'жена', 'супруг')} ${parent === 'F' ? 'матери' : parent === 'M' ? 'отца' : 'родителя'}`,
   inLawViaSpouse(key: string, me: Sex, spouse: Sex, s: Sex) {
     if (key === '1,0') return spouse === 'M' ? g(s, 'свёкор', 'свекровь') : g(s, 'тесть', 'тёща')
     if (key === '1,1') return spouse === 'M' ? g(s, 'деверь', 'золовка') : g(s, 'шурин', 'свояченица')
@@ -209,6 +216,8 @@ const EN = {
   spouse: (s: Sex) => pick(s, 'husband', 'wife', 'spouse'),
   stepParent: (s: Sex) => pick(s, 'stepfather', 'stepmother', 'stepparent'),
   stepChild: (s: Sex) => pick(s, 'stepson', 'stepdaughter', 'stepchild'),
+  partnersChild: (s: Sex, partner: Sex) => `${partner === 'M' ? "husband's" : partner === 'F' ? "wife's" : "spouse's"} ${pick(s, 'son', 'daughter', 'child')}`,
+  parentsPartner: (s: Sex, parent: Sex) => `${parent === 'F' ? "mother's" : parent === 'M' ? "father's" : "parent's"} ${pick(s, 'husband', 'wife', 'partner')}`,
   inLawViaSpouse(key: string, _me: Sex, _sp: Sex, s: Sex) {
     if (key === '1,0') return pick(s, 'father-in-law', 'mother-in-law', 'parent-in-law')
     if (key === '1,1') return pick(s, 'brother-in-law', 'sister-in-law', 'sibling-in-law')
