@@ -137,6 +137,12 @@ export function enqueue(actor: Actor, ops: (PlannedOp & { details?: string[] })[
         temps.push(tempId)
       }
       const args = swapIds(o.args, renames)
+      // The card as it was when the draft was made: accepting it later merges lists, and refuses a value someone
+      // changed meanwhile instead of writing over it, just as two people editing at once are treated.
+      if (o.op === 'update_person' && !args.seen && typeof args.id === 'string' && !args.id.startsWith('tmp_') && args.patch && typeof args.patch === 'object') {
+        const row = people.getPersonRow(args.id) as unknown as Record<string, unknown>
+        args.seen = Object.fromEntries(Object.keys(args.patch).filter((k) => k in row).map((k) => [k, row[k]]))
+      }
       checkRefs(d, args, known)
       const said = d.describe(args, { name: (id) => nameInDraft(String(id), queued) })
       queued.push({ op: o.op, args, tempId, text: said.text, details: [...(said.details ?? []), ...(o.details ?? [])] })
