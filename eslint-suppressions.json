@@ -1,0 +1,275 @@
+{
+  "app/api/events/route.ts": {
+    "prefer-const": {
+      "count": 1
+    }
+  },
+  "components/assistant-panel.tsx": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    },
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "components/chart-scope.ts": {
+    "react-hooks/refs": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/chart-selection.ts": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "components/chart-view.ts": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "components/dictate-button.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/family-app.tsx": {
+    "react-hooks/immutability": {
+      "count": 2
+    },
+    "react-hooks/preserve-manual-memoization": {
+      "count": 1
+    },
+    "react-hooks/refs": {
+      "count": 8
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/import-dialog.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "components/page-editor.tsx": {
+    "react-hooks/purity": {
+      "count": 1
+    }
+  },
+  "components/panel-size.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/person-details.tsx": {
+    "react-hooks/refs": {
+      "count": 11
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "components/person-extras.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/person-panel.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/purity": {
+      "count": 1
+    },
+    "react-hooks/use-memo": {
+      "count": 1
+    }
+  },
+  "components/person-pickers.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "components/photo-dialog.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "components/place-map.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "components/quick-add.tsx": {
+    "react-hooks/refs": {
+      "count": 23
+    }
+  },
+  "components/settings/cloud-speech.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/settings/restore-form.tsx": {
+    "@next/next/no-html-link-for-pages": {
+      "count": 1
+    }
+  },
+  "components/settings/smart.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/settings/tokens.tsx": {
+    "react-hooks/purity": {
+      "count": 1
+    }
+  },
+  "components/side-panels.tsx": {
+    "react-hooks/purity": {
+      "count": 1
+    }
+  },
+  "components/sign-in-buttons.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "components/story-dialog.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/tell-screen.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/text-dialog.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "lib/agent/models.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 5
+    }
+  },
+  "lib/api/router.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "lib/auth.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "lib/client.tsx": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    },
+    "react-hooks/refs": {
+      "count": 3
+    }
+  },
+  "lib/db/safe-migrate.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "lib/linkify.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "lib/markdown.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "lib/ops/op-defs.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 12
+    }
+  },
+  "lib/ops/pages.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "lib/ops/people.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "lib/ops/proposals.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 4
+    }
+  },
+  "lib/ops/tools.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 5
+    }
+  },
+  "tests/agent-files.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 12
+    }
+  },
+  "tests/agent-guards.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 19
+    }
+  },
+  "tests/agent-loop.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 3
+    }
+  },
+  "tests/agent-matrix.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 16
+    }
+  },
+  "tests/agent-outputs.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "tests/agent-setup.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "tests/agent-tools.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 10
+    }
+  },
+  "tests/api.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "tests/linkify.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "tests/security.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  }
+}

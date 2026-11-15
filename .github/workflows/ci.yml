@@ -7,9 +7,15 @@ on:
 permissions:
   contents: read
 
+# A new push to the same branch or pull request makes the older run pointless.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   authorship:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
@@ -19,6 +25,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -27,11 +34,29 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
+      - name: Types and ESLint (old findings are listed in eslint-suppressions.json; new ones fail)
+        run: pnpm lint
       - run: pnpm test
+      - name: No dependency with a known high or critical vulnerability
+        run: pnpm audit --audit-level high
+      - name: No circular imports
+        run: npx --yes madge --circular --extensions ts,tsx --ts-config tsconfig.json app components lib
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: A pull request adds no vulnerable dependency and no licence that conflicts with the AGPL
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+          deny-licenses: SSPL-1.0, BUSL-1.1
 
   local-install:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -47,9 +72,14 @@ jobs:
           FOLKBRANCH_BUNDLE="file://$(ls "$PWD"/dist/folkbranch-*.tar.gz)" sh install.sh --local --dir "$RUNNER_TEMP/folkbranch" --port 3000
           curl -fs http://127.0.0.1:3000/api/health
           "$RUNNER_TEMP/folkbranch/folkbranch" stop
+      - name: Data entered in the last release survives the update, a restart and a crash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tests/e2e/data-survives.mjs
 
   server-install:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -65,6 +95,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - name: The image builds and answers
@@ -74,3 +105,10 @@ jobs:
           for i in $(seq 1 30); do curl -fs http://127.0.0.1:3000/api/health && docker exec folkbranch node folkbranch.mjs doctor && exit 0; sleep 2; done
           docker logs folkbranch
           exit 1
+      - name: The image has no critical vulnerability with a fix available
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: folkbranch
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'

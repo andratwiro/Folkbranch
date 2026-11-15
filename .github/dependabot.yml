@@ -5,6 +5,10 @@ updates:
     schedule: { interval: monthly }
     open-pull-requests-limit: 5
     target-branch: develop
+    # Small updates come as one pull request a month; security fixes still come at once, on their own.
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }

@@ -8,12 +8,11 @@ import { api, useApp } from '@/lib/client'
 import type { AiSettingsFile } from '@/lib/ops/ai-config'
 import { applyChoices, chosen, currentChoices, type Pack } from '@/lib/smart/models'
 import { sttPreset } from '@/lib/transcribe/presets'
-import type { Section as Screen } from './settings-dialog'
 
 interface Applied { applied: string[]; skipped: { what: string; why: string }[]; onDevice: Partial<Record<Pack, string>> | null }
 
 /** Everything about the AI at a glance, and one file for all of it. Each line opens the screen where it is set. */
-export function AiOverview({ onGo }: { onGo: (to: Screen) => void }) {
+export function AiOverview({ onGo }: { onGo: (to: 'assistant' | 'speech' | 'smart' | 'people') => void }) {
   const { t, notify } = useApp()
   const qc = useQueryClient()
   const { data } = useQuery({ queryKey: ['ai-settings'], queryFn: () => api<AiSettingsFile>('ai-settings') })
