@@ -58,6 +58,15 @@ describe('a child with one parent on record', () => {
     expect(one.relation('ilya', 'elena')?.label).toBe('жена отца')
     expect(one.relation('elena', 'ilya', 'en')?.label).toBe("husband's son")
   })
+  it('has its own words in Spanish and Catalan, and the reader\'s possessive lands on the nearest relative', () => {
+    const one = g([['pavel', 'ilya']])
+    const es = [one.relation('elena', 'ilya', 'es')!.label, one.relation('ilya', 'elena', 'es')!.label]
+    const ca = [one.relation('elena', 'ilya', 'ca')!.label, one.relation('ilya', 'elena', 'ca')!.label]
+    expect(es).toEqual(['hijo del esposo', 'esposa del padre'])
+    expect(ca).toEqual(["fill de l'espòs", 'esposa del pare'])
+    expect([yourTerm(es[0], 'M', 'es'), yourTerm(es[1], 'F', 'es')]).toEqual(['el hijo de tu esposo', 'la esposa de tu padre'])
+    expect([yourTerm(ca[0], 'M', 'ca'), yourTerm(ca[1], 'F', 'ca')]).toEqual(["el fill del teu espòs", "l'esposa del teu pare"])
+  })
   it('is a stepchild only when the other parent is on record as someone else', () => {
     const both = new Family({
       persons: [P('pavel', 'M'), P('elena', 'F'), P('ilya', 'M'), P('other', 'F')],

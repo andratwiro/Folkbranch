@@ -17,7 +17,7 @@ interface Status {
 }
 
 const input = 'h-9 w-full rounded-lg border border-input bg-white px-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-ring/40'
-const hour = (p: SttPreset['models'][number], t: (key: string) => string) => (p.perMinute === null ? null : p.perMinute === 0 ? t('бесплатно') : `$${(p.perMinute * 60).toFixed(2)} ${t('в час')}`)
+const hour = (p: SttPreset['models'][number], t: (k: string) => string) => (p.perMinute === null ? null : p.perMinute === 0 ? t('бесплатно') : t('{price} в час').replace('{price}', `$${(p.perMinute * 60).toFixed(2)}`))
 
 /** Where the owner connects one speech service for everyone and pays for it. Editors only use it. */
 export function CloudSpeech() {

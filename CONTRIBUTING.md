@@ -41,6 +41,7 @@ Turn on the repository's Git hooks once after cloning: `git config core.hooksPat
 - Anything a reader can get must hide living people. Add new read tools to the reader sweep in `tests/api.test.ts`.
 - A schema change: edit `lib/db/schema.ts`, run `pnpm exec drizzle-kit generate`, commit the migration. Migrations only add: never drop or rename a column or table people's data is in, since an update must open every older archive. `tests/migrations-order.test.ts` and the update check in CI guard this.
 - A new word in the interface: wrap it in `t()` and add its English to `lib/i18n.ts`. `tests/i18n-coverage.test.ts` fails without it.
+- Only English is required. Spanish and Catalan (`lib/i18n-es.ts`, `lib/i18n-ca.ts`) show the English for any word they do not have yet; `pnpm i18n:gaps` lists those words.
 - A changed logo: edit the sources in `docs/brand`, then run `node scripts/make-icons.mjs`.
 
 ## Pull requests
