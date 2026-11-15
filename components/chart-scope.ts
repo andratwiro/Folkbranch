@@ -9,10 +9,15 @@ import { api } from '@/lib/client'
 
 const MAIN = 'main'
 
+/** One query for the chart and the share settings. Live events invalidate it, so it can stay fresh for a while. */
+export function useViews() {
+  return useQuery({ queryKey: ['views'], queryFn: () => api<ChartView[]>('views'), staleTime: 5 * 60_000 })
+}
+
 /** Which part of the family is on the chart, and which cards stand where they were put by hand. */
 export function useChartScope(graph: Graph | undefined, family: Family | undefined, focusId: string | null, onChanged: () => void) {
   const qc = useQueryClient()
-  const { data: views = [] } = useQuery({ queryKey: ['views'], queryFn: () => api<ChartView[]>('views') })
+  const { data: views = [] } = useViews()
   const [activeId, setActiveId] = useState<string>(MAIN)
   const [scope, setScope] = useState<Scope>('all')
   const [rootId, setRootId] = useState<string | null>(null)

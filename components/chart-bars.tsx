@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 're
 import { ArrowUpDown, CalendarDays, CircleHelp, ClipboardCheck, EyeOff, Clock, Minus, Plus, Printer, Search, Settings, Tags } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useApp } from '@/lib/client'
-import type { Present } from '@/lib/use-live'
+import { useLiveConnected, type Present } from '@/lib/use-live'
 import { cn } from '@/lib/utils'
 import { AssistantIcon } from './assistant-icon'
 import type { CanvasHandle } from './graph-canvas'
@@ -114,9 +114,11 @@ export function ViewBar({ folded, onHide, onOverview, onPrint, scope, canvas, ro
 /** Says so when the server cannot be reached, so nobody types into a chart that will not save. */
 export function ConnectionNotice({ t }: { t: (key: string) => string }) {
   const [down, setDown] = useState(false)
+  const live = useLiveConnected()
   useEffect(() => {
     const check = () => document.hidden ? undefined : fetch('/api/health', { cache: 'no-store' }).then((r) => setDown(!r.ok)).catch(() => setDown(true))
-    const timer = setInterval(check, 15_000)
+    // An open live line already proves the server is there, so it is asked only while that line is down.
+    const timer = live ? undefined : setInterval(check, 15_000)
     window.addEventListener('online', check)
     window.addEventListener('offline', check)
     return () => {
@@ -124,7 +126,7 @@ export function ConnectionNotice({ t }: { t: (key: string) => string }) {
       window.removeEventListener('online', check)
       window.removeEventListener('offline', check)
     }
-  }, [])
-  if (!down) return null
+  }, [live])
+  if (!down || live) return null
   return <div role="alert" className="float fixed left-1/2 -translate-x-1/2 top-3 z-50 px-3 py-1.5 text-xs text-destructive">{t('Нет связи с сервером. Схема показана как при последней загрузке, новые правки могут не сохраниться')}</div>
 }

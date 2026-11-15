@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { List, ListRow, Section } from '@/components/ui/section'
 import { Select } from '@/components/ui/select'
 import { api, useApp, useLinkOrigin } from '@/lib/client'
-import type { ChartView } from '@/lib/ops/views'
+import { useViews } from '@/components/chart-scope'
 import { StoryRequests } from './story-requests'
 
 interface Share { id: string; name: string; viewId: string | null; hasPassword: boolean; expiresAt: number | null; opens: number }
@@ -56,7 +56,7 @@ export function ShareLinks() {
   const { t, lang, confirm: ask } = useApp()
   const qc = useQueryClient()
   const { data: links = [] } = useQuery({ queryKey: ['shares'], queryFn: () => api<Share[]>('shares') })
-  const { data: views = [] } = useQuery({ queryKey: ['views'], queryFn: () => api<ChartView[]>('views') })
+  const { data: views = [] } = useViews()
   const named = views.filter((v) => v.id !== 'main')
   const [name, setName] = useState('')
   const [viewId, setViewId] = useState('')

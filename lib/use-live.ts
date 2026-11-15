@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { api } from './client'
 
@@ -13,6 +13,20 @@ const SPREAD_MS = 3000
 /** The server speaks at least every 25 seconds. Silence this long means a line that died without saying so: a laptop waking up, a changed network. */
 const SILENCE_MS = 70_000
 const CHECK_MS = 15_000
+
+let connected = false
+const listeners = new Set<() => void>()
+/** Whether the line to the server is open right now. */
+export function setLiveConnected(value: boolean) {
+  if (connected === value) return
+  connected = value
+  listeners.forEach((l) => l())
+}
+export const isLiveConnected = () => connected
+export function subscribeLive(l: () => void) { listeners.add(l); return () => { listeners.delete(l) } }
+export function useLiveConnected() {
+  return useSyncExternalStore(subscribeLive, isLiveConnected, () => false)
+}
 
 /** Keeps this page in step with the others, and closes the line while the tab is hidden. */
 export function useLive(focusId: string | null, enabled = true) {
@@ -39,6 +53,7 @@ export function useLive(focusId: string | null, enabled = true) {
         alive()
         client.current = JSON.parse((e as MessageEvent).data).id
         wait = RETRY_MS
+        setLiveConnected(true)
         // Whatever changed before this line opened was not announced here. After a restart all pages ask at once, so they spread out.
         setTimeout(refresh, returning ? Math.random() * SPREAD_MS : 0)
         returning = true
@@ -48,6 +63,7 @@ export function useLive(focusId: string | null, enabled = true) {
       source.addEventListener('presence', (e) => { alive(); setPresent(JSON.parse((e as MessageEvent).data)) })
       // The browser retries a dropped line by itself, but gives up for good on an error page, such as during a deploy.
       source.onerror = () => {
+        setLiveConnected(false)
         if (source?.readyState !== EventSource.CLOSED) return
         source = null
         client.current = null
@@ -60,6 +76,7 @@ export function useLive(focusId: string | null, enabled = true) {
       source?.close()
       source = null
       client.current = null
+      setLiveConnected(false)
     }
     const onVisibility = () => {
       if (document.hidden) return close()
