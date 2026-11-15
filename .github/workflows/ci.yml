@@ -82,6 +82,10 @@ jobs:
         run: |
           gh release download --repo danarkhipov/folkbranch --pattern "folkbranch-linux-x64.tar.xz" --dir "$RUNNER_TEMP/next"
           FG_NEXT_BUNDLE="$RUNNER_TEMP/next/folkbranch-linux-x64.tar.xz" node tests/e2e/self-update.mjs
+      - name: Many people writing at once, deletes against edits, and a restart lose nothing
+        run: node tests/e2e/concurrent-people.mjs
+      - name: Live updates reach other pages, and confirmed writes survive the server being killed mid-write
+        run: node tests/e2e/concurrent-live.mjs
 
   server-install:
     runs-on: ubuntu-latest

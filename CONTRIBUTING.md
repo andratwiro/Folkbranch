@@ -27,6 +27,7 @@ In `pnpm dev` you are signed in as the owner by yourself, on this computer only,
 | `pnpm check` | All of the above, plus a check for import cycles. Run it before you open a pull request |
 | `pnpm check:full` | Everything in throwaway Docker containers and folders: browser scenarios, install without Docker, speed budgets, crash and restore scenarios. No paid model is called |
 | `node tests/e2e/data-survives.mjs` | After `pnpm build && node scripts/make-bundle.mjs`: the last release fills an archive, this version opens it, restarts and crashes, and nothing entered may be lost or changed |
+| `node tests/e2e/concurrent-people.mjs`, `concurrent-live.mjs` | After the same build: three people writing at once, conflicts, deletes against edits, live updates, and the server killed in the middle of writing. Nothing confirmed may be lost |
 
 ESLint findings that were there before it was switched on are listed in `eslint-suppressions.json`, so only new ones fail. When you fix old ones, run `pnpm exec eslint . --prune-suppressions` to shrink the list.
 
