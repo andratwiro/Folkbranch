@@ -4,7 +4,9 @@ import path from 'node:path'
 import Database from 'better-sqlite3'
 import { getTableColumns } from 'drizzle-orm'
 import { describe, expect, it } from 'vitest'
+import { ALL_LANGS } from '../lib/languages'
 import { REFERENCES, TRACKED } from '../lib/ops/core'
+import { duplicateKeys, scanSources } from '../scripts/i18n-lib'
 
 const sourceFiles = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
   const p = path.join(dir, e.name)
@@ -43,20 +45,14 @@ describe('the interface kit', () => {
 })
 
 describe('translations', () => {
-  const dict = readFileSync('lib/i18n.ts', 'utf8')
-  const has = (key: string) => dict.includes(`'${key}':`) || dict.includes(`"${key}":`)
-
-  it('every text on screen has an English version', () => {
-    const missing = new Set<string>()
-    for (const f of [...sourceFiles('components'), ...sourceFiles('app')]) {
-      for (const m of readFileSync(f, 'utf8').matchAll(/\bt\('([^']*[а-яё][^']*)'\)/gi)) if (!has(m[1])) missing.add(m[1])
-    }
-    expect([...missing]).toEqual([])
+  it('ask for English phrases: a t() call written in Russian is a phrase nobody moved to the English key', () => {
+    // lib/fact-kinds.ts holds Russian values archives store (kinds of fact and their roles): they find their English key in lib/i18n-legacy.ts.
+    const russian = scanSources().calls.filter((c) => /[\u0400-\u04FF]/.test(c.key ?? '') && c.file !== 'lib/fact-kinds.ts').map((c) => `${c.file}:${c.line} ${c.key}`)
+    expect(russian).toEqual([])
   })
 
-  it('no text is listed twice', () => {
-    const keys = [...dict.matchAll(/'((?:[^'\\\n]|\\.)*[а-яё](?:[^'\\\n]|\\.)*)':/gi)].map((m) => m[1])
-    expect(keys.filter((k, i) => keys.indexOf(k) !== i)).toEqual([])
+  it('lists no text twice in a locale file', () => {
+    for (const code of ALL_LANGS) expect(duplicateKeys(code), code).toEqual([])
   })
 })
 

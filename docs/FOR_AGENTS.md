@@ -8,7 +8,7 @@ This file is for coding agents and automation working in this repository. Humans
 
 - `lib/ops/`: every change to data. New operations go in `lib/ops/registry.ts`.
 - `lib/db/schema.ts`: database schema. Generate migrations with drizzle-kit and commit them.
-- `lib/i18n.ts`, `lib/i18n-es.ts`, `lib/i18n-ca.ts`: English, Spanish and Catalan strings.
+- `lib/languages.ts`: the language registry; `lib/i18n.ts`: lookup; `locales/<code>.json`: every language's words, keyed by the English text; `docs/TRANSLATING.md`: how to add a language.
 - `tests/`: unit and integration tests (Vitest). `tests/ui/` and `tests/e2e/`: browser checks.
 - `scripts/ui-check.mjs`: runs the browser checks.
 - `CHANGELOG.md`: add user-visible changes under **Unreleased**.
@@ -35,8 +35,8 @@ Run these in order and fix what fails.
 4. Open `./ui-shots` and look at every screen you changed at phone size (375x812 or 390x844) and at laptop size (1440x900).
 5. If you touched the map or a large list, run `pnpm check:perf` (budgets in `tests/budgets.json`). Work must not run for every person when it can run once, and no task may block the user for more than 200 ms.
 6. If you added a user-visible word:
-   - wrap it in `t()`, with the Russian source phrase as the key;
-   - add the English to `lib/i18n.ts`, the Spanish to `lib/i18n-es.ts` and the Catalan to `lib/i18n-ca.ts`;
+   - wrap it in `t()`, with the English text as the key (one phrase with `{placeholders}`, never a sentence glued from pieces);
+   - add its lines to `locales/ru.json`, `locales/es.json` and `locales/ca.json`, and run `pnpm i18n:check` until it passes;
    - keep `{placeholders}` and «quotes»; use informal "tú" / "tu", never usted or vós;
    - use the project terms, for example árbol / arbre for tree, ficha / fitxa for a person's card, familiar for relative, archivo / arxiu for archive.
 7. For a bug fix, add a test that fails without the fix. Confirm it fails for the reason the bug describes.
