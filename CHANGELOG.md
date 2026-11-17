@@ -4,6 +4,9 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ## Unreleased
 
+### Added
+- **Ask a relative to tell a story from the person's own card**: **Ask to tell by a link** in the Stories tab (and in the **Add a story** dialog) opens a small dialog with the person already filled in; name who is asked, press ready questions, and the link comes out with **Copy** and, on a phone, **Share**. The card then lists open links ("Waiting for a story from Nina, link valid until…") with **New link** and **Close**, and what came back waits there with the teller's name, to hear and accept or reject in place. Editors can make and close these links, not only the owner.
+
 ## 1.7.0 - 2026-11-17
 
 The family on a map, year by year. It began as [pull request #14](https://github.com/danarkhipov/Folkbranch/pull/14) by [@andratwiro](https://github.com/andratwiro): thank you. On top of it this release tells two villages of one name apart, suggests points for places that have none, imports Gramps files with their places, and guards the archive against several easy mistakes.

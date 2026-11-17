@@ -20,7 +20,7 @@ const primary = cn(buttonVariants(), 'self-start')
 const NO_MIC = { insecure: 'Запись голоса работает только по защищённому адресу (https). Можно выбрать файл.', unsupported: 'Этот браузер не умеет записывать звук. Можно выбрать файл.', denied: 'Нет доступа к микрофону. Разрешите его в браузере или выберите файл.' }
 
 /** A voice from the microphone or from a file, with the words as far as anyone has written them down. */
-export function StoryDialog({ person, story, onClose }: { person: Person; story: Story | null; onClose: () => void }) {
+export function StoryDialog({ person, story, onClose, onAsk }: { person: Person; story: Story | null; onClose: () => void; onAsk?: () => void }) {
   const { t, me, lang, canEdit, byId, notify } = useApp()
   const qc = useQueryClient()
   const rec = useRecorder()
@@ -75,6 +75,7 @@ export function StoryDialog({ person, story, onClose }: { person: Person; story:
       <DialogContent className="max-w-lg max-h-[calc(100dvh-32px)] overflow-auto">
         <DialogTitle className="font-serif text-lg font-medium">{t(story ? 'Изменить рассказ' : 'Записать рассказ')}</DialogTitle>
         <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
+          {!story && onAsk && <button type="button" className="self-start text-xs text-ink-soft underline underline-offset-2 hover:text-ink" onClick={onAsk}>{t('Или попросить рассказать по ссылке')}</button>}
           {!story && (
             <div className="flex flex-col gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
               {!rec.recording && !preview && (

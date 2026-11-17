@@ -1284,6 +1284,18 @@ const en: Record<string, string> = {
   'точка из GeoNames': 'point from GeoNames',
   'Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.': 'Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it.',
 
+  'Попросить рассказать по ссылке': 'Ask to tell by a link',
+  'Расскажите о близком': 'Tell us about someone dear',
+  'Запишите рассказ': 'Record a story',
+  'Поделиться': 'Share',
+  'Ссылка готова. Отправьте её человеку: рассказ появится на карточке и будет ждать вашей проверки.': 'The link is ready. Send it to the person: their story will appear on the card and wait for your review.',
+  'Ждём рассказ': 'Waiting for a story',
+  'Ждём рассказ от': 'Waiting for a story from',
+  'прислал(а) запись': 'sent a recording',
+  'ссылка до': 'link valid until',
+  'ждёт проверки': 'waiting for review',
+  'Саму ссылку показать второй раз нельзя: она хранится только в виде отпечатка. Новая ссылка делается за одно нажатие, старую можно закрыть.': 'The link itself cannot be shown a second time: only its fingerprint is stored. A new link takes one press, and the old one can be closed.',
+  'Или попросить рассказать по ссылке': 'Or ask someone to tell it by a link',
 }
 
 /** Spanish and Catalan live in lib/i18n-es.ts and lib/i18n-ca.ts, and reach a browser only when it reads in them (lib/i18n-load.ts). */
