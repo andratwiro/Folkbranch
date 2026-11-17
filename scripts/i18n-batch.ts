@@ -2,7 +2,7 @@
 // the code asks for, so several workers can take a range each without overlapping.
 //   pnpm i18n:batch <code> --count                 how many phrases there are, and how many this language still lacks
 //   pnpm i18n:batch <code> --from 0 --to 120       prints JSON for the phrases still missing in that range of the sorted list
-//   pnpm i18n:batch <code> --apply lines.json      merges {"English phrase": "translation"}; a line that loses a {placeholder} or a «quote» is refused
+//   pnpm i18n:batch <code> --apply lines.json [--dry]   merges (with --dry only checks) {"English phrase": "translation"}; a line that loses a {placeholder} or a «quote» is refused
 import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { PLURAL_SUFFIX, askedPhrases, localesDir, pluralCategories, readTable, scanSources, slots, quotes } from './i18n-lib'
@@ -35,8 +35,8 @@ if (rest.includes('--count')) {
     else if (quotes(source) > 0 && quotes(source) !== quotes(value)) rejected.push(`${key}: the «quotes» of the English are lost`)
     else { table[key] = value; added++ }
   }
-  writeFileSync(path.join(localesDir, `${code}.json`), JSON.stringify(Object.fromEntries(Object.keys({ ...Object.fromEntries(all.map((k) => [k, ''])), ...table }).map((k) => [k, table[k] ?? ''])), null, 2) + '\n')
-  console.log(JSON.stringify({ added, rejected }, null, 1))
+  if (!rest.includes('--dry')) writeFileSync(path.join(localesDir, `${code}.json`), JSON.stringify(Object.fromEntries(Object.keys({ ...Object.fromEntries(all.map((k) => [k, ''])), ...table }).map((k) => [k, table[k] ?? ''])), null, 2) + '\n')
+  console.log(JSON.stringify({ [rest.includes('--dry') ? 'wouldAdd' : 'added']: added, rejected }, null, 1))
 } else {
   const from = Number(flag('from') ?? 0), to = Number(flag('to') ?? all.length)
   const out: Record<string, { english: string; russian?: string; spanish?: string; note?: string }> = {}
