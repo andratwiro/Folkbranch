@@ -20,15 +20,16 @@ const locale = flag('locale') ?? code
 try { new Intl.PluralRules(locale) } catch { console.error(`"${locale}" is not a language tag Intl knows.`); process.exit(1) }
 const dir = flag('dir') === 'rtl' ? 'rtl' : 'ltr'
 
-const parts = [`name: ${JSON.stringify(name)}`, `openEnd: ${JSON.stringify(flag('open-end') ?? 'now')}`, `locale: ${JSON.stringify(locale)}`, `dir: '${dir}'`,
+const q = (v: string) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+const parts = [`name: ${q(name)}`, `openEnd: ${q(flag('open-end') ?? 'now')}`, `locale: ${q(locale)}`, `dir: '${dir}'`,
   `nameOrder: '${has('surname-first') ? 'surname-first' : 'given-first'}'`, `patronymic: ${has('patronymic')}`, `status: 'needs-review'`]
-if (flag('whisper')) parts.push(`whisper: ${JSON.stringify(flag('whisper'))}`)
+if (flag('whisper')) parts.push(`whisper: ${q(flag('whisper')!)}`)
 parts.push('hidden: true')
 const registry = path.join(root, 'lib/languages.ts')
 const source = readFileSync(registry, 'utf8')
 const marker = '  // The pseudo-language:'
 if (!source.includes(marker)) { console.error('lib/languages.ts has no pseudo-language marker; add the line by hand.'); process.exit(1) }
-writeFileSync(registry, source.replace(marker, `  ${JSON.stringify(code)}: { ${parts.join(', ')} },\n${marker}`))
+writeFileSync(registry, source.replace(marker, `  ${/^[a-z]+$/.test(code) ? code : q(code)}: { ${parts.join(', ')} },\n${marker}`))
 
 // Every phrase, empty: an empty line counts as missing.
 const asked = askedPhrases(scanSources())
