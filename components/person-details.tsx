@@ -48,8 +48,8 @@ function FactRow({ fact, readOnly, fresh, kinds, places, onChange, onRemove }: {
   if (readOnly) {
     return (
       <div className="min-w-0 border-l-2 border-border pl-2.5 py-0.5 flex flex-col gap-0.5">
-        <span className="break-anywhere font-medium">{[f.date, f.kind].filter(Boolean).join(' · ')}</span>
-        {f.place && <ReadText value={f.place} className="text-ink-soft" />}
+        <span className="break-anywhere font-medium">{f.date || <span className="text-xs italic font-normal text-ink-faint">{t('Дата неизвестна')}</span>}{f.kind && ` · ${f.kind}`}</span>
+        {f.place ? <ReadText value={f.place} className="text-ink-soft" /> : <span className="text-xs italic text-ink-faint">{t('Место неизвестно')}</span>}
         {f.note && <ReadText value={f.note} />}
         {Object.entries(f.fields ?? {}).filter(([, v]) => v).map(([k, v]) => <span key={k} className="break-anywhere"><span className="text-ink-soft">{t(k)}:</span> {v}</span>)}
         {(f.people ?? []).filter((x) => x.name).map((x, i) => <Participant key={i} person={x} />)}
@@ -301,6 +301,7 @@ function LifeLine({ person }: { person: Person }) {
           <li key={i} className="min-w-0">
             <span className="font-medium">{e.date}</span>{e.age !== null && <span className="text-ink-soft"> · {t('возраст')} {e.age}</span>}
             <span className="block break-anywhere">{t(e.title)}{e.note && ': '}{e.otherId ? <button className="pick underline underline-offset-2 hover:text-ink" onClick={() => focus(e.otherId, { center: true })}>{e.note}</button> : e.note}</span>
+            {e.place !== null && (e.place ? <span className="block break-anywhere text-ink-soft">📍 {e.place}</span> : <span className="block text-xs italic text-ink-faint">📍 {t('Место неизвестно')}</span>)}
           </li>
         ))}
       </ol>
