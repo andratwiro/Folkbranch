@@ -4,6 +4,13 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ## Unreleased
 
+### Added
+- **More languages are easy to add.** English is now the language the interface is written in and every other language, Russian included, is one file in `locales/`; a language is loaded only when someone reads in it, and one line in the language list plus its file adds a new one. The first wave (Portuguese, French, German, Italian, Ukrainian, Polish) is machine-translated and marked **beta** in the language picker until a native reader signs it off. Languages with more than two plural forms, names written surname first, a patronymic in the full name and a different word for a father's and a mother's brother are now possible; lists sort in the reader's own alphabet. How to add or fix a language: [docs/TRANSLATING.md](docs/TRANSLATING.md).
+
+### Changed
+- A phrase a language has not translated yet shows in English everywhere, never in Russian.
+- `pnpm i18n:check` (also in CI) replaces the old Spanish and Catalan table tests: it fails on a missing, unused or mismatched translation.
+
 ## 1.7.0 - 2026-11-17
 
 The family on a map, year by year. It began as [pull request #14](https://github.com/danarkhipov/Folkbranch/pull/14) by [@andratwiro](https://github.com/andratwiro): thank you. On top of it this release tells two villages of one name apart, suggests points for places that have none, imports Gramps files with their places, and guards the archive against several easy mistakes.
