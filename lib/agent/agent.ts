@@ -145,7 +145,20 @@ function toAiTool(actor: Actor, def: ToolDef) {
   return tool({
     description: def.description,
     inputSchema: def.input,
-    execute: async (args: unknown) => {
+    // A long read reports how far it has got before its answer, so the panel can say "12 of 40" while it works.
+    execute: (def.slices && !changes ? async function* (args: { ids?: string[] }) {
+      try {
+        const all = args.ids ?? []
+        const out: unknown[] = []
+        for (let at = 0; at < all.length; at += def.slices!) {
+          out.push(...(await def.run(actor, { ...args, ids: all.slice(at, at + def.slices!) }) as unknown[]))
+          if (at + def.slices! < all.length) { yield { progress: { done: out.length, total: all.length } } as never; await new Promise((r) => setImmediate(r)) }
+        }
+        yield out as never
+      } catch (e) {
+        throw plainError(e)
+      }
+    } : async (args: unknown) => {
       try {
         if (!changes) return await def.run(actor, args)
         // Each call's own entry, or none if it changed nothing, so the person can take back one answer exactly.
@@ -153,7 +166,7 @@ function toAiTool(actor: Actor, def: ToolDef) {
       } catch (e) {
         throw plainError(e)
       }
-    },
+    }) as never,
     toModelOutput: async ({ output }: { output: unknown }) => {
       if (!def.shown) return forTheModel(def.forModel ? def.forModel(output) : output)
       const seen = await def.shown(actor, output).catch(() => null)

@@ -14,6 +14,10 @@ import { PromptInput, PromptInputBody, PromptInputButton, PromptInputFooter, Pro
 import { PanelEdge } from './panel-size'
 import { changesData, isOrdinaryEdit, stepLabel, toolLabel } from '@/lib/agent/labels'
 import { api, undoFailure, useApp } from '@/lib/client'
+import { stepDetail } from '@/lib/agent/labels'
+import { subjectOf } from '@/lib/agent/subject'
+import { personName } from '@/lib/types'
+import { avatarUrl } from '@/lib/client'
 import { stampDetail, stampLine, stampOf } from '@/lib/agent/stamp'
 import { forgetChat, loadChats, saveChat, type SavedChat } from '@/lib/chat-store'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -29,6 +33,8 @@ function plainError(e: Error, t: (k: string) => string) {
   return e.message
 }
 
+/** A long step's progress report, before its answer: the step is still running. */
+const preliminary = (p: UIMessage['parts'][number]) => !!(p as { preliminary?: boolean }).preliminary
 const historyIds = (m: UIMessage) => [...new Set(m.parts.flatMap((p) => (isToolUIPart(p) && p.state === 'output-available' && (p.output as { historyId?: string } | null)?.historyId ? [(p.output as { historyId: string }).historyId] : [])))]
 
 export default function AssistantPanel({ open, width, onWidth, onClose, onPath, onDirection, onBranch }: { open: boolean; width: number; onWidth: (w: number) => void; onClose: () => void; onPath: (path: string[]) => void; onDirection: (rootsBelow: boolean) => void; onBranch: (id: string, scope: Scope) => void }) {
@@ -305,13 +311,30 @@ function ToolCall({ part, onAnswer, onAllowEdits }: { part: ToolUIPart; onAnswer
     <>
       <div className="tool-row" title={t(STATUS[part.state])}>
         <div className="flex items-center gap-1.5">
-          {part.state === 'output-available' ? <CircleCheck size={13} className="text-ink-faint" /> : part.state === 'output-error' ? <CircleX size={13} className="text-destructive" /> : <Loader2 size={13} className="animate-spin" />}
+          {part.state === 'output-available' && !preliminary(part) ? <CircleCheck size={13} className="text-ink-faint" /> : part.state === 'output-error' ? <CircleX size={13} className="text-destructive" /> : <Loader2 size={13} className="animate-spin" />}
           <span className="min-w-0 flex-1 truncate">{label}</span>
+          <StepSubject part={part} />
         </div>
       </div>
       {part.state === 'output-error' && <p className="text-xs text-destructive">{part.errorText}</p>}
       {link && <InviteLink link={link} />}
     </>
+  )
+}
+
+/** What the step is about: the person it reads or writes, with a small avatar that opens them on the chart, or how many and how far. */
+function StepSubject({ part }: { part: ToolUIPart }) {
+  const { byId, focus, t } = useApp()
+  const sub = subjectOf(getToolName(part), part.input, part.output)
+  const person = sub.total === 1 ? byId.get(sub.ids[0]) : undefined
+  const shown = person && !person.hidden ? person : undefined
+  const text = stepDetail(sub, (id) => { const q = byId.get(id); return q && !q.hidden ? personName(q) : undefined }, t('из'))
+  if (!text) return null
+  return (
+    <span className="step-subject flex min-w-0 flex-none items-center gap-1 text-ink-soft" data-subject={sub.ids.join(',')} data-progress={sub.done !== undefined ? `${sub.done}/${sub.total}` : undefined}>
+      {shown && <button type="button" className="size-4 flex-none overflow-hidden rounded-full" aria-label={personName(shown)} onClick={() => focus(shown.id)}><img src={avatarUrl(shown)} alt="" className="size-full object-cover" /></button>}
+      <span className="min-w-0 truncate">{text}</span>
+    </span>
   )
 }
 
@@ -364,7 +387,7 @@ function visiblyWorking(m: UIMessage | undefined, status: string) {
   const last = m.parts.at(-1)
   if (!last) return false
   if (last.type === 'text') return last.state === 'streaming' && last.text.length > 0
-  return isToolUIPart(last) && (RUNNING.includes(last.state) || last.state === 'approval-requested')
+  return isToolUIPart(last) && (RUNNING.includes(last.state) || preliminary(last) || last.state === 'approval-requested')
 }
 
 /** Said at once after sending and whenever the model is quiet between steps, with the seconds it has been at it. */
@@ -386,18 +409,19 @@ function Thinking() {
  */
 function Steps({ parts, live }: { parts: ToolUIPart[]; live: boolean }) {
   const { lang } = useApp()
-  const current = live ? parts.findLast((p) => RUNNING.includes(p.state)) : undefined
+  const current = live ? parts.findLast((p) => RUNNING.includes(p.state) || preliminary(p)) : undefined
   const failed = parts.some((p) => p.state === 'output-error')
   const [open, setOpen] = useState(false)
   // The same step done several times in a row is said once.
   const names = parts.map((p) => stepLabel(getToolName(p), lang)).filter((n, i, all) => n !== all[i - 1])
   const line = current ? `${stepLabel(getToolName(current), lang)}…` : names.join(' · ')
+  const now = current ? <StepSubject part={current} /> : null
   const icon = current ? <Loader2 size={13} className="shrink-0 animate-spin" /> : failed ? <CircleX size={13} className="shrink-0 text-destructive" /> : <CircleCheck size={13} className="shrink-0 text-ink-faint" />
-  if (parts.length === 1 && !failed) return <p className="tool-steps-line">{icon}<span className="min-w-0 flex-1 truncate">{line}</span></p>
+  if (parts.length === 1 && !failed) return <p className="tool-steps-line">{icon}<span className="min-w-0 flex-1 truncate">{line}</span>{now}</p>
   return (
     <details className="tool-steps" open={open || failed} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
       <summary className="tool-steps-line">
-        {icon}<span className="min-w-0 flex-1 truncate">{line}</span><ChevronDown size={13} className="chev shrink-0" />
+        {icon}<span className="min-w-0 flex-1 truncate">{line}</span>{now}<ChevronDown size={13} className="chev shrink-0" />
       </summary>
       <div className="flex flex-col gap-0.5 border-l border-border pl-3 ml-1.5 mt-0.5">
         {parts.map((p) => <ToolCall key={p.toolCallId} part={p} onAnswer={() => {}} />)}

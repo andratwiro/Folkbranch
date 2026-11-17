@@ -11,6 +11,7 @@ const READ: Record<string, [string, string]> = {
   query_people: ['Ищет людей', 'Selecting people'],
   search_archive: ['Ищет по всему архиву', 'Searching the archive'],
   get_person: ['Читает карточку', 'Reading a card'],
+  get_people: ['Читает карточки', 'Reading cards'],
   get_relatives: ['Смотрит родню', 'Looking at relatives'],
   count_relatives: ['Считает родню', 'Counting relatives'],
   how_related: ['Считает родство', 'Working out the relation'],
@@ -61,6 +62,7 @@ const WRITE: Record<string, [string, string]> = {
 const CAREFUL: Record<string, [string, string]> = {
   delete_person: ['Удалить человека', 'Delete a person'],
   update_people: ['Изменить сразу нескольких', 'Change several people'],
+  add_fact_to_people: ['Добавить факт нескольким', 'Add a fact to several people'],
   remove_relation: ['Удалить связь', 'Delete a link'],
   remove_parent_links: ['Удалить связи', 'Delete links'],
   import_gedcom: ['Импортировать GEDCOM', 'Import GEDCOM'],
@@ -102,6 +104,7 @@ const DOING: Record<string, [string, string]> = {
   add_source: ["Добавляет источник", "Adding a source"],
   delete_person: ["Удаляет человека", "Deleting a person"],
   update_people: ["Меняет сразу нескольких", "Changing several people"],
+  add_fact_to_people: ["Добавляет факт нескольким", "Adding a fact to several people"],
   remove_relation: ["Удаляет связь", "Deleting a link"],
   remove_parent_links: ["Удаляет связи", "Deleting links"],
   import_gedcom: ["Импортирует GEDCOM", "Importing GEDCOM"],
@@ -122,6 +125,18 @@ const DOING: Record<string, [string, string]> = {
 
 /** The step as it happens: reading in its own words, an edit as being done rather than as a question. */
 export const stepLabel = (name: string, lang: Lang) => { const pair = READ[name] ?? DOING[name]; return pair ? translatePair(lang, ...pair) : toolLabel(name, lang) }
+
+/**
+ * A running step in words, with what it is about: "Reading a card: Ivan Sokolov", "Reading cards: 12 of 40",
+ * "Adding a fact «Service»: Ivan Sokolov". `nameOf` gives a person's name from the archive, or nothing for one it does not know.
+ */
+export function stepDetail(sub: { ids: string[]; total: number; done?: number; what?: string }, nameOf: (id: string) => string | undefined, of: string) {
+  // A few people by name; a long list as a count, with how far it has got once the step reports it.
+  const who = sub.total > 3 || sub.done !== undefined
+    ? (sub.done !== undefined ? `${sub.done} ${of} ${sub.total}` : String(sub.total))
+    : sub.ids.map(nameOf).filter(Boolean).join(', ')
+  return [sub.what && `«${sub.what}»`, who].filter(Boolean).join(': ')
+}
 
 export const TOOL_NAMES = { read: Object.keys(READ), write: Object.keys(WRITE), careful: Object.keys(CAREFUL) }
 export const isOrdinaryEdit = (name: string) => name in WRITE

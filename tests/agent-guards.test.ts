@@ -462,8 +462,8 @@ describe('tokens', () => {
 })
 
 // Facts carry their people and extra fields: an agent that rewrites the list must see them, or it would drop them.
-// Raised by about 600 for count_relatives: one core tool replaces a round trip to load another group and a whole list of relatives.
-const BUDGET_OWNER = 12_200
+// Raised by about 1,100 for count_relatives and get_people: one core tool replace a round trip to load another group, a whole list of relatives and many get_person calls.
+const BUDGET_OWNER = 12_700
 
 describe('reasoning sent back', () => {
   const turn = (i: number) => [{ role: 'user', content: 'q' + i }, { role: 'assistant', content: [{ type: 'reasoning', text: 'think' + i }, { type: 'tool-call', toolCallId: 'c' + i, toolName: 'search', input: {} }] }, { role: 'tool', content: [{ type: 'tool-result', toolCallId: 'c' + i, toolName: 'search', output: { type: 'text', value: 'ok' } }] }] as never[]

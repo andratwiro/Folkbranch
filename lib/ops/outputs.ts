@@ -47,6 +47,11 @@ export const OUTPUTS: Record<string, z.ZodType> = {
     unions: z.array(relative.extend({ linkId: id, personId: id, kind: text, startDate: text, endDate: text, place: text })),
     pages: z.array(pageMeta),
   }),
+  get_people: z.array(z.object({
+    id, missing: z.literal(true).optional(), hidden: z.literal(true).optional(), name: text.optional(), maidenName: text.optional(), sex: text.optional(), years: text.optional(), living: z.boolean().optional(),
+    birthDate: text.optional(), birthPlace: text.optional(), deathDate: text.optional(), deathPlace: text.optional(), certainty: text.optional(), tags: z.array(text).optional(),
+    facts: z.array(z.object({ kind: text, date: text, place: text })).optional(), parentIds: z.array(id).optional(), childIds: z.array(id).optional(), spouseIds: z.array(id).optional(),
+  })),
   get_relatives: z.array(brief.extend({ relation: text, blood: z.boolean(), kind: text })),
   count_relatives: z.union([z.object({ ambiguous: z.array(brief), note: text }), z.object({
     person: z.object({ id, name: text }), total: z.number(), byKind: z.record(z.string(), z.number()), bloodByDegree: z.record(z.string(), z.number()), hiddenFromYou: z.number(), definition: text,
@@ -71,6 +76,7 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   update_person: write(written),
   add_fact: write(written),
   update_people: write(applied),
+  add_fact_to_people: write(applied),
   delete_person: write(ok),
   add_relation: write(ok),
   update_relation: write(ok),

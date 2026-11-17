@@ -2221,5 +2221,7 @@ const ca: Record<string, string> = {
   'точка из GeoNames': 'punt de GeoNames',
   'Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.': 'Suggeriments a partir d\'una llista de ciutats i pobles desada a la mateixa aplicació: els noms de llocs no s\'envien enlloc. El punt només es posa quan el confirmes.',
   'шагов': 'passos',
+  'Читает карточки': 'Llegint fitxes',
+  'Добавить факт нескольким': 'Afegeix una dada a diverses persones',
 }
 export default ca

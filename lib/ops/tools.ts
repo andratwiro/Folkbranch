@@ -43,6 +43,8 @@ export interface ToolDef {
   /** What the model gets instead of the output, when the output holds a secret only the person may see. */
   forModel?: (output: any) => unknown
   /** A picture or document the model looks at, fetched for it alone: the chat keeps only the answer. */
+  /** A long list in `ids` is read this many at a time, reporting progress between the parts. */
+  slices?: number
   shown?: (actor: Actor, output: any) => Promise<{ file: Buffer; mediaType: string; name: string }>
 }
 
@@ -58,7 +60,7 @@ function visiblePerson(actor: Actor, id: string) {
 }
 
 /** Read tools: what each returns is already limited by the caller's role in the ops layer. */
-const READS: Record<string, { description: string; input: z.ZodObject; run: (a: Actor, x: any) => unknown }> = {
+const READS: Record<string, { description: string; input: z.ZodObject; run: (a: Actor, x: any) => unknown; slices?: number }> = {
   get_overview: {
     description: 'Start here. Who you are in this archive, whether your writes go to review, how many people there are, how much is unsourced or in conflict, and how many of your drafts wait.',
     input: z.object({}),
@@ -114,6 +116,26 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
         unions: g.unions.filter((u) => u.aId === x.id || u.bId === x.id).map((u) => ({ ...u, linkId: u.id, ...named(u.aId === x.id ? u.bId : u.aId) })),
         pages: listPages(a, x.id),
       }
+    },
+  },
+  get_people: {
+    description: 'Several people at once, trimmed: names, dates, places, certainty, facts (kind, date, place) and the ids of parents, children and spouses. Use it instead of many get_person calls; get_person has sources, versions and pages.',
+    input: z.object({ ids: z.array(z.string()).min(1).max(60) }),
+    slices: 10,
+    run: (a, x) => {
+      const g = getGraph(a)
+      const byId = new Map(g.persons.map((q) => [q.id, q]))
+      return x.ids.map((id: string) => {
+        const q = byId.get(id)
+        if (!q) return { id, missing: true as const }
+        if (q.hidden) return { id, hidden: true as const }
+        return {
+          id, name: fullName(q), maidenName: q.maidenName, sex: q.sex, years: lifeYears(q), living: q.living, birthDate: q.birthDate, birthPlace: q.birthPlace, deathDate: q.deathDate, deathPlace: q.deathPlace, certainty: q.certainty, tags: q.tags,
+          facts: q.facts.map((f) => ({ kind: f.kind, date: f.date, place: f.place })),
+          parentIds: g.parentChild.filter((l) => l.childId === id).map((l) => l.parentId), childIds: g.parentChild.filter((l) => l.parentId === id).map((l) => l.childId),
+          spouseIds: g.unions.filter((u) => u.aId === id || u.bId === id).map((u) => (u.aId === id ? u.bId : u.aId)),
+        }
+      })
     },
   },
   get_relatives: {
@@ -231,9 +253,9 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
 }
 
 /** Every request carries what its tools look like, so only these go along until the model asks for more. */
-export const CORE_TOOLS = ['search_people', 'query_people', 'search_archive', 'get_person', 'how_related', 'count_relatives', 'create_person', 'update_person', 'add_fact', 'delete_person', 'add_relation', 'remove_relation', 'import_text', 'undo', 'get_history', 'set_plan', 'use_tools']
+export const CORE_TOOLS = ['search_people', 'query_people', 'search_archive', 'get_person', 'get_people', 'how_related', 'count_relatives', 'create_person', 'update_person', 'add_fact', 'delete_person', 'add_relation', 'remove_relation', 'import_text', 'undo', 'get_history', 'set_plan', 'use_tools']
 export const TOOL_GROUPS: Record<string, { about: string; tools: string[] }> = {
-  people: { about: 'many at once, relatives, gaps, overview, links, tree, tables', tools: ['update_people', 'get_relatives', 'find_gaps', 'get_overview', 'update_relation', 'remove_parent_links', 'export_text', 'preview_text', 'parse_table'] },
+  people: { about: 'many at once, relatives, gaps, overview, links, tree, tables', tools: ['update_people', 'add_fact_to_people', 'get_relatives', 'find_gaps', 'get_overview', 'update_relation', 'remove_parent_links', 'export_text', 'preview_text', 'parse_table'] },
   sources: { about: 'adding or removing a source, versions of values', tools: ['add_source', 'remove_source', 'add_version', 'choose_version', 'reject_version', 'restore_version'] },
   files: { about: 'photos, scans, avatars, attached files, GEDCOM, research cases', tools: ['import_kinship_case', 'list_photos', 'view_photo', 'save_attachment', 'set_avatar', 'tag_photo', 'untag_photo', 'update_photo', 'delete_photo', 'upload_photo', 'read_attachment', 'import_gedcom_attachment', 'export_gedcom', 'preview_gedcom', 'import_gedcom'] },
   pages: { about: 'pages about people', tools: ['list_pages', 'get_page', 'create_page', 'update_page', 'move_page', 'delete_page'] },

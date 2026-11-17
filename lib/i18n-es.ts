@@ -2220,5 +2220,7 @@ const es: Record<string, string> = {
   'точка из GeoNames': 'punto de GeoNames',
   'Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.': 'Sugerencias a partir de una lista de ciudades y pueblos guardada en la propia aplicación: los nombres de lugares no se envían a ninguna parte. El punto solo se pone cuando lo confirmas.',
   'шагов': 'pasos',
+  'Читает карточки': 'Leyendo fichas',
+  'Добавить факт нескольким': 'Añadir un dato a varias personas',
 }
 export default es
