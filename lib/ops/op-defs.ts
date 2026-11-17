@@ -261,11 +261,11 @@ export function pageContent(actor: Actor, args: { markdown?: string; content?: u
 }
 
 export const FIELD: Record<string, string> = {
-  givenName: 'Имя', surname: 'Фамилия', maidenName: 'Девичья фамилия', sex: 'Пол', birthDate: 'Рождение', birthPlace: 'Место рождения',
-  deathDate: 'Смерть', deathPlace: 'Место смерти', living: 'Жив', certainty: 'Уверенность',
+  givenName: 'Given name', surname: 'Surname', maidenName: 'Maiden name', sex: 'Sex', birthDate: 'Birth', birthPlace: 'Birthplace',
+  deathDate: 'Death', deathPlace: 'Place of death', living: 'Living_male', certainty: 'Certainty',
 }
 
-export const REL: Record<string, string> = { father: 'отец', mother: 'мать', son: 'сын', daughter: 'дочь', spouse: 'супруг' }
+export const REL: Record<string, string> = { father: 'father', mother: 'mother', son: 'son', daughter: 'daughter', spouse: 'spouse' }
 
 const personFull = (p: { givenName: string; patronymic: string; surname: string; birthDate: string; deathDate: string }) => {
   const name = [p.givenName, p.patronymic, p.surname].filter(Boolean).join(' ')
@@ -276,10 +276,10 @@ const personFull = (p: { givenName: string; patronymic: string; surname: string;
 /** With patronymic and years: on a confirmation card two namesakes must look different. */
 export function nameOfReal(id: string) {
   const p = getDb().select().from(schema.persons).where(eq(schema.persons.id, id)).get()
-  return p ? personFull(p) || tell('Без названия') : id
+  return p ? personFull(p) || tell('Untitled') : id
 }
 
 export function pageName(id: string, c: Ctx) {
   if (id.startsWith('tmp_')) return c.name(id)
-  return getDb().select({ title: schema.pages.title }).from(schema.pages).where(eq(schema.pages.id, id)).get()?.title || tell('Без названия')
+  return getDb().select({ title: schema.pages.title }).from(schema.pages).where(eq(schema.pages.id, id)).get()?.title || tell('Untitled')
 }

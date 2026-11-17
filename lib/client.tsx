@@ -74,7 +74,7 @@ export function useWrite<V = void, R = unknown>(fn: (v: V) => Promise<R>, also: 
   return useMutation({
     mutationFn: fn,
     // Nothing fails in silence: a person who sees no message believes it worked.
-    onError: onError ?? (() => app?.notify(app.t('Не получилось. Проверьте интернет и попробуйте ещё раз.'), [], true)),
+    onError: onError ?? (() => app?.notify(app.t('That did not work. Check the connection and try again.'), [], true)),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['graph'] })
       qc.invalidateQueries({ queryKey: ['history'] })
@@ -104,7 +104,7 @@ export function usePersonSave(person: Person, onError: (e: Error) => void) {
 
 /** Why an undo was refused, in words a person can act on. */
 export const undoFailure = (e: unknown, t: (key: string) => string) =>
-  (e as { status?: number }).status === 409 ? t('Это уже изменили позже. Сначала отмените более новую правку') : `${t('Не удалось сохранить')}: ${(e as Error).message}`
+  (e as { status?: number }).status === 409 ? t('This was changed later. Undo the newer edit first') : `${t('Could not save')}: ${(e as Error).message}`
 
 /** The person's photo, or a drawn portrait when there is none. */
 export const avatarUrl = (p: Person) => (p.avatarMediaId ? `/api/v1/persons/${p.id}/avatar?v=${p.updatedAt}` : drawnAvatar(p))

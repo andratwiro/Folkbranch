@@ -41,7 +41,7 @@ export function FollowChip({ name, face, years, to, missing, cardOpen, onOpen, o
     radios.current[line.on ? 0 : 1]?.focus()
   }
   return (
-    <div role="group" aria-label={`${t('Следим')}: ${name}${to ? ` → ${to}` : ''}`} className={`map-chip flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1${line?.on ? ' lining' : ''}`}>
+    <div role="group" aria-label={`${t('Following')}: ${name}${to ? ` → ${to}` : ''}`} className={`map-chip flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1${line?.on ? ' lining' : ''}`}>
       <img src={face} alt="" className="map-place-face" />
       <span className="map-chip-who flex min-w-0 flex-1 flex-col leading-tight">
         <span className="flex min-w-0 font-serif text-base text-ink"><span className="truncate">{name}</span>{to && <span className="flex-none whitespace-pre"> → {to}</span>}</span>
@@ -51,19 +51,19 @@ export function FollowChip({ name, face, years, to, missing, cardOpen, onOpen, o
               {line.notOnMap && line.notOnMap.count > 0 && <button type="button" className="map-chip-gaps underline decoration-dotted underline-offset-2" onClick={line.notOnMap.onShow}>{line.notOnMap.words}</button>}
             </span>
           : years && <span className="truncate text-sm tabular-nums text-ink-soft">{years}</span>}
-        {missing !== null && <span className="line-clamp-2 text-sm text-ink-soft">{t('Пока не на карте')}{missing && `: ${missing}`}</span>}
+        {missing !== null && <span className="line-clamp-2 text-sm text-ink-soft">{t('Not on the map yet')}{missing && `: ${missing}`}</span>}
       </span>
       {line && (
-        <div role="radiogroup" aria-label={t('Что показать о человеке')} className="map-chip-mode flex flex-none rounded-md border border-border text-sm" onKeyDown={keys}>
+        <div role="radiogroup" aria-label={t('What to follow')} className="map-chip-mode flex flex-none rounded-md border border-border text-sm" onKeyDown={keys}>
           {[false, true].map((on, i) => (
             <button key={i} ref={(el) => { radios.current[i] = el }} type="button" role="radio" aria-checked={line.on === on} tabIndex={line.on === on ? 0 : -1}
-              className={`px-2 py-1 ${line.on === on ? 'bg-muted text-ink' : 'text-ink-soft'}`} onClick={() => line.onChange(on)}>{on ? line.choice : t('Жизнь')}</button>
+              className={`px-2 py-1 ${line.on === on ? 'bg-muted text-ink' : 'text-ink-soft'}`} onClick={() => line.onChange(on)}>{on ? line.choice : t('Their life')}</button>
           ))}
         </div>
       )}
       <span className="map-chip-acts flex flex-none items-center gap-1">
-        {!cardOpen && <button type="button" className="bar-btn flex-none" onClick={onOpen}>{t('Открыть')}</button>}
-        <button type="button" className="bar-btn flex-none !px-0" aria-label={t('Не следить')} title={t('Не следить')} onClick={onStop}><X size={15} /></button>
+        {!cardOpen && <button type="button" className="bar-btn flex-none" onClick={onOpen}>{t('Open')}</button>}
+        <button type="button" className="bar-btn flex-none !px-0" aria-label={t('Stop following')} title={t('Stop following')} onClick={onStop}><X size={15} /></button>
       </span>
     </div>
   )

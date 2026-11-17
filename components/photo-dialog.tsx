@@ -128,13 +128,13 @@ function Photo({ id, list, index, setIndex, onClose }: { id: string; list?: stri
             const p = tag.personId ? byId.get(tag.personId) : undefined
             return (
               <div key={tag.id} className={cn('tagbox', hot === tag.id && 'show')} style={pos(tag as Box)} onClick={() => { if (p) { onClose(); focus(p.id, { center: true }) } }}>
-                <span className="tagname">{p ? personName(p) || t('Скрыто') : tag.label || t('Без подписи')}</span>
+                <span className="tagname">{p ? personName(p) || t('Hidden_neuter') : tag.label || t('No caption')}</span>
               </div>
             )
           })}
           {faces.map((f, i) => (
-            <div key={i} className={cn('tagbox suggest', faces.length > 6 && !guesses[i] && 'quiet')} style={pos(f)} title={faces.length > 6 ? t('Кто это?') : undefined} onClick={() => setPick(f)}>
-              <span className="tagname">{guesses[i] && byId.has(guesses[i]!.personId) ? `${personName(byId.get(guesses[i]!.personId)!)}?` : t('Кто это?')}</span>
+            <div key={i} className={cn('tagbox suggest', faces.length > 6 && !guesses[i] && 'quiet')} style={pos(f)} title={faces.length > 6 ? t('Who is this?') : undefined} onClick={() => setPick(f)}>
+              <span className="tagname">{guesses[i] && byId.has(guesses[i]!.personId) ? `${personName(byId.get(guesses[i]!.personId)!)}?` : t('Who is this?')}</span>
             </div>
           ))}
           {draft && <div className="tagbox show" style={pos(draft)} />}
@@ -149,14 +149,14 @@ function Photo({ id, list, index, setIndex, onClose }: { id: string; list?: stri
 
       <div className="flex flex-col p-4 gap-3 text-sm overflow-auto">
         <div className="flex justify-end -mt-1 -mr-1 gap-0.5">
-          <button className="bar-btn !p-0 w-7 !h-7" title={t('На весь экран')} onClick={() => setFull(true)}><Expand size={14} /></button>
-          {canEdit && <button className="bar-btn !p-0 w-7 !h-7" title={t('Удалить')} onClick={async () => { if (await confirm(t('Удалить это фото? Отменить можно в «Истории».'), t('Удалить'))) { await del.mutateAsync(); qc.invalidateQueries({ queryKey: ['pages'] }); onClose() } }}><Trash2 size={14} /></button>}
-          <button className="bar-btn !p-0 w-7 !h-7" title={t('Закрыть')} onClick={onClose}><X size={15} /></button>
+          <button className="bar-btn !p-0 w-7 !h-7" title={t('Full screen')} onClick={() => setFull(true)}><Expand size={14} /></button>
+          {canEdit && <button className="bar-btn !p-0 w-7 !h-7" title={t('Delete')} onClick={async () => { if (await confirm(t('Delete this photo? You can undo it in What\'s new.'), t('Delete'))) { await del.mutateAsync(); qc.invalidateQueries({ queryKey: ['pages'] }); onClose() } }}><Trash2 size={14} /></button>}
+          <button className="bar-btn !p-0 w-7 !h-7" title={t('Close')} onClick={onClose}><X size={15} /></button>
         </div>
-        <MetaField readOnly={!canEdit} className="font-serif text-base" placeholder={t('Подпись')} value={m.caption} onSave={(caption) => meta.mutate({ caption })} />
+        <MetaField readOnly={!canEdit} className="font-serif text-base" placeholder={t('Caption')} value={m.caption} onSave={(caption) => meta.mutate({ caption })} />
         <div className="flex gap-2 text-ink-soft">
-          <MetaField readOnly={!canEdit} placeholder={t('например: 1978')} value={m.date} onSave={(date) => meta.mutate({ date })} />
-          <MetaField readOnly={!canEdit} placeholder={t('например: Пермь')} value={m.place} onSave={(place) => meta.mutate({ place })} />
+          <MetaField readOnly={!canEdit} placeholder={t('e.g. 1978')} value={m.date} onSave={(date) => meta.mutate({ date })} />
+          <MetaField readOnly={!canEdit} placeholder={t('e.g. Boston')} value={m.place} onSave={(place) => meta.mutate({ place })} />
         </div>
 
         <div className="flex flex-col gap-1">
@@ -167,11 +167,11 @@ function Photo({ id, list, index, setIndex, onClose }: { id: string; list?: stri
               <div key={tag.id} onMouseEnter={() => setHot(tag.id)} onMouseLeave={() => setHot(null)} className="group flex items-center gap-2 rounded-md hover:bg-muted px-1 py-0.5">
                 {p ? (
                   <button className="flex items-center gap-2 min-w-0 flex-1 text-left" onClick={() => { onClose(); focus(p.id, { center: true }) }}>
-                    <Mini person={p} /> <span className="truncate">{personName(p) || t('Скрыто')}</span>
+                    <Mini person={p} /> <span className="truncate">{personName(p) || t('Hidden_neuter')}</span>
                   </button>
-                ) : <span className="min-w-0 flex-1 truncate">{tag.label || t('Без подписи')}</span>}
-                {canEdit && p && tag.x !== null && <button title={t('Сделать аватаркой')} className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity text-ink-faint hover:text-ink" onClick={() => avatar.mutate({ personId: p.id, crop: squareCrop(tag as Box, m.width, m.height) })}><UserRound size={14} /></button>}
-                {canEdit && <button title={t('Удалить')} className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity text-ink-faint hover:text-destructive" onClick={() => delTag.mutate(tag.id)}><X size={14} /></button>}
+                ) : <span className="min-w-0 flex-1 truncate">{tag.label || t('No caption')}</span>}
+                {canEdit && p && tag.x !== null && <button title={t('Set as avatar')} className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity text-ink-faint hover:text-ink" onClick={() => avatar.mutate({ personId: p.id, crop: squareCrop(tag as Box, m.width, m.height) })}><UserRound size={14} /></button>}
+                {canEdit && <button title={t('Delete')} className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity text-ink-faint hover:text-destructive" onClick={() => delTag.mutate(tag.id)}><X size={14} /></button>}
               </div>
             )
           })}
@@ -191,7 +191,7 @@ function Photo({ id, list, index, setIndex, onClose }: { id: string; list?: stri
                 setPick(null)
               }}
             >
-              <span className="text-xs text-ink-faint">{t('Обведите лицо на фото, чтобы отметить человека')}</span>
+              <span className="text-xs text-ink-faint">{t('Draw around a face to tag a person')}</span>
             </PersonPopover>
             {pick && (
               <form className="flex gap-1.5" onSubmit={(e) => {
@@ -205,33 +205,33 @@ function Photo({ id, list, index, setIndex, onClose }: { id: string; list?: stri
                 setPick(null)
                 setCaption('')
               }}>
-                <input aria-label={t('Подпись без карточки')} placeholder={t('Подпись без карточки')} className={`${inputClass} flex-1`} value={caption} onChange={(e) => setCaption(e.target.value)} />
-                <button className="bar-btn border border-border" disabled={!caption.trim()}>{t('Подписать')}</button>
+                <input aria-label={t('Caption, no card')} placeholder={t('Caption, no card')} className={`${inputClass} flex-1`} value={caption} onChange={(e) => setCaption(e.target.value)} />
+                <button className="bar-btn border border-border" disabled={!caption.trim()}>{t('Add caption')}</button>
               </form>
             )}
-            {findOn && findModel.status === 'ready' && <button className="bar-btn border border-border self-start" disabled={scan === 'busy'} onClick={scanFaces}><ScanFace size={14} /> {t('Найти лица')}{scan === 'busy' && '…'}</button>}
-            {findOn && <ModelPrompt pack="faces">{t('Чтобы приложение само находило лица на фото, скачайте модель. Она работает в этом браузере, фото никуда не уходят.')}</ModelPrompt>}
+            {findOn && findModel.status === 'ready' && <button className="bar-btn border border-border self-start" disabled={scan === 'busy'} onClick={scanFaces}><ScanFace size={14} /> {t('Find faces')}{scan === 'busy' && '…'}</button>}
+            {findOn && <ModelPrompt pack="faces">{t('To have the app find faces in photos, download the model. It runs in this browser, and photos go nowhere.')}</ModelPrompt>}
             {learning && (
               <p role="status" className="flex flex-wrap items-center gap-2 text-xs text-ink-soft">
-                {learning.stage === 'model' ? t('Готовлю модель узнавания…') : `${t('Сравниваю с отмеченными лицами')}: ${learning.done} ${t('из')} ${learning.total}`}
-                <button className="underline underline-offset-2" onClick={() => stopLearning.current?.abort()}>{t('Остановить')}</button>
+                {learning.stage === 'model' ? t('Getting the recognition model ready…') : `${t('Comparing with tagged faces')}: ${learning.done} ${t('of')} ${learning.total}`}
+                <button className="underline underline-offset-2" onClick={() => stopLearning.current?.abort()}>{t('Stop')}</button>
               </p>
             )}
-            {learnFailed && <p className="text-xs text-destructive">{t('Не удалось запустить модель распознавания')}</p>}
+            {learnFailed && <p className="text-xs text-destructive">{t('Could not start the recognition model')}</p>}
             {faces.map((f, i) => {
               const g = guesses[i]
               const p = g && byId.get(g.personId)
               if (!p) return null
               return (
                 <div key={i} className="flex flex-wrap items-center gap-2 rounded-lg bg-muted px-2 py-1.5 text-xs">
-                  <Mini person={p} /> <span className="min-w-0 flex-1">{t('Похоже, это')} {personName(p)}</span>
-                  <button className="bar-btn !h-7 border border-border bg-white" onClick={() => { addTag.mutate({ personId: p.id, box: f }); setFaces((all) => all.filter((x) => x !== f)); setGuesses((all) => all.filter((_, j) => j !== i)) }}>{t('Да')}</button>
-                  <button className="bar-btn !h-7" onClick={() => setGuesses((all) => all.map((x, j) => (j === i ? null : x)))}>{t('Нет')}</button>
+                  <Mini person={p} /> <span className="min-w-0 flex-1">{t('This looks like')} {personName(p)}</span>
+                  <button className="bar-btn !h-7 border border-border bg-white" onClick={() => { addTag.mutate({ personId: p.id, box: f }); setFaces((all) => all.filter((x) => x !== f)); setGuesses((all) => all.filter((_, j) => j !== i)) }}>{t('Yes')}</button>
+                  <button className="bar-btn !h-7" onClick={() => setGuesses((all) => all.map((x, j) => (j === i ? null : x)))}>{t('No')}</button>
                 </div>
               )
             })}
-            {scan === 'none' && <p className="text-xs text-ink-faint">{t('Лиц не найдено')}</p>}
-            {scan === 'error' && <p className="text-xs text-destructive">{t('Не удалось запустить модель распознавания')}</p>}
+            {scan === 'none' && <p className="text-xs text-ink-faint">{t('No faces found')}</p>}
+            {scan === 'error' && <p className="text-xs text-destructive">{t('Could not start the recognition model')}</p>}
           </>
         )}
       </div>

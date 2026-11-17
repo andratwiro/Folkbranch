@@ -15,7 +15,7 @@ interface Status {
 }
 
 const input = 'h-9 w-full rounded-lg border border-input bg-white px-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-ring/40'
-const price = (p: FacePreset, t: (k: string) => string) => p.perCall === null ? null : p.perCall === 0 ? t('бесплатно') : `$${(p.perCall * 1000).toFixed(2)} ${t('за 1000 запросов')}`
+const price = (p: FacePreset, t: (k: string) => string) => p.perCall === null ? null : p.perCall === 0 ? t('free') : `$${(p.perCall * 1000).toFixed(2)} ${t('per 1000 requests')}`
 
 /** Where the owner connects one face service for everyone and pays for it. Editors only use it. */
 export function CloudFaces() {
@@ -44,19 +44,19 @@ export function CloudFaces() {
   const save = () => run('save', () => api('faces', {
     method: 'PUT',
     json: { provider, limitRequests: Number(limit) || 0, ...(preset.needsBase ? { baseUrl } : {}), ...(key ? { key } : {}), ...(secret ? { secret } : {}) },
-  }), 'Сохранено. Ключ проверен бесплатным запросом, фото не отправлялось')
+  }), 'Saved. The key was checked with a free request; no photo was sent')
   return (
     <div className="flex min-w-0 flex-col gap-7 text-sm">
-      <Section title={t('Распознавание лиц в облаке')} description={t('Вы подключаете один сервис распознавания лиц и платите за него сами. Все редакторы архива ищут и узнают лица без своих ключей, а фото идёт через ваш сервер и нигде в архиве не хранится. Кто не хочет отправлять фото наружу, остаётся с моделью на своём устройстве.')}>
+      <Section title={t('Cloud faces')} description={t('You connect one face recognition service and pay for it yourself. All editors of the archive find and recognise faces without keys of their own; the photo goes through your server and is not kept anywhere in the archive. Anyone who does not want their photo sent out stays with the model on their own device.')}>
         {cur ? (
           <p className="rounded-lg bg-muted px-3 py-2 text-xs text-ink-soft" role="status">
-            {t('Подключено')}: {t(facePreset(cur.provider)!.label)}, {t('ключ')} …{cur.keyEnding}{cur.secretEnding ? `, ${t('секрет')} …${cur.secretEnding}` : ''}{locked ? `. ${t('Задано в настройках сервера')}` : ''}.
-            {' '}{t('Этот месяц')}: {data.usage.requests} {t('запросов')}, {data.usage.dollars === 0 && data.usage.unpriced > 0 ? t('цена неизвестна') : formatMoney(data.usage.dollars, lang)}{cur.limitRequests ? ` · ${t('предел')} ${cur.limitRequests}` : ''}
+            {t('Connected')}: {t(facePreset(cur.provider)!.label)}, {t('key')} …{cur.keyEnding}{cur.secretEnding ? `, ${t('secret')} …${cur.secretEnding}` : ''}{locked ? `. ${t('Set in the server\'s settings_neuter')}` : ''}.
+            {' '}{t('This month')}: {data.usage.requests} {t('requests')}, {data.usage.dollars === 0 && data.usage.unpriced > 0 ? t('price unknown') : formatMoney(data.usage.dollars, lang)}{cur.limitRequests ? ` · ${t('limit')} ${cur.limitRequests}` : ''}
           </p>
-        ) : <p className="text-xs text-ink-soft">{t('Пока не подключено: лица ищет и узнаёт только модель, скачанная на устройство.')}</p>}
+        ) : <p className="text-xs text-ink-soft">{t('Not connected yet: only the model downloaded to the device finds and recognises faces.')}</p>}
         {!locked && (
           <>
-            <div role="radiogroup" aria-label={t('Сервис')} className="grid gap-2 sm:grid-cols-2">
+            <div role="radiogroup" aria-label={t('Service')} className="grid gap-2 sm:grid-cols-2">
               {FACE_PRESETS.map((p) => (
                 <button key={p.id} role="radio" aria-checked={provider === p.id} type="button" onClick={() => { setProviderPick(p.id); setBasePick(''); setKey(''); setSecret(''); setMessage(null) }} className={`rounded-lg border p-2.5 text-left transition-colors ${provider === p.id ? 'border-ink bg-white' : 'border-border hover:border-ink-faint'}`}>
                   <b className="block font-medium">{t(p.label)}</b>
@@ -65,29 +65,29 @@ export function CloudFaces() {
                 </button>
               ))}
             </div>
-            {preset.needsBase && <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Адрес сервера CompreFace')}<input className={input} aria-label={t('Адрес сервера CompreFace')} value={baseUrl} placeholder="https://faces.example.org" onChange={(e) => setBasePick(e.target.value)} /></label>}
+            {preset.needsBase && <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('CompreFace server address')}<input className={input} aria-label={t('CompreFace server address')} value={baseUrl} placeholder="https://faces.example.org" onChange={(e) => setBasePick(e.target.value)} /></label>}
             <label className="flex flex-col gap-1 text-xs text-ink-soft">
-              {t(preset.needsSecret ? 'Ключ доступа' : 'Ключ сервиса')}
-              <input className={`${input} font-mono`} type="password" autoComplete="off" aria-label={t('Ключ сервиса')} value={key} placeholder={cur && cur.provider === provider ? `…${cur.keyEnding} (${t('оставьте пустым, чтобы не менять')})` : t('Вставьте ключ')} onChange={(e) => setKey(e.target.value)} />
-              {preset.keysUrl && <a className="underline" href={preset.keysUrl} target="_blank" rel="noreferrer">{t('Где взять ключ')}</a>}
-              <a className="underline" href={preset.docs} target="_blank" rel="noreferrer">{t('Документация сервиса')}</a>
+              {t(preset.needsSecret ? 'Access key' : 'Service key')}
+              <input className={`${input} font-mono`} type="password" autoComplete="off" aria-label={t('Service key')} value={key} placeholder={cur && cur.provider === provider ? `…${cur.keyEnding} (${t('leave empty to keep it')})` : t('Paste the key')} onChange={(e) => setKey(e.target.value)} />
+              {preset.keysUrl && <a className="underline" href={preset.keysUrl} target="_blank" rel="noreferrer">{t('Where to get a key')}</a>}
+              <a className="underline" href={preset.docs} target="_blank" rel="noreferrer">{t('Service documentation')}</a>
             </label>
             {preset.needsSecret && (
               <label className="flex flex-col gap-1 text-xs text-ink-soft">
-                {t('Секрет сервиса')}
-                <input className={`${input} font-mono`} type="password" autoComplete="off" aria-label={t('Секрет сервиса')} value={secret} placeholder={cur && cur.provider === provider && cur.secretEnding ? `…${cur.secretEnding} (${t('оставьте пустым, чтобы не менять')})` : t('Вставьте секрет')} onChange={(e) => setSecret(e.target.value)} />
+                {t('Service secret')}
+                <input className={`${input} font-mono`} type="password" autoComplete="off" aria-label={t('Service secret')} value={secret} placeholder={cur && cur.provider === provider && cur.secretEnding ? `…${cur.secretEnding} (${t('leave empty to keep it')})` : t('Paste the secret')} onChange={(e) => setSecret(e.target.value)} />
               </label>
             )}
             <label className="flex flex-col gap-1 text-xs text-ink-soft">
-              {t('Предел в месяц, запросов к сервису (0 без предела)')}
-              <input className={`${input} max-w-40`} inputMode="numeric" aria-label={t('Предел в месяц')} value={limit} onChange={(e) => setLimitPick(e.target.value.replace(/\D/g, ''))} />
+              {t('Monthly limit, requests to the service (0 for none)')}
+              <input className={`${input} max-w-40`} inputMode="numeric" aria-label={t('Monthly limit')} value={limit} onChange={(e) => setLimitPick(e.target.value.replace(/\D/g, ''))} />
             </label>
-            <p className="text-xs text-ink-faint">{t('Фото уйдёт в')}: {t(preset.where)}. {price(preset, t) ? `${price(preset, t)}. ` : ''}{t('Цены сервисов меняются: смотрите их страницы.')} {t(preset.tested)}</p>
+            <p className="text-xs text-ink-faint">{t('The photo goes to')}: {t(preset.where)}. {price(preset, t) ? `${price(preset, t)}. ` : ''}{t('Service prices change: see their pages.')} {t(preset.tested)}</p>
             <DataTerms service={preset.id} open />
             <div className="flex flex-wrap gap-2">
-              <Button type="button" loading={busy === 'save'} onClick={save}><KeyRound /> {cur ? t('Сохранить') : t('Подключить')}</Button>
-              {cur && <Button type="button" variant="outline" loading={busy === 'test'} onClick={() => run('test', () => api('faces/test', { method: 'POST', json: {} }), 'Работает: сервис принял пустую картинку. Она стоила доли цента')}><FlaskConical /> {t('Проверить на пустой картинке')}</Button>}
-              {cur && <Button type="button" variant="danger" onClick={async () => { if (await ask(t('Отключить распознавание лиц в облаке?'), t('Отключить'), t('Редакторы вернутся к моделям на своих устройствах.'))) run('remove', () => api('faces', { method: 'DELETE' }), 'Отключено') }}><Trash2 /> {t('Отключить')}</Button>}
+              <Button type="button" loading={busy === 'save'} onClick={save}><KeyRound /> {cur ? t('Save') : t('Connect')}</Button>
+              {cur && <Button type="button" variant="outline" loading={busy === 'test'} onClick={() => run('test', () => api('faces/test', { method: 'POST', json: {} }), 'Works: the service accepted a blank picture. It cost a fraction of a cent')}><FlaskConical /> {t('Test with a blank picture')}</Button>}
+              {cur && <Button type="button" variant="danger" onClick={async () => { if (await ask(t('Disconnect cloud faces?'), t('Disconnect'), t('Editors go back to the models on their own devices.'))) run('remove', () => api('faces', { method: 'DELETE' }), 'Disconnected') }}><Trash2 /> {t('Disconnect')}</Button>}
             </div>
           </>
         )}

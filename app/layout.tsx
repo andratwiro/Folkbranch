@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { headers } from 'next/headers'
 import './globals.css'
 import { Providers } from '@/components/providers'
-import { viewerLang } from '@/lib/languages'
+import { viewerLang, langDef } from '@/lib/languages'
 import { archiveLang } from '@/lib/ops/settings'
 
 export const metadata: Metadata = { title: 'Folkbranch', applicationName: 'Folkbranch', robots: { index: false, follow: false } }
@@ -14,7 +14,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const lang = viewerLang(h.get('cookie'), h.get('accept-language'), archive)
   // The archive keeps its own language for its data, whatever the viewer reads the interface in.
   return (
-    <html lang={lang} data-archive-lang={archive}>
+    <html lang={lang} dir={langDef(lang).dir} data-archive-lang={archive}>
       <body><Providers>{children}</Providers></body>
     </html>
   )

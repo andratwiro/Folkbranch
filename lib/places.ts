@@ -279,14 +279,14 @@ function lifeRawStops(person: Person, graph: Graph): RawStop[] {
   const byId = new Map(graph.persons.map((p) => [p.id, p]))
   const raw: RawStop[] = []
   const add = (text: string, placeId: string | null | undefined, date: string, what: string, order: number, withId: string | null = null) => { if (text.trim()) raw.push({ text, placeId: placeId ?? null, date, what, order, withId, year: yearOf(date) }) }
-  add(person.birthPlace, person.birthPlaceId, person.birthDate, 'Рождение', 0)
+  add(person.birthPlace, person.birthPlaceId, person.birthDate, 'Birth', 0)
   for (const u of graph.unions) {
     if (u.aId !== person.id && u.bId !== person.id) continue
     const other = byId.get(u.aId === person.id ? u.bId : u.aId)
-    add(u.place, u.placeId, u.startDate, u.kind === 'civil' ? 'Союз' : 'Брак', 1, other && !other.hidden ? other.id : null)
+    add(u.place, u.placeId, u.startDate, u.kind === 'civil' ? 'Partnership' : 'Marriage', 1, other && !other.hidden ? other.id : null)
   }
   for (const f of person.facts) add(f.place, f.placeId, f.date, f.kind, 1)
-  add(person.deathPlace, person.deathPlaceId, person.deathDate, 'Смерть', 2)
+  add(person.deathPlace, person.deathPlaceId, person.deathDate, 'Death', 2)
   // Birth first and death last whatever their dates; a stop with no date goes just before death.
   const key = (r: RawStop) => (r.order === 0 ? -Infinity : r.order === 2 ? Infinity : r.year ?? Number.MAX_SAFE_INTEGER)
   return raw.sort((a, b) => key(a) - key(b))

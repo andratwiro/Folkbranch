@@ -3,7 +3,8 @@ export type Sex = 'M' | 'F' | 'U'
 export type Certainty = 'documented' | 'family' | 'assumed'
 export type ParentKind = 'birth' | 'adopted' | 'step'
 export type UnionKind = 'marriage' | 'civil'
-export type Lang = 'ru' | 'en' | 'es' | 'ca'
+import { langDef, langOf, type Lang } from './languages'
+export type { Lang }
 
 export interface Person {
   id: string
@@ -210,12 +211,11 @@ export const personName = (p: Pick<Person, 'givenName' | 'surname'>) =>
 let serverOpenEnd: (() => string) | null = null
 /** The server says how a living person's open range ends in the archive's language; a browser reads the language of its page. */
 export const setOpenEnd = (f: () => string) => { serverOpenEnd = f }
-/** The page's own word for it: this file cannot reach the tables. The server's word comes from "н. в." ("now") in them. A language not here reads 'now'. */
-const OPEN_END: Partial<Record<Lang, string>> = { ru: 'н. в.', en: 'now', es: 'hoy', ca: 'avui' }
+/** The page's own word for it comes from the registry: this file cannot reach the tables. The server's word is the phrase "now" in them. */
 // Dates belong to the archive's data, so they keep its language even when the interface is read in another.
 const openEnd = () => (typeof document !== 'undefined'
-  ? (OPEN_END[(document.documentElement.dataset.archiveLang ?? document.documentElement.lang).slice(0, 2) as Lang] ?? 'now')
-  : serverOpenEnd?.() ?? 'н. в.')
+  ? langDef(langOf(document.documentElement.dataset.archiveLang ?? document.documentElement.lang)).openEnd
+  : serverOpenEnd?.() ?? 'now')
 
 export function lifeYears(p: Person, unknown = '?', open: string = openEnd()): string {
   const b = p.birthDate || (p.birthYear ? String(p.birthYear) : '')

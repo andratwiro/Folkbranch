@@ -24,7 +24,7 @@ const TAKEN_BACK = '[The edits from this answer were undone]'
 /** The server's words when it has them; never a raw response. */
 function plainError(e: Error, t: (k: string) => string) {
   try { const said = JSON.parse(e.message); if (said?.plain && typeof said.error === 'string') return said.error } catch {}
-  if (!e.message || e.message.startsWith('{') || e.message === 'The assistant could not answer. Try again.') return t('Ассистент не смог ответить.')
+  if (!e.message || e.message.startsWith('{') || e.message === 'The assistant could not answer. Try again.') return t('The assistant could not answer.')
   return e.message
 }
 
@@ -106,9 +106,9 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
         const att = await res.json()
         return { type: 'file' as const, mediaType: f.mediaType ?? 'application/octet-stream', filename: att.name as string, url: att.url as string }
       }))
-      await sendMessage({ text: text.trim() || t('Посмотри этот файл'), files: uploaded })
+      await sendMessage({ text: text.trim() || t('Have a look at this file'), files: uploaded })
     } catch (e) {
-      notify(`${t('Не удалось загрузить файл')}: ${(e as Error).message}`)
+      notify(`${t('Could not upload the file')}: ${(e as Error).message}`)
       throw e
     }
   }
@@ -118,7 +118,7 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
       for (const id of historyIds(m).reverse()) await api(`history/${id}/undo`, { json: {} })
       setUndone((u) => [...u, m.id])
       setMessages((list) => [...list, { id: `taken-${m.id}`, role: 'user', parts: [{ type: 'text', text: TAKEN_BACK }] }])
-      notify(t('Отменено'))
+      notify(t('Undone'))
     } catch (e) {
       notify(undoFailure(e, t))
     }
@@ -126,18 +126,18 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
   }
 
   return (
-    <aside hidden={!open} aria-label={t('Ассистент')} style={{ width: `min(${width}px, calc(100vw - 24px))` }} className="assistant side-sheet float fixed left-3 top-[60px] bottom-3 z-10 flex flex-col !bg-[#fffdf8] text-sm [&[hidden]]:hidden">
+    <aside hidden={!open} aria-label={t('Assistant')} style={{ width: `min(${width}px, calc(100vw - 24px))` }} className="assistant side-sheet float fixed left-3 top-[60px] bottom-3 z-10 flex flex-col !bg-[#fffdf8] text-sm [&[hidden]]:hidden">
       <PanelEdge width={width} onWidth={onWidth} />
       <header className="flex items-center gap-1 border-b border-border py-1 pl-3 pr-1">
-        <h2 className="flex-1 font-serif text-lg font-medium">{t('Ассистент')}</h2>
+        <h2 className="flex-1 font-serif text-lg font-medium">{t('Assistant')}</h2>
         <ChatHistory userId={me.id} current={chatId} onOpen={(c) => { stop(); clearError(); forgetEdits(); openChat(c) }} onForget={(c) => { forgetChat(me.id, c.id); if (c.id === chatId) restart() }} />
-        {messages.length > 0 && <button className="bar-btn" onClick={restart}><Plus size={15} /> {t('Новый разговор')}</button>}
-        <button className="bar-btn" title={t('Закрыть')} aria-label={t('Закрыть')} onClick={onClose}><X size={15} /></button>
+        {messages.length > 0 && <button className="bar-btn" onClick={restart}><Plus size={15} /> {t('New conversation')}</button>}
+        <button className="bar-btn" title={t('Close')} aria-label={t('Close')} onClick={onClose}><X size={15} /></button>
       </header>
       <Conversation className="min-h-0 flex-1">
         <ConversationContent className="gap-3 p-3">
           {messages.map((m) => {
-            if (m.role === 'user' && m.id.startsWith('taken-')) return <p key={m.id} className="text-center text-xs text-ink-soft">{t('Правки из этого ответа отменены')}</p>
+            if (m.role === 'user' && m.id.startsWith('taken-')) return <p key={m.id} className="text-center text-xs text-ink-soft">{t('This answer\'s changes were undone')}</p>
             const ids = m.role === 'assistant' ? historyIds(m) : []
             const finished = m !== messages.at(-1) || !busy
             return (
@@ -157,7 +157,7 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
                     return <ToolCall key={p.toolCallId} part={p as ToolUIPart} onAnswer={(approved) => addToolApprovalResponse({ id: p.approval!.id, approved })} onAllowEdits={isOrdinaryEdit(name) && !trusted ? allowEdits : undefined} />
                   })}
                   {ids.length > 0 && finished && !pending.length && !undone.includes(m.id) && (
-                    <button className="bar-btn self-start border border-border !h-7" onClick={() => takeBack(m)}><Undo2 size={13} /> {t('Отменить правки из этого ответа')}</button>
+                    <button className="bar-btn self-start border border-border !h-7" onClick={() => takeBack(m)}><Undo2 size={13} /> {t('Undo this answer\'s changes')}</button>
                   )}
                 </MessageContent>
               </Message>
@@ -166,7 +166,7 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
           {busy && !visiblyWorking(messages.at(-1), status) && <Thinking />}
           {error && (
             <div role="alert" className="text-xs text-destructive">
-              {plainError(error, t)} <button className="underline" onClick={() => regenerate()}>{t('Повторить')}</button>
+              {plainError(error, t)} <button className="underline" onClick={() => regenerate()}>{t('Try again')}</button>
             </div>
           )}
         </ConversationContent>
@@ -174,26 +174,26 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
       </Conversation>
       {!messages.length && (
         <div className="flex flex-col items-center gap-2 px-3 pb-2 text-center">
-          <h3 className="font-serif text-base font-medium">{t('Спросите о семье')}</h3>
+          <h3 className="font-serif text-base font-medium">{t('Ask about the family')}</h3>
           <div className="flex flex-wrap justify-center gap-1.5">
-            {['Кто самый старший в семье?', 'Чего не хватает в архиве?', 'Кто родился до 1900 года?'].map((q) => <button key={q} className="h-7 rounded-full border border-border bg-white px-3 text-xs text-ink-soft hover:text-ink" onClick={() => sendMessage({ text: t(q) })}>{t(q)}</button>)}
+            {['Who is the eldest in the family?', 'What is missing from the archive?', 'Who was born before 1900?'].map((q) => <button key={q} className="h-7 rounded-full border border-border bg-white px-3 text-xs text-ink-soft hover:text-ink" onClick={() => sendMessage({ text: t(q) })}>{t(q)}</button>)}
           </div>
         </div>
       )}
       {trusted && (
         <p className="flex items-center gap-2 border-t border-border px-3 py-1 text-xs text-ink-soft">
-          <span className="flex-1">{t('Обычные правки в этом разговоре идут без вопросов')}</span>
-          <button className="underline" onClick={forgetEdits}>{t('Спрашивать снова')}</button>
+          <span className="flex-1">{t('Ordinary edits in this conversation run without asking')}</span>
+          <button className="underline" onClick={forgetEdits}>{t('Ask again')}</button>
         </p>
       )}
       <PromptInput className="composer px-2 pb-2 pt-1" multiple maxFileSize={40 * 1024 * 1024} onError={(e) => notify(e.message)} onSubmit={submit}>
         <AttachedFiles />
         <PromptInputBody>
-          <PromptInputTextarea aria-label={t('Сообщение ассистенту')} placeholder={t(pending.length ? 'Сначала ответьте на вопрос выше' : 'Спросите или попросите изменить…')} disabled={pending.length > 0} />
+          <PromptInputTextarea aria-label={t('Message to the assistant')} placeholder={t(pending.length ? 'Answer the question above first' : 'Ask, or ask for a change…')} disabled={pending.length > 0} />
         </PromptInputBody>
         <PromptInputFooter>
           <PromptInputTools><AttachButton /><DictateButton /><ModelPick userId={me.id} pick={pick} onPick={setPick} /></PromptInputTools>
-          <PromptInputSubmit labels={{ send: t('Отправить'), stop: t('Остановить') }} status={status} onStop={stop} disabled={pending.length > 0} className="size-7 rounded-full">{busy ? undefined : <ArrowUp className="size-4" />}</PromptInputSubmit>
+          <PromptInputSubmit labels={{ send: t('Send'), stop: t('Stop') }} status={status} onStop={stop} disabled={pending.length > 0} className="size-7 rounded-full">{busy ? undefined : <ArrowUp className="size-4" />}</PromptInputSubmit>
         </PromptInputFooter>
       </PromptInput>
     </aside>
@@ -209,17 +209,17 @@ function ChatHistory({ userId, current, onOpen, onForget }: { userId: string; cu
   const when = (at: number) => new Date(at).toLocaleString(lang, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
   return (
     <Popover open={open} onOpenChange={show}>
-      <PopoverTrigger asChild><button className="bar-btn" title={t('История разговоров')} aria-label={t('История разговоров')}><History size={15} /></button></PopoverTrigger>
+      <PopoverTrigger asChild><button className="bar-btn" title={t('Past conversations')} aria-label={t('Past conversations')}><History size={15} /></button></PopoverTrigger>
       <PopoverContent align="end" className="w-72 p-1">
-        <p className="px-2 py-1 text-xs text-ink-soft">{t(chats.length ? 'Разговоры хранятся только в этом браузере' : 'Прошлых разговоров пока нет')}</p>
+        <p className="px-2 py-1 text-xs text-ink-soft">{t(chats.length ? 'Conversations are kept in this browser only' : 'No earlier conversations yet')}</p>
         <ul className="max-h-80 overflow-y-auto">
           {chats.map((c) => (
             <li key={c.id} className="flex items-center gap-1">
               <button className={`min-w-0 flex-1 rounded px-2 py-1.5 text-left hover:bg-black/5 ${c.id === current ? 'font-medium' : ''}`} onClick={() => { setOpen(false); onOpen(c) }}>
-                <span className="block truncate text-sm">{c.title || t('Без названия')}</span>
+                <span className="block truncate text-sm">{c.title || t('Untitled')}</span>
                 <span className="block text-xs text-ink-soft">{when(c.at)}</span>
               </button>
-              <button className="bar-btn !h-7 shrink-0" title={t('Удалить')} aria-label={t('Удалить')} onClick={() => { onForget(c); setChats(loadChats(userId)) }}><X size={13} /></button>
+              <button className="bar-btn !h-7 shrink-0" title={t('Delete')} aria-label={t('Delete')} onClick={() => { onForget(c); setChats(loadChats(userId)) }}><X size={13} /></button>
             </li>
           ))}
         </ul>
@@ -249,15 +249,15 @@ function ModelPick({ userId, pick, onPick }: { userId: string; pick: { provider:
     try { if (next) localStorage.setItem(pickKey(userId), JSON.stringify(next)); else localStorage.removeItem(pickKey(userId)) } catch { /* private mode keeps it for this page only */ }
   }
   return (
-    <Select look="quiet" className="max-w-[180px]" aria-label={t('Кто отвечает')} title={t('Кто отвечает')} value={known ? value : ''} onChange={choose}
-      options={[{ value: '', label: t('Как выбрал владелец') }, ...choices.map((c) => ({ value: `${c.provider}|${c.model}`, label: `${t(c.label)} · ${c.modelLabel}` }))]} />
+    <Select look="quiet" className="max-w-[180px]" aria-label={t('Who answers')} title={t('Who answers')} value={known ? value : ''} onChange={choose}
+      options={[{ value: '', label: t('The owner\'s choice') }, ...choices.map((c) => ({ value: `${c.provider}|${c.model}`, label: `${t(c.label)} · ${c.modelLabel}` }))]} />
   )
 }
 
 function AttachButton() {
   const { t } = useApp()
   const files = usePromptInputAttachments()
-  return <PromptInputButton aria-label={t('Прикрепить файл')} title={t('Прикрепить файл')} onClick={() => files.openFileDialog()}><Paperclip size={15} /></PromptInputButton>
+  return <PromptInputButton aria-label={t('Attach a file')} title={t('Attach a file')} onClick={() => files.openFileDialog()}><Paperclip size={15} /></PromptInputButton>
 }
 
 function AttachedFiles() {
@@ -269,7 +269,7 @@ function AttachedFiles() {
       {files.files.map((f) => (
         <span key={f.id} className="flex max-w-40 items-center gap-1 rounded border border-border px-1.5 py-0.5">
           <span className="truncate">{f.filename}</span>
-          <button type="button" aria-label={t('Закрыть')} onClick={() => files.remove(f.id)}><X size={11} /></button>
+          <button type="button" aria-label={t('Close')} onClick={() => files.remove(f.id)}><X size={11} /></button>
         </span>
       ))}
     </div>
@@ -285,19 +285,19 @@ function ToolCall({ part, onAnswer, onAllowEdits }: { part: ToolUIPart; onAnswer
     return (
       <Confirmation approval={part.approval as never} state={part.state} className="flex flex-col gap-2">
         <ConfirmationRequest>
-          <p className="font-medium">{t('Ассистент просит разрешения')}</p>
+          <p className="font-medium">{t('The assistant asks for permission')}</p>
           <p className="mt-1 whitespace-pre-wrap text-ink-soft">{reason || label}</p>
         </ConfirmationRequest>
         <ConfirmationActions className="flex-wrap justify-start">
-          <ConfirmationAction className="h-9" onClick={() => onAnswer(true)}>{t('Разрешить один раз')}</ConfirmationAction>
-          {onAllowEdits && <ConfirmationAction className="h-9" variant="outline" onClick={onAllowEdits}>{t('Разрешить до конца разговора')}</ConfirmationAction>}
-          <ConfirmationAction className="h-9" variant="outline" onClick={() => onAnswer(false)}>{t('Отказать')}</ConfirmationAction>
+          <ConfirmationAction className="h-9" onClick={() => onAnswer(true)}>{t('Allow once')}</ConfirmationAction>
+          {onAllowEdits && <ConfirmationAction className="h-9" variant="outline" onClick={onAllowEdits}>{t('Allow and stop asking')}</ConfirmationAction>}
+          <ConfirmationAction className="h-9" variant="outline" onClick={() => onAnswer(false)}>{t('Decline')}</ConfirmationAction>
         </ConfirmationActions>
-        {onAllowEdits && <p className="text-xs text-ink-soft">{t('«Разрешить до конца разговора»: правки пойдут без вопросов, пока вы не начнёте новый разговор.')}</p>}
+        {onAllowEdits && <p className="text-xs text-ink-soft">{t('“Allow and stop asking”: ordinary edits go ahead without asking until you start a new conversation.')}</p>}
       </Confirmation>
     )
   }
-  if (part.state === 'output-denied') return <p className="text-xs text-ink-soft">{t('Вы отказали')}: {label}{reason ? `. ${reason}` : ''}</p>
+  if (part.state === 'output-denied') return <p className="text-xs text-ink-soft">{t('You declined')}: {label}{reason ? `. ${reason}` : ''}</p>
   const link = part.state === 'output-available' ? (part.output as { link?: string } | null)?.link : undefined
   return (
     <>
@@ -320,7 +320,7 @@ function Plan({ part }: { part: ToolUIPart }) {
   if (!steps.length) return null
   return (
     <div className="rounded-lg border border-border bg-white/70 px-2.5 py-2 text-xs">
-      <p className="mb-1 font-medium">{t('План')}</p>
+      <p className="mb-1 font-medium">{t('Plan')}</p>
       <ol className="flex flex-col gap-1">
         {steps.map((s, i) => <li key={i} className={`flex items-start gap-1.5 ${s.done ? 'text-ink-faint line-through' : ''}`}>{s.done ? <CircleCheck size={13} className="mt-px shrink-0" /> : <Circle size={13} className="mt-px shrink-0 text-ink-faint" />}<span>{s.text}</span></li>)}
       </ol>
@@ -357,7 +357,7 @@ function Thinking() {
   return (
     <p role="status" aria-live="polite" className="thinking flex items-center gap-2 text-sm text-ink-soft">
       <span className="thinking-dots" aria-hidden><i /><i /><i /></span>
-      <span>{t('Думает…')}{s >= 3 ? ` ${s} ${t('сек')}` : ''}</span>
+      <span>{t('Thinking…')}{s >= 3 ? ` ${s} ${t('s')}` : ''}</span>
     </p>
   )
 }
@@ -389,8 +389,8 @@ function Steps({ parts, live }: { parts: ToolUIPart[]; live: boolean }) {
 }
 
 const STATUS: Record<ToolUIPart['state'], string> = {
-  'input-streaming': 'Готовит', 'input-available': 'Выполняет', 'approval-requested': 'Ждёт ответа', 'approval-responded': 'Выполняет',
-  'output-available': 'Готово', 'output-error': 'Не получилось', 'output-denied': 'Вы отказали',
+  'input-streaming': 'Preparing', 'input-available': 'Working', 'approval-requested': 'Waiting', 'approval-responded': 'Working',
+  'output-available': 'Done', 'output-error': 'Failed', 'output-denied': 'You declined',
 }
 
 /** The one thing only the person gets to see. */
@@ -401,7 +401,7 @@ function InviteLink({ link }: { link: string }) {
   return (
     <div className="flex items-center gap-1 rounded-md border border-border p-1.5 text-xs">
       <span className="min-w-0 flex-1 truncate">{url}</span>
-      <button className="bar-btn !h-7" aria-label={t('Скопировать')} onClick={() => navigator.clipboard.writeText(url).then(() => setCopied(true))}>{copied ? <Check size={13} /> : <Copy size={13} />}</button>
+      <button className="bar-btn !h-7" aria-label={t('Copy')} onClick={() => navigator.clipboard.writeText(url).then(() => setCopied(true))}>{copied ? <Check size={13} /> : <Copy size={13} />}</button>
     </div>
   )
 }

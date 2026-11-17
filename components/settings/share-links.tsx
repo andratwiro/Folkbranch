@@ -26,7 +26,7 @@ function FamilyFile() {
     setError('')
     try {
       const r = await fetch('/api/family-file')
-      if (!r.ok) throw new Error(t('Не удалось подготовить файл'))
+      if (!r.ok) throw new Error(t('Could not prepare the file'))
       const stats = JSON.parse(r.headers.get('X-Family-File') ?? '{}')
       const name = decodeURIComponent(r.headers.get('Content-Disposition')?.split("''")[1] ?? 'family.html')
       const url = URL.createObjectURL(await r.blob())
@@ -35,7 +35,7 @@ function FamilyFile() {
       a.download = name
       a.click()
       setTimeout(() => URL.revokeObjectURL(url), 30_000)
-      setDone(`${t('Людей')}: ${stats.people}. ${t('Живых скрыто')}: ${stats.hidden}. ${t('Фотографий')}: ${stats.photos}${stats.photosLeftOut ? `, ${t('не поместилось')}: ${stats.photosLeftOut}` : ''}. ${stats.bytes < 1048576 ? `${Math.ceil(stats.bytes / 1024)} ${t('КБ')}` : `${(stats.bytes / 1048576).toFixed(1)} ${t('МБ')}`}.`)
+      setDone(`${t('People_count')}: ${stats.people}. ${t('Living hidden')}: ${stats.hidden}. ${t('Photos_count')}: ${stats.photos}${stats.photosLeftOut ? `, ${t('did not fit')}: ${stats.photosLeftOut}` : ''}. ${stats.bytes < 1048576 ? `${Math.ceil(stats.bytes / 1024)} ${t('KB')}` : `${(stats.bytes / 1048576).toFixed(1)} ${t('MB')}`}.`)
     } catch (x) {
       setError(String((x as Error).message ?? x))
     } finally {
@@ -43,8 +43,8 @@ function FamilyFile() {
     }
   }
   return (
-    <Section title={t('Файл для родных')} description={t('Один файл со схемой, карточками и фото. Отправьте его в мессенджере: родные откроют его без интернета и регистрации. Живые родственники скрыты, но текст биографий и подписи к фото попадают как написаны: проверьте, нет ли в них имён живых.')}>
-      <Button className="self-start" disabled={busy} onClick={make}><Download /> {busy ? t('Готовим файл…') : t('Скачать файл для родных')}</Button>
+    <Section title={t('A file for relatives')} description={t('One file with the chart, cards and photos. Send it in a messenger: relatives open it with no internet and no account. Living relatives are hidden, but biographies and photo captions go in as written, so check them for the names of the living.')}>
+      <Button className="self-start" disabled={busy} onClick={make}><Download /> {busy ? t('Preparing the file…') : t('Download the file for relatives')}</Button>
       {done && <p role="status" className="text-xs text-ink-soft">{done}</p>}
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
     </Section>
@@ -71,7 +71,7 @@ export function ShareLinks() {
     <div className="flex min-w-0 flex-col gap-7 text-sm">
       <FamilyFile />
       <StoryRequests />
-      <Section title={t('Ссылка для просмотра')} description={t('Для тех, кому не нужен вход: только смотреть, без регистрации. Живые родственники скрыты, как у читателя.')}>
+      <Section title={t('Link for viewing')} description={t('For those who need no account: view only, no sign-up. Living relatives are hidden, as for a reader.')}>
         <form className="flex flex-col gap-3" onSubmit={async (e) => {
           e.preventDefault()
           setError('')
@@ -86,20 +86,20 @@ export function ShareLinks() {
           }
         }}>
           <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-            <Field label={t('Для кого')}><Input required maxLength={80} value={name} onChange={(e) => setName(e.target.value)} /></Field>
-            <Field label={t('Что показать по ссылке')}><Select aria-label={t('Что показать по ссылке')} value={viewId} onChange={setViewId} options={[{ value: '', label: t('Всю семью') }, ...named.map((v) => ({ value: v.id, label: v.name }))]} /></Field>
-            <Field label={t('Срок')}><Select aria-label={t('Срок')} value={days} onChange={setDays} options={[{ value: '7', label: t('7 дней') }, { value: '30', label: t('30 дней') }, { value: '90', label: t('90 дней') }, { value: '', label: t('Пока не закрою') }]} /></Field>
-            <Field label={t('Пароль (необязательно)')}><Input type="text" autoComplete="off" minLength={4} maxLength={200} value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+            <Field label={t('Who it is for')}><Input required maxLength={80} value={name} onChange={(e) => setName(e.target.value)} /></Field>
+            <Field label={t('What the link shows')}><Select aria-label={t('What the link shows')} value={viewId} onChange={setViewId} options={[{ value: '', label: t('The whole family') }, ...named.map((v) => ({ value: v.id, label: v.name }))]} /></Field>
+            <Field label={t('Lasts')}><Select aria-label={t('Lasts')} value={days} onChange={setDays} options={[{ value: '7', label: t('7 days') }, { value: '30', label: t('30 days') }, { value: '90', label: t('90 days') }, { value: '', label: t('Until I close it') }]} /></Field>
+            <Field label={t('Password (optional)')}><Input type="text" autoComplete="off" minLength={4} maxLength={200} value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
           </div>
           {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
-          <Button className="self-start" disabled={!name.trim()}><Link2 /> {t('Создать ссылку')}</Button>
-          {link && <CopyField label={t('Отправьте эту ссылку человеку')} value={link} primary />}
+          <Button className="self-start" disabled={!name.trim()}><Link2 /> {t('Create a link')}</Button>
+          {link && <CopyField label={t('Send this link to the person')} value={link} primary />}
         </form>
       </Section>
-      <Section title={t('Открытые ссылки')}>
-        {!links.length && <p className="text-xs text-ink-soft">{t('Пока ни одной.')}</p>}
+      <Section title={t('Open links')}>
+        {!links.length && <p className="text-xs text-ink-soft">{t('None yet.')}</p>}
         <List>
-          {links.map((l) => <ListRow key={l.id} title={l.name} meta={[l.viewId ? (named.find((v) => v.id === l.viewId)?.name ?? '') : t('Всю семью'), l.hasPassword && t('с паролем'), l.expiresAt ? t('до {date}').replace('{date}', date.format(l.expiresAt)) : t('Пока не закрою'), `${t('открывали')}: ${l.opens}`].filter(Boolean).join(' · ')} actions={<Button size="sm" variant="danger" onClick={async () => { if (await ask(t('Закрыть ссылку: {name}?').replace('{name}', () => l.name), t('Закрыть ссылку'))) { await api(`shares/${l.id}`, { method: 'DELETE' }); refresh() } }}><X /> {t('Закрыть ссылку')}</Button>} />)}
+          {links.map((l) => <ListRow key={l.id} title={l.name} meta={[l.viewId ? (named.find((v) => v.id === l.viewId)?.name ?? '') : t('The whole family'), l.hasPassword && t('with a password'), l.expiresAt ? t('before {date}').replace('{date}', date.format(l.expiresAt)) : t('Until I close it'), `${t('opened')}: ${l.opens}`].filter(Boolean).join(' · ')} actions={<Button size="sm" variant="danger" onClick={async () => { if (await ask(t('Close the link: {name}?').replace('{name}', () => l.name), t('Close the link'))) { await api(`shares/${l.id}`, { method: 'DELETE' }); refresh() } }}><X /> {t('Close the link')}</Button>} />)}
         </List>
       </Section>
     </div>

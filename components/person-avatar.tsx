@@ -26,7 +26,7 @@ export function AvatarButton({ person }: { person: Person }) {
 
   return (
     <>
-      <button disabled={!canEdit} aria-label={t('Сменить фото')} title={canEdit ? t('Сменить фото') : undefined} className="w-[48px] h-[48px] flex-none rounded-full overflow-hidden bg-[#e7dfcd] flex-none shadow-[0_0_0_3px_#fffdf8,0_2px_10px_rgb(60_45_20/.25)] enabled:hover:opacity-85 transition" onClick={() => input.current?.click()}>
+      <button disabled={!canEdit} aria-label={t('Choose photo')} title={canEdit ? t('Choose photo') : undefined} className="w-[48px] h-[48px] flex-none rounded-full overflow-hidden bg-[#e7dfcd] flex-none shadow-[0_0_0_3px_#fffdf8,0_2px_10px_rgb(60_45_20/.25)] enabled:hover:opacity-85 transition" onClick={() => input.current?.click()}>
         <img src={avatarUrl(person)} alt="" className="w-full h-full object-cover" />
       </button>
       <input ref={input} type="file" accept="image/*" hidden onChange={(e) => {
@@ -36,14 +36,14 @@ export function AvatarButton({ person }: { person: Person }) {
       }} />
       <Dialog open={!!src} onOpenChange={(o) => !o && setSrc(null)}>
         <DialogContent className="max-w-md">
-          <DialogTitle className="font-serif font-medium">{t('Кадрировать аватарку')}</DialogTitle>
+          <DialogTitle className="font-serif font-medium">{t('Crop avatar')}</DialogTitle>
           <div className="relative h-80 rounded-lg overflow-hidden bg-ink">
             <Cropper image={srcUrl} crop={crop} zoom={zoom} aspect={1} cropShape="round" showGrid={false} onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={(a) => (area.current = a)} />
           </div>
           <input type="range" min={1} max={4} step={0.01} value={zoom} onChange={(e) => setZoom(+e.target.value)} className="w-full accent-[var(--ink)]" />
           <div className="flex justify-end gap-2">
-            <button className="bar-btn" onClick={() => setSrc(null)}>{t('Отмена')}</button>
-            <button className="bar-btn on" disabled={save.isPending} aria-busy={save.isPending} onClick={async () => { await save.mutateAsync(); setSrc(null) }}>{t('Сохранить')}</button>
+            <button className="bar-btn" onClick={() => setSrc(null)}>{t('Cancel')}</button>
+            <button className="bar-btn on" disabled={save.isPending} aria-busy={save.isPending} onClick={async () => { await save.mutateAsync(); setSrc(null) }}>{t('Save')}</button>
           </div>
         </DialogContent>
       </Dialog>

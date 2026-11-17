@@ -23,7 +23,7 @@ export function FanChart({ rootId, onClose }: { rootId: string; onClose: () => v
   const root = levels[0][0]
   const open = (p: Person) => { onClose(); focus(p.id, { center: true }) }
   const known = levels.slice(1).flat().filter(Boolean).length
-  const label = (p: Person) => (p.hidden ? t('Скрыт') : personName(p) || t('Без названия'))
+  const label = (p: Person) => (p.hidden ? t('Hidden') : personName(p) || t('Untitled'))
   const cell = (p: Person | null, g: number, i: number) => {
     const span = SWEEP / 2 ** g
     const a0 = FROM + i * span, a1 = a0 + span
@@ -52,12 +52,12 @@ export function FanChart({ rootId, onClose }: { rootId: string; onClose: () => v
     <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
       <DialogContent className="flex max-h-[calc(100dvh-32px)] max-w-[min(860px,calc(100vw-16px))] flex-col gap-3 overflow-hidden sm:max-w-[min(860px,calc(100vw-32px))]">
         <div>
-          <DialogTitle className="font-serif text-lg font-medium">{t('Веер предков')}{root ? `: ${label(root)}` : ''}</DialogTitle>
-          <DialogDescription className="text-sm text-ink-soft">{known ? t('Слева сторона отца, справа сторона матери. Нажмите на человека, чтобы открыть его карточку.') : t('Предки этого человека пока не указаны.')}</DialogDescription>
+          <DialogTitle className="font-serif text-lg font-medium">{t('Ancestor fan')}{root ? `: ${label(root)}` : ''}</DialogTitle>
+          <DialogDescription className="text-sm text-ink-soft">{known ? t('Father\'s side on the left, mother\'s on the right. Press a person to open their card.') : t('This person\'s ancestors are not filled in yet.')}</DialogDescription>
         </div>
         {/* A phone scrolls a picture of readable size, rather than shrinking the names away. */}
         <div className="min-h-0 flex-1 overflow-auto">
-          <svg viewBox={`0 ${SIZE - (CENTER + RING * RINGS) - 6} ${SIZE * 2} ${(CENTER + RING * RINGS) * 1.72 + 12}`} className="mx-auto block h-auto w-full min-w-[720px]" role="group" aria-label={t('Веер предков')}>
+          <svg viewBox={`0 ${SIZE - (CENTER + RING * RINGS) - 6} ${SIZE * 2} ${(CENTER + RING * RINGS) * 1.72 + 12}`} className="mx-auto block h-auto w-full min-w-[720px]" role="group" aria-label={t('Ancestor fan')}>
             {levels.slice(1).map((level, k) => level.map((p, i) => cell(p, k + 1, i)))}
             {root && (
               <g role="button" tabIndex={0} aria-label={label(root)} className="cursor-pointer outline-none" onClick={() => open(root)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(root) } }}>

@@ -30,7 +30,7 @@ const Mention = createReactInlineContentSpec(
 /** A mark on a paragraph: nobody has checked this yet. */
 const Unverified = createReactInlineContentSpec(
   { type: 'unverified', propSchema: {}, content: 'none' } as const,
-  { render: () => <span className="mark-chip unverified">⚠ {translate(typeof document !== 'undefined' ? pageLang() : 'ru', 'не проверено')}</span> },
+  { render: () => <span className="mark-chip unverified">⚠ {translate(typeof document !== 'undefined' ? pageLang() : 'ru', 'not verified')}</span> },
 )
 
 /** A link from a paragraph to one of this person's sources. */
@@ -80,8 +80,8 @@ function Editor({ page, personId, onChanged }: { page: Page; personId: string; o
   const editor = useCreateBlockNote({
     schema,
     initialContent: initial,
-    // BlockNote has no Catalan: a Catalan page editor reads in English.
-    dictionary: { ru, en, es, ca: en }[lang],
+    // BlockNote has no Catalan (or most other languages): their page editor reads in English.
+    dictionary: (({ ru, en, es }) as Record<string, typeof en>)[lang] ?? en,
     uploadFile: async (file: File) => {
       const form = new FormData()
       form.set('file', file)
@@ -111,7 +111,7 @@ function Editor({ page, personId, onChanged }: { page: Page; personId: string; o
   const schedule = () => saver.current!.change()
   useEffect(() => {
     const s = saver.current!
-    if (draft) { s.change(); notify(t('Восстановлен несохранённый текст')) }
+    if (draft) { s.change(); notify(t('Unsaved text restored')) }
     const online = () => s.retry()
     // The tab is going away. The browser keeps the text; a short one can also still reach the server.
     const hide = () => {
@@ -148,7 +148,7 @@ function Editor({ page, personId, onChanged }: { page: Page; personId: string; o
   const currentBlock = () => {
     const block = lastBlock.current ? editor.getBlock(lastBlock.current) : undefined
     if (block && Array.isArray(block.content)) return block
-    notify(t('Поставьте курсор в нужный абзац'))
+    notify(t('Put the cursor in the paragraph first'))
     return null
   }
   const toggleUnverified = () => {
@@ -168,7 +168,7 @@ function Editor({ page, personId, onChanged }: { page: Page; personId: string; o
   const addTag = (name: string) => {
     editor.insertInlineContent([{ type: 'tag', props: { name } }, ' '])
     if (!person || person.tags.includes(name)) return
-    api(`persons/${person.id}`, { method: 'PATCH', json: { tags: [...person.tags, name] } }).then(() => qc.invalidateQueries({ queryKey: ['graph'] })).catch(() => notify(t('Не удалось сохранить')))
+    api(`persons/${person.id}`, { method: 'PATCH', json: { tags: [...person.tags, name] } }).then(() => qc.invalidateQueries({ queryKey: ['graph'] })).catch(() => notify(t('Could not save')))
   }
   const createSource = async () => {
     const title = newSource.trim()
@@ -206,7 +206,7 @@ function Editor({ page, personId, onChanged }: { page: Page; personId: string; o
     >
       <div className={`font-serif text-[20px] font-medium pb-1 leading-snug ${canEdit ? 'pl-14 pr-5 [@media(hover:none)]:px-4' : 'px-4'}`}>
         {canEdit
-          ? <GrowText value={title} aria-label={t('Название')} placeholder={t('Без названия')} onChange={(e) => { setTitle(e.target.value); latestTitle.current = e.target.value; schedule() }} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }} />
+          ? <GrowText value={title} aria-label={t('Title_name')} placeholder={t('Untitled')} onChange={(e) => { setTitle(e.target.value); latestTitle.current = e.target.value; schedule() }} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }} />
           : <ReadText value={title} />}
       </div>
       <BlockNoteView
@@ -227,7 +227,7 @@ function Editor({ page, personId, onChanged }: { page: Page; personId: string; o
           getItems={async (query) => {
             const known = [...new Set(graph.persons.flatMap((p) => shownTags(p.tags)))].sort()
             const fresh = query.trim() && !known.some((x) => x.toLowerCase() === query.trim().toLowerCase()) ? [query.trim()] : []
-            return [...filterSuggestionItems(known.map((name) => ({ title: name, onItemClick: () => addTag(name) })), query), ...fresh.map((name) => ({ title: `${t('Новый тег')}: ${name}`, onItemClick: () => addTag(name) }))]
+            return [...filterSuggestionItems(known.map((name) => ({ title: name, onItemClick: () => addTag(name) })), query), ...fresh.map((name) => ({ title: `${t('New tag')}: ${name}`, onItemClick: () => addTag(name) }))]
           }}
         />
         <SuggestionMenuController
@@ -235,7 +235,7 @@ function Editor({ page, personId, onChanged }: { page: Page; personId: string; o
           getItems={async (query) =>
             filterSuggestionItems(
               people.map((p) => ({
-                title: personName(p) || t('Без названия'),
+                title: personName(p) || t('Untitled'),
                 onItemClick: () => editor.insertInlineContent([{ type: 'mention', props: { personId: p.id, label: personName(p) } }, ' ']),
               })),
               query,
@@ -245,29 +245,29 @@ function Editor({ page, personId, onChanged }: { page: Page; personId: string; o
       </BlockNoteView>
       {canEdit && (writing || picking) && (
         <div className="sticky bottom-0 z-10 border-t border-border bg-[#fffdf8] flex flex-wrap items-center gap-1.5 px-4 py-1.5 text-xs" onMouseDown={(e) => { if ((e.target as HTMLElement).tagName !== 'INPUT') e.preventDefault() }}>
-          <span className="text-ink-faint">{t('Отметить абзац')}:</span>
-          <button className="pick rounded-full border border-border px-2.5 h-7 text-ink-soft hover:text-ink" onClick={toggleUnverified}>{marked ? `✓ ${t('Не проверено')}` : `⚠ ${t('Не проверено')}`}</button>
+          <span className="text-ink-faint">{t('Mark the paragraph')}:</span>
+          <button className="pick rounded-full border border-border px-2.5 h-7 text-ink-soft hover:text-ink" onClick={toggleUnverified}>{marked ? `✓ ${t('Not checked')}` : `⚠ ${t('Not checked')}`}</button>
           <Popover open={picking} onOpenChange={setPicking}>
-            <PopoverTrigger asChild><button className="pick rounded-full border border-border px-2.5 h-7 text-ink-soft hover:text-ink">🔗 {t('Источник')}</button></PopoverTrigger>
+            <PopoverTrigger asChild><button className="pick rounded-full border border-border px-2.5 h-7 text-ink-soft hover:text-ink">🔗 {t('Source')}</button></PopoverTrigger>
             <PopoverContent align="start" className="w-64 p-2 text-sm flex flex-col gap-1" onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
-              {sources.filter((s) => s.id).map((s) => <button key={s.id} className="text-left rounded px-2 py-1.5 hover:bg-muted break-anywhere" onMouseDown={(e) => e.preventDefault()} onClick={() => cite(s.id!, s.title || t('Без названия'))}>{s.title || t('Без названия')}</button>)}
-              {!sources.some((s) => s.id) && <p className="px-2 py-1 text-xs text-ink-faint">{t('У этого человека пока нет источников')}</p>}
+              {sources.filter((s) => s.id).map((s) => <button key={s.id} className="text-left rounded px-2 py-1.5 hover:bg-muted break-anywhere" onMouseDown={(e) => e.preventDefault()} onClick={() => cite(s.id!, s.title || t('Untitled'))}>{s.title || t('Untitled')}</button>)}
+              {!sources.some((s) => s.id) && <p className="px-2 py-1 text-xs text-ink-faint">{t('This person has no sources yet')}</p>}
               <form className="flex gap-1 pt-1 border-t border-border" onSubmit={(e) => { e.preventDefault(); createSource() }}>
-                <input value={newSource} onChange={(e) => setNewSource(e.target.value)} placeholder={t('Новый источник')} aria-label={t('Новый источник')} className={`${inputClass} flex-1`} />
-                <button className="bar-btn border border-border flex-none" disabled={!newSource.trim()}>{t('Добавить')}</button>
+                <input value={newSource} onChange={(e) => setNewSource(e.target.value)} placeholder={t('New source')} aria-label={t('New source')} className={`${inputClass} flex-1`} />
+                <button className="bar-btn border border-border flex-none" disabled={!newSource.trim()}>{t('Add')}</button>
               </form>
             </PopoverContent>
           </Popover>
         </div>
       )}
-      {status === 'waiting' && <p role="status" className="px-9 text-xs text-destructive">{t('Нет связи. Текст сохранён в этом браузере и отправится сам, когда связь вернётся')}</p>}
-      {status === 'failed' && <p role="alert" className="px-9 text-xs text-destructive">{t('Не удалось сохранить')}. {t('Текст остался в этом браузере')}</p>}
+      {status === 'waiting' && <p role="status" className="px-9 text-xs text-destructive">{t('No connection. Your text is kept in this browser and will be sent when the connection returns')}</p>}
+      {status === 'failed' && <p role="alert" className="px-9 text-xs text-destructive">{t('Could not save')}. {t('Your text stays in this browser')}</p>}
       {status === 'conflict' && (
         <div role="alert" className="mx-[54px] mt-1 rounded-md border border-destructive/40 p-2 text-xs">
-          <p>{t('Эту страницу уже изменили в другом окне или другой человек. Какой текст оставить?')}</p>
+          <p>{t('This page was changed in another window or by another person. Which text should stay?')}</p>
           <div className="mt-1.5 flex gap-2">
-            <button className="underline" onClick={() => { saver.current!.discard(); setStatus(''); qc.invalidateQueries({ queryKey: ['page', page.id] }) }}>{t('Показать новый, мой убрать')}</button>
-            <button className="underline" onClick={() => saver.current!.overwrite()}>{t('Оставить мой')}</button>
+            <button className="underline" onClick={() => { saver.current!.discard(); setStatus(''); qc.invalidateQueries({ queryKey: ['page', page.id] }) }}>{t('Show the new one, drop mine')}</button>
+            <button className="underline" onClick={() => saver.current!.overwrite()}>{t('Keep mine')}</button>
           </div>
         </div>
       )}

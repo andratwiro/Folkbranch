@@ -3,9 +3,10 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { App, type AppCtx } from '../lib/client'
+import { translate } from '../lib/i18n'
 import { ViewTools } from '../components/chart-bars'
 
-const render = (map: boolean, folded = false) => renderToStaticMarkup(createElement(App.Provider, { value: { t: (k: string) => k } as unknown as AppCtx }, createElement(ViewTools, { map, onChange: () => {}, onZoom: () => {}, folded, card: false })))
+const render = (map: boolean, folded = false) => renderToStaticMarkup(createElement(App.Provider, { value: { t: (k: string) => translate('ru', k) } as unknown as AppCtx }, createElement(ViewTools, { map, onChange: () => {}, onZoom: () => {}, folded, card: false })))
 const radios = (html: string) => [...html.matchAll(/<button[^>]*role="radio"[^>]*>/g)].map((m) => m[0])
 
 describe('the tree-or-map switch', () => {

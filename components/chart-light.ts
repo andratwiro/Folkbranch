@@ -51,7 +51,7 @@ export function useChartLight(layout: Layout, pathIds: string[] | null, groupIds
     if ((family.spouses.get(parent) ?? []).length < 2) return ''
     const other = (family.parents.get(child) ?? []).find((p) => p !== parent)
     const name = other && byId.get(other)?.givenName
-    return name ? ` · ${t('от: {name}').replace('{name}', name)}` : ''
+    return name ? ` · ${t('by {name}').replace('{name}', name)}` : ''
   }
   const fromMe = useMemo(() => (me.personId && byId.has(me.personId) && !focusId && !pathIds ? family.relatives(me.personId, lang) : null), [me.personId, focusId, pathIds, family, lang, byId])
 

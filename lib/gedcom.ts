@@ -1,7 +1,7 @@
 // GEDCOM 5.5.1 and 7.0: a deterministic parser and writer. No model is involved.
 import type { Fact, Graph, Lang, Person, Place, PlaceName, Source } from './types'
 import { findPlace, onMap } from './places'
-import { translatePair } from './i18n'
+import { translatePair, translate } from './i18n'
 import { factWords } from './fact-kinds'
 import { splitPatronymic } from './names'
 import { datesIn } from './search/dates'
@@ -19,10 +19,10 @@ export const FACT_TAGS: Record<string, [string, string]> = {
 
 // Spanish and Catalan look the Russian word up in their own table, else take the English.
 const word = (lang: Lang, pair: [string, string] | undefined) => (pair ? translatePair(lang, ...pair) : '')
-export const roleWord = (rela: string, lang: Lang) => word(lang, ASSOCIATES[rela.toLowerCase()]) || rela || translatePair(lang, 'Участник', 'Participant')
+export const roleWord = (rela: string, lang: Lang) => word(lang, ASSOCIATES[rela.toLowerCase()]) || rela || translate(lang, 'Participant')
 
 /** A kind of event the file gives no name for. */
-export const eventWord = (lang: Lang) => translatePair(lang, 'Событие', 'Event')
+export const eventWord = (lang: Lang) => translate(lang, 'Event')
 
 /** What ASSO says one person was to another, in the archive's words. */
 const ASSOCIATES: Record<string, [string, string]> = {
@@ -274,7 +274,7 @@ export function parseGedcom(text: string, lang: Lang = 'ru'): Imported {
           const note = [longText(c), ...c.children.filter((x) => x.tag === 'NOTE' || x.tag === 'SNOTE').map(noteOf)].filter(Boolean).join('\n')
           // GEDCOM 7 names those present at an event under it: godparents at a baptism, witnesses at a wedding.
           const people = c.children.filter((x) => x.tag === 'ASSO').map((x) => ({ personId: x.value.startsWith('@') ? x.value : null, name: x.value.startsWith('@') ? '' : x.value, role: roleWord(val(child(x, 'ROLE'), 'PHRASE') || val(x, 'ROLE') || val(x, 'RELA'), lang) }))
-          return { kind: val(c, 'TYPE') || word(lang, FACT_TAGS[c.tag]) || translatePair(lang, 'Событие', 'Event'), date: fromGedDate(val(c, 'DATE')), place: val(c, 'PLAC'), note, source: source ? sourceTitles.get(source.value) ?? longText(source) : '', ...(people.length ? { people } : {}) }
+          return { kind: val(c, 'TYPE') || word(lang, FACT_TAGS[c.tag]) || translate(lang, 'Event'), date: fromGedDate(val(c, 'DATE')), place: val(c, 'PLAC'), note, source: source ? sourceTitles.get(source.value) ?? longText(source) : '', ...(people.length ? { people } : {}) }
         }),
       // Citations on an event stay with its fact; the rest are about the person.
       sources: uniqueSources([...r.children, ...r.children.filter((c) => c.tag !== 'EVEN' && !(c.tag in FACT_TAGS)).flatMap((c) => c.children)].filter((c) => c.tag === 'SOUR').map((c) => ({ title: sourceTitles.get(c.value) ?? longText(c), ...pageOf(val(c, 'PAGE'), lang), url: val(c, 'WWW') || val(c, 'NOTE') })).filter((s) => s.title)),

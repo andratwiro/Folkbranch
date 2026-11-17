@@ -53,19 +53,19 @@ export function lifeEvents(person: Person, graph: Graph): LifeEvent[] {
     const year = yearOf(date)
     if (year !== null) events.push({ kind, date, year, age: born !== null && year >= born && kind !== 'birth' ? year - born : null, title, note, otherId, place })
   }
-  add('birth', person.birthDate, 'Рождение', '', null, person.birthPlace)
+  add('birth', person.birthDate, 'Birth', '', null, person.birthPlace)
   for (const u of graph.unions) {
     if (u.aId !== person.id && u.bId !== person.id) continue
     const other = byId.get(u.aId === person.id ? u.bId : u.aId)
-    if (other && shown(other)) add('union', u.startDate, u.kind === 'civil' ? 'Союз' : 'Брак', personName(other), other.id, u.place)
+    if (other && shown(other)) add('union', u.startDate, u.kind === 'civil' ? 'Partnership' : 'Marriage', personName(other), other.id, u.place)
   }
   for (const l of graph.parentChild) {
     if (l.parentId !== person.id) continue
     const child = byId.get(l.childId)
-    if (child && shown(child)) add('child', child.birthDate, 'Рождение ребёнка', personName(child), child.id)
+    if (child && shown(child)) add('child', child.birthDate, 'Birth of a child', personName(child), child.id)
   }
   for (const f of person.facts) add('fact', f.date, f.kind, f.note, null, f.place)
-  add('death', person.deathDate, 'Смерть', '', null, person.deathPlace)
+  add('death', person.deathDate, 'Death', '', null, person.deathPlace)
   const order: Record<LifeKind, number> = { birth: 0, union: 1, child: 1, fact: 1, death: 2 }
   return events.sort((a, b) => a.year - b.year || order[a.kind] - order[b.kind])
 }
@@ -147,8 +147,8 @@ const pad = (n: number) => String(n).padStart(2, '0')
  */
 export function familyCalendar(graph: Graph, t: (key: string) => string, stamp = new Date()): string {
   const byId = new Map(graph.persons.map((p) => [p.id, p]))
-  const name = (p: Person) => personName(p) || t('Без названия')
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Folkbranch//Family days//EN', 'CALSCALE:GREGORIAN', `X-WR-CALNAME:${icsText(t('Семейные даты'))}`]
+  const name = (p: Person) => personName(p) || t('Untitled')
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Folkbranch//Family days//EN', 'CALSCALE:GREGORIAN', `X-WR-CALNAME:${icsText(t('Family days'))}`]
   const now = `${stamp.getUTCFullYear()}${pad(stamp.getUTCMonth() + 1)}${pad(stamp.getUTCDate())}T000000Z`
   const add = (uid: string, title: string, text: string) => {
     const date = fullDate(text)
@@ -157,12 +157,12 @@ export function familyCalendar(graph: Graph, t: (key: string) => string, stamp =
     lines.push('BEGIN:VEVENT', `UID:${uid}@folkbranch`, `DTSTAMP:${now}`, `DTSTART;VALUE=DATE:${day}`, 'RRULE:FREQ=YEARLY', `SUMMARY:${icsText(title)}`, 'TRANSP:TRANSPARENT', 'END:VEVENT')
   }
   for (const p of graph.persons.filter(shown)) {
-    add(`b-${p.id}`, `${t(p.living ? 'День рождения' : 'Со дня рождения')}: ${name(p)}`, p.birthDate)
-    if (!p.living) add(`d-${p.id}`, `${t('День памяти')}: ${name(p)}`, p.deathDate)
+    add(`b-${p.id}`, `${t(p.living ? 'Birthday' : 'Years since birth')}: ${name(p)}`, p.birthDate)
+    if (!p.living) add(`d-${p.id}`, `${t('Day of remembrance')}: ${name(p)}`, p.deathDate)
   }
   for (const u of graph.unions) {
     const a = byId.get(u.aId), b = byId.get(u.bId)
-    if (a && b && shown(a) && shown(b) && !u.endDate) add(`w-${u.id}`, `${t('Годовщина свадьбы')}: ${name(a)} ${t('и')} ${name(b)}`, u.startDate)
+    if (a && b && shown(a) && shown(b) && !u.endDate) add(`w-${u.id}`, `${t('Wedding anniversary')}: ${name(a)} ${t('and')} ${name(b)}`, u.startDate)
   }
   lines.push('END:VCALENDAR')
   return lines.join('\r\n') + '\r\n'

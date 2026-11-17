@@ -123,8 +123,8 @@ export function applyPointGuess(actor: Actor, raw: unknown) {
   const c = gazPlace(gz, id)
   if (!c) throw new OpError(400, 'no such GeoNames place')
   const region = gz.regions[`${c.cc}.${c.region}`]?.find((n) => /[а-яё]/i.test(n)) ?? gz.regions[`${c.cc}.${c.region}`]?.[0] ?? ''
-  const credit = `${say('Точка взята из GeoNames')} (${gz.snapshot}): ${[c.ru || c.name, region, c.cc].filter(Boolean).join(', ')}, geonames.org/${c.id}`
-  const summary = (name: string) => `${say('Место')}: ${name} — ${say('точка из GeoNames')}`
+  const credit = `${say('Point taken from GeoNames')} (${gz.snapshot}): ${[c.ru || c.name, region, c.cc].filter(Boolean).join(', ')}, geonames.org/${c.id}`
+  const summary = (name: string) => `${say('Place')}: ${name} — ${say('point from GeoNames')}`
   if (typeof body.placeId === 'string' && body.placeId) {
     const p = getPlace(body.placeId)
     if (onMap(p)) throw new OpError(409, 'this place already has a point')

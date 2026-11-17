@@ -350,13 +350,13 @@ export class PeopleLayer {
       if (!face.moving) this.yieldTo(face, false)
       const t = this.opts.t
       this.setFlag(face, 'unsure', pos.after !== undefined)
-      const at = pos.moving ? `${clipPlace(pos.at.place)} → ${clipPlace(pos.moving.place)} (${pos.moving.date})` : `${clipPlace(pos.at.place)} · ${pos.at.what}, ${pos.at.date}${pos.after !== undefined ? ` · ${t('дальше неизвестно')}` : ''}`
+      const at = pos.moving ? `${clipPlace(pos.at.place)} → ${clipPlace(pos.moving.place)} (${pos.moving.date})` : `${clipPlace(pos.at.place)} · ${pos.at.what}, ${pos.at.date}${pos.after !== undefined ? ` · ${t('whereabouts after that unknown')}` : ''}`
       if (face.at !== at) { face.at = at; face.where.textContent = at }
       this.setFlag(face, 'focused', tr.personId === this.focusId)
       this.setFlag(face, 'kin', !!this.kin?.has(tr.personId))
       this.setLabel(face, pos.moving ? `${tr.name}, ${pos.at.place} → ${pos.moving.place}`
-        : pos.after !== undefined ? `${tr.name}, ${pos.at.place} ${sinceAt(tr, pos)}–${pos.after}, ${t('дальше неизвестно')}`
-          : `${tr.name}, ${pos.at.place}, ${t('с')} ${sinceAt(tr, pos)}`)
+        : pos.after !== undefined ? `${tr.name}, ${pos.at.place} ${sinceAt(tr, pos)}–${pos.after}, ${t('whereabouts after that unknown')}`
+          : `${tr.name}, ${pos.at.place}, ${t('since')} ${sinceAt(tr, pos)}`)
       // Travellers, and the person followed, stand on their own spot, apart from any stack, and are always named.
       if (pos.leg || tr.personId === this.focusId) { travellers.push({ id: tr.personId, pos }); continue }
       const key = `${pos.lat},${pos.lon}`

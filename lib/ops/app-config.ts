@@ -2,7 +2,6 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { eq } from 'drizzle-orm'
 import { getDb, schema } from '../db'
 import { translate } from '../i18n'
-import '../i18n-server'
 import { isLang, viewerLang } from '../languages'
 import type { Lang } from '../types'
 

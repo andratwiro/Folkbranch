@@ -56,11 +56,11 @@ export function dateProblem(date: string, field: 'birth' | 'death' | 'fact', lif
 
 /** The words for a problem, in the source language; the caller translates them. */
 export const DATE_PROBLEM_TEXT: Record<DateProblemKind, string> = {
-  'no-such-day': 'такого дня в календаре нет',
-  'not-a-date': 'в дате нет года: карта и возраст её не учтут',
-  future: 'этот год ещё не наступил',
-  'death-before-birth': 'смерть раньше рождения',
-  'before-birth': 'раньше рождения человека',
-  'after-death': 'позже смерти человека',
-  'too-old': 'человеку было бы больше 120 лет',
+  'no-such-day': 'there is no such day in the calendar',
+  'not-a-date': 'this date has no year: the map and ages will not count it',
+  future: 'this year has not come yet',
+  'death-before-birth': 'death before birth',
+  'before-birth': 'before this person was born',
+  'after-death': 'after this person died',
+  'too-old': 'this person would be over 120',
 }

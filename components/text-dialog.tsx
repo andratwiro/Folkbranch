@@ -48,17 +48,17 @@ export function PlanSummary({ plan, choices, onChoose }: { plan: TextPlan; choic
   const { t } = useApp()
   return (
     <>
-      {plan.errors.map((e, i) => <p key={i} className="text-xs text-destructive">{t('Ошибка в строке')} {e.line}: {e.message}</p>)}
+      {plan.errors.map((e, i) => <p key={i} className="text-xs text-destructive">{t('Error on line')} {e.line}: {e.message}</p>)}
       {plan.ambiguous.map((a) => (
         <label key={a.ref} className="flex items-center gap-2 text-xs">
-          <span className="text-rust">{t('Несколько совпадений')}: {a.name}</span>
-          <Select look="small" className="flex-1" aria-label={a.name} value={choices[a.ref] ?? ''} placeholder="—" onChange={(v) => onChoose({ ...choices, [a.ref]: v })} options={[{ value: '', label: '—', disabled: true }, ...a.candidates.map((c) => ({ value: c.id, label: `${c.name} ${c.years}` })), { value: 'new', label: t('Новый человек') }]} />
+          <span className="text-rust">{t('Several matches')}: {a.name}</span>
+          <Select look="small" className="flex-1" aria-label={a.name} value={choices[a.ref] ?? ''} placeholder="—" onChange={(v) => onChoose({ ...choices, [a.ref]: v })} options={[{ value: '', label: '—', disabled: true }, ...a.candidates.map((c) => ({ value: c.id, label: `${c.name} ${c.years}` })), { value: 'new', label: t('New person') }]} />
         </label>
       ))}
-      {!plan.ops.length && !plan.errors.length && !plan.ambiguous.length && <p className="text-xs text-ink-faint">{t('Изменений нет')}</p>}
-      {plan.creates.length > 0 && <p className="text-xs"><b className="font-medium">{t('Добавится')} ({plan.creates.length}):</b> {plan.creates.slice(0, 12).join(', ')}{plan.creates.length > 12 ? '…' : ''}</p>}
-      {plan.updates.length > 0 && <p className="text-xs"><b className="font-medium">{t('Изменится')} ({plan.updates.length}):</b> {plan.updates.slice(0, 12).join(', ')}{plan.updates.length > 12 ? '…' : ''}</p>}
-      {plan.relations > 0 && <p className="text-xs"><b className="font-medium">{t('Связей')}:</b> +{plan.relations}</p>}
+      {!plan.ops.length && !plan.errors.length && !plan.ambiguous.length && <p className="text-xs text-ink-faint">{t('No changes')}</p>}
+      {plan.creates.length > 0 && <p className="text-xs"><b className="font-medium">{t('To add')} ({plan.creates.length}):</b> {plan.creates.slice(0, 12).join(', ')}{plan.creates.length > 12 ? '…' : ''}</p>}
+      {plan.updates.length > 0 && <p className="text-xs"><b className="font-medium">{t('To change')} ({plan.updates.length}):</b> {plan.updates.slice(0, 12).join(', ')}{plan.updates.length > 12 ? '…' : ''}</p>}
+      {plan.relations > 0 && <p className="text-xs"><b className="font-medium">{t('Links_count')}:</b> +{plan.relations}</p>}
     </>
   )
 }
@@ -83,7 +83,7 @@ export function TextDialog({ open, onOpenChange }: { open: boolean; onOpenChange
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[min(1200px,calc(100vw-32px))] sm:max-w-[min(1200px,calc(100vw-32px))] h-[calc(100vh-64px)] flex flex-col gap-3">
-        <DialogTitle className="font-serif font-medium text-lg">{t('Текстовый вид графа')}</DialogTitle>
+        <DialogTitle className="font-serif font-medium text-lg">{t('The chart as text_view')}</DialogTitle>
         <div className="grid md:grid-cols-2 gap-3 flex-1 min-h-0">
           <textarea value={text} readOnly={!canEdit} spellCheck={false} onChange={(e) => setText(e.target.value)} className={`${textareaClass} min-h-0 h-full resize-none`} />
           <div className="min-h-0 flex flex-col gap-2">
@@ -95,7 +95,7 @@ export function TextDialog({ open, onOpenChange }: { open: boolean; onOpenChange
         </div>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex justify-end gap-2">
-          <button className="bar-btn" onClick={() => { navigator.clipboard.writeText(text); setCopied(true) }}>{copied ? <Check size={14} /> : <Copy size={14} />} {t(copied ? 'Скопировано' : 'Скопировать')}</button>
+          <button className="bar-btn" onClick={() => { navigator.clipboard.writeText(text); setCopied(true) }}>{copied ? <Check size={14} /> : <Copy size={14} />} {t(copied ? 'Copied' : 'Copy')}</button>
           {canEdit && <button className="bar-btn on disabled:opacity-40" disabled={blocked} onClick={async () => {
             setError('')
             try {
@@ -105,7 +105,7 @@ export function TextDialog({ open, onOpenChange }: { open: boolean; onOpenChange
             } catch (e) {
               setError(String((e as Error).message))
             }
-          }}>{t('Применить')}</button>}
+          }}>{t('Apply')}</button>}
         </div>
       </DialogContent>
     </Dialog>

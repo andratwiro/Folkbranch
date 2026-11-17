@@ -8,7 +8,7 @@ import type { Gap, MapTimeline, Unplaced } from '@/lib/map-timeline'
 import { eventWords } from '@/lib/map-scrub'
 import { peopleWords } from '@/lib/names'
 
-export const GAP_LABEL: Record<Gap, string> = { 'no-place': 'место неизвестно', 'no-coords': 'у места нет координат', 'bad-coords': 'координаты места вне допустимого', 'unknown-place': 'такого места нет в списке мест', 'ambiguous-place': 'в списке несколько мест с таким названием — выберите нужное в карточке', 'no-date': 'дата неизвестна', 'outside-span': 'вне лет жизни человека', future: 'этот год ещё не наступил', 'death-before-birth': 'смерть раньше рождения' }
+export const GAP_LABEL: Record<Gap, string> = { 'no-place': 'place unknown', 'no-coords': 'place has no coordinates', 'bad-coords': 'place coordinates are out of range', 'unknown-place': 'no such place in the list of places', 'ambiguous-place': 'several places in the list have this name: choose one on the card', 'no-date': 'date unknown', 'outside-span': 'outside this person\'s life span', future: 'this year has not come yet', 'death-before-birth': 'death before birth' }
 
 /**
  * `only`: the list opened from a line's chip shows just the people of that line who are not on the map, and why.
@@ -39,24 +39,24 @@ export function MapGaps({ data, only = null, open, onOpen }: { data: MapTimeline
           <button type="button" className="float flex min-h-9 items-center gap-1.5 px-2.5 py-1.5 text-left text-sm text-ink-soft" aria-expanded={listOpen} onClick={() => setListOpen(!listOpen)}>
             <MapPinOff size={13} className="flex-none" />
             <span>
-              {data.absent.length > 0 && <>{peopleWords(data.absent.length, lang)} {t('не на карте')}</>}
+              {data.absent.length > 0 && <>{peopleWords(data.absent.length, lang)} {t('not on the map')}</>}
               {data.absent.length > 0 && gapEvents > 0 && ' · '}
-              {gapEvents > 0 && <>{eventWords(gapEvents, lang)} {t('без места или года')}</>}
+              {gapEvents > 0 && <>{eventWords(gapEvents, lang)} {t('without a place or year')}</>}
             </span>
           </button>
           {listOpen && (
             <div className="float w-80 max-w-[calc(100vw-24px)] overflow-y-auto p-2 text-sm">
               <div className="mb-1 flex items-start justify-between gap-2 px-1">
-                <span className="text-ink-soft">{only && <strong className="block font-medium text-ink">{t('В этой линии')}</strong>}{t('Чтобы событие попало на карту, нужны место с координатами и год.')}</span>
-                <button type="button" className="flex-none rounded p-1 hover:bg-muted" aria-label={t('Закрыть')} onClick={() => setListOpen(false)}><X size={14} /></button>
+                <span className="text-ink-soft">{only && <strong className="block font-medium text-ink">{t('In this line')}</strong>}{t('An event reaches the map with a place that has coordinates and a year.')}</span>
+                <button type="button" className="flex-none rounded p-1 hover:bg-muted" aria-label={t('Close')} onClick={() => setListOpen(false)}><X size={14} /></button>
               </div>
               {/* One entry per person: first those with nowhere to stand, then those missing some events. */}
               <ul className="flex flex-col">
                 {absent.map((a) => (
                   <li key={a.personId}>
                     <button type="button" className="w-full rounded px-1 py-1 text-left hover:bg-muted" onClick={() => focus(a.personId)}>
-                      <span className="flex items-baseline justify-between gap-2"><strong className="font-medium text-ink">{a.name}</strong><span className="flex-none text-ink-faint">{t('не на карте')}</span></span>
-                      {a.gaps.length ? a.gaps.map((m, i) => <Reason key={i} line={gapLine(m)} why={t(GAP_LABEL[m.gap])} />) : <span className="block pl-2 text-ink-soft">{t('событий не записано')}</span>}
+                      <span className="flex items-baseline justify-between gap-2"><strong className="font-medium text-ink">{a.name}</strong><span className="flex-none text-ink-faint">{t('not on the map')}</span></span>
+                      {a.gaps.length ? a.gaps.map((m, i) => <Reason key={i} line={gapLine(m)} why={t(GAP_LABEL[m.gap])} />) : <span className="block pl-2 text-ink-soft">{t('no events written')}</span>}
                     </button>
                   </li>
                 ))}

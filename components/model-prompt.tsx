@@ -11,7 +11,7 @@ export function ModelPrompt({ pack, children, compact }: { pack: Pack; children?
   const { t } = useApp()
   const m = useModel(pack)
   if (m.status === 'ready' || m.status === 'unknown') return null
-  if (m.status === 'unavailable') return <p className="text-xs text-ink-soft">{t('Модели можно скачать только по защищённому адресу (https) или на этом компьютере.')}</p>
+  if (m.status === 'unavailable') return <p className="text-xs text-ink-soft">{t('Models can only be downloaded on a secure address (https) or on this computer.')}</p>
   return (
     <div className={compact ? 'flex flex-col gap-1.5' : 'flex flex-col gap-1.5 rounded-lg bg-muted px-3 py-2'}>
       {children && <p className="text-xs text-ink-soft">{children}</p>}
@@ -19,13 +19,13 @@ export function ModelPrompt({ pack, children, compact }: { pack: Pack; children?
         ? (
           <div className="flex items-center gap-2" role="status">
             <div className="h-1.5 min-w-16 flex-1 overflow-hidden rounded-full bg-input"><div className="h-full bg-ink transition-[width]" style={{ width: `${m.total ? Math.min(100, (m.loaded / m.total) * 100) : 4}%` }} /></div>
-            <span className="text-xs tabular-nums text-ink-soft">{m.total ? `${mb(m.loaded)} ${t('из')} ${mb(m.total)} ${t('МБ')}` : t('Готовлюсь…')}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={() => cancelPack(pack)}><Square /> {t('Остановить')}</Button>
+            <span className="text-xs tabular-nums text-ink-soft">{m.total ? `${mb(m.loaded)} ${t('of')} ${mb(m.total)} ${t('MB')}` : t('Getting ready…')}</span>
+            <Button type="button" variant="ghost" size="sm" onClick={() => cancelPack(pack)}><Square /> {t('Stop')}</Button>
           </div>
         )
-        : <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => downloadPack(pack)}><Download /> {t('Скачать модель')}, {packSize(pack)} {t('МБ')}</Button>}
-      {m.failed && <p role="alert" className="text-xs text-destructive">{t('Не удалось скачать модель. Проверьте соединение и попробуйте ещё раз.')}</p>}
-      {!compact && m.status === 'none' && <p className="text-xs text-ink-soft">{t('Другие модели можно выбрать в настройках, в разделе «Умные функции».')}</p>}
+        : <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => downloadPack(pack)}><Download /> {t('Download model')}, {packSize(pack)} {t('MB')}</Button>}
+      {m.failed && <p role="alert" className="text-xs text-destructive">{t('Could not download the model. Check your connection and try again.')}</p>}
+      {!compact && m.status === 'none' && <p className="text-xs text-ink-soft">{t('Other models are under Settings, Smart features.')}</p>}
     </div>
   )
 }

@@ -37,7 +37,7 @@ function scrubMentions(hidden: Set<string>, content: string) {
     if (Array.isArray(node)) return node.map(walk)
     if (node && typeof node === 'object') {
       const o = node as Record<string, any>
-      if (o.type === 'mention' && hidden.has(o.props?.personId)) return { ...o, props: { ...o.props, personId: '', label: tell('Скрыто') } }
+      if (o.type === 'mention' && hidden.has(o.props?.personId)) return { ...o, props: { ...o.props, personId: '', label: tell('Hidden_neuter') } }
       return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, walk(v)]))
     }
     return node
@@ -72,7 +72,7 @@ export function createPage(actor: Actor, input: { personId: string; title?: stri
   requireRole(actor, 'editor')
   const person = getPersonRow(input.personId)
   const title = input.title ?? ''
-  return mutate(actor, { summary: `${personName(person)}: ${say('Новая страница')}`, personIds: [input.personId] }, (c) => row(insertPage(c, { ...input, title })))
+  return mutate(actor, { summary: `${personName(person)}: ${say('New page')}`, personIds: [input.personId] }, (c) => row(insertPage(c, { ...input, title })))
 }
 
 export function updatePage(actor: Actor, id: string, input: { title?: string; icon?: string; content?: unknown; parentPageId?: string | null; position?: number; baseUpdatedAt?: number }) {
@@ -88,7 +88,7 @@ export function updatePage(actor: Actor, id: string, input: { title?: string; ic
   const updatedAt = Math.max(Date.now(), page.updatedAt + 1)
   const set: Record<string, unknown> = { ...patch, updatedAt }
   if (patch.content !== undefined) set.content = JSON.stringify(patch.content)
-  mutate(actor, { summary: `${personName(person)}: «${patch.title ?? page.title ?? say('Без названия')}»`, personIds: [page.personId], key: `page:${id}` }, (c) => c.update('pages', id, set))
+  mutate(actor, { summary: `${personName(person)}: «${patch.title ?? page.title ?? say('Untitled')}»`, personIds: [page.personId], key: `page:${id}` }, (c) => c.update('pages', id, set))
   return { updatedAt }
 }
 
@@ -130,7 +130,7 @@ export function deletePage(actor: Actor, id: string, ids?: string[], baseUpdated
   if (baseUpdatedAt !== undefined && baseUpdatedAt !== page.updatedAt) throw new OpError(409, 'the page changed since this copy was read')
   const person = getPersonRow(page.personId)
   const drop = new Set(ids ?? subtreeIds(id))
-  mutate(actor, { summary: `${personName(person)}: ${say('Удалить')} «${page.title}»`, personIds: [page.personId] }, (c) => {
+  mutate(actor, { summary: `${personName(person)}: ${say('Delete')} «${page.title}»`, personIds: [page.personId] }, (c) => {
     for (const pid of drop) {
       // A child that was not in the draft is kept, at the top level, rather than left pointing nowhere.
       for (const ch of db.select().from(schema.pages).where(eq(schema.pages.parentPageId, pid)).all())

@@ -81,10 +81,10 @@ export function PlaceMap({ marks, path = false, onPerson, className = 'h-72' }: 
   if (!ok) {
     return (
       <div className={`flex flex-col items-start justify-center gap-2 rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm ${className}`}>
-        <p className="text-ink-soft">{t('Карту рисует OpenStreetMap: его сервер увидит, какую часть мира вы смотрите. Имена и даты туда не попадают.')}</p>
-        <Button size="sm" variant="outline" onClick={allow}><MapIcon /> {t('Показать карту')}</Button>
+        <p className="text-ink-soft">{t('The map is drawn by OpenStreetMap: its server will see which part of the world you look at. No names or dates go there.')}</p>
+        <Button size="sm" variant="outline" onClick={allow}><MapIcon /> {t('Show the map')}</Button>
       </div>
     )
   }
-  return <div ref={box} role="region" aria-label={t('Карта')} className={`map-box relative z-0 overflow-hidden rounded-lg border border-border ${className}`} />
+  return <div ref={box} role="region" aria-label={t('Map')} className={`map-box relative z-0 overflow-hidden rounded-lg border border-border ${className}`} />
 }

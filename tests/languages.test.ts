@@ -4,7 +4,9 @@ import path from 'node:path'
 import { eq } from 'drizzle-orm'
 import { describe, expect, it, vi } from 'vitest'
 import { getDb, schema } from '../lib/db'
-import { addTable, english, translate, translatePair } from '../lib/i18n'
+import { addTable, translate } from '../lib/i18n'
+import es from '../locales/es.json'
+import ru from '../locales/ru.json'
 import { LANG_NAMES, LANGS, langOf } from '../lib/languages'
 import { say, setSetting } from '../lib/ops/app-config'
 import { readableSummary } from '../lib/ops/history-text'
@@ -19,41 +21,42 @@ const cyrillic = /[А-Яа-яЁё]/
 
 describe('a language that is not finished', () => {
   it('takes its own line first, then the English, then the key', () => {
-    addTable('ca', { 'Удалить': 'Elimina' })
-    expect(translate('ca', 'Удалить')).toBe('Elimina')
-    expect(translate('ca', 'Сохранить')).toBe(english['Сохранить'])
-    expect(translate('ca', 'Слово, которого нет нигде')).toBe('Слово, которого нет нигде')
-    expect(translate('ru', 'Удалить')).toBe('Удалить')
-    expect(translate('en', 'Удалить')).toBe('Delete')
+    addTable('ca', { Delete: 'Elimina' })
+    expect(translate('ca', 'Delete')).toBe('Elimina')
+    expect(translate('ca', 'Save')).toBe('Save')
+    expect(translate('ca', 'A phrase nobody wrote down')).toBe('A phrase nobody wrote down')
+    expect(translate('ru', 'Delete')).toBe('Удалить')
+    expect(translate('en', 'Delete')).toBe('Delete')
   })
 
   it('shows English for every word, never Russian, whatever its table holds', () => {
-    const russian = LANGS.filter((l) => l !== 'ru').flatMap((lang) => Object.keys(english).filter((k) => !cyrillic.test(english[k]) && cyrillic.test(translate(lang, k))).map((k) => `${lang}: ${k}`))
+    const russian = LANGS.filter((l) => l !== 'ru').flatMap((lang) => Object.keys(ru).filter((k) => cyrillic.test(translate(lang, k)) && !cyrillic.test(k)).map((k) => `${lang}: ${k}`))
     expect(russian).toEqual([])
   })
 
   it('loads its table once, and a finished language at once', async () => {
-    // A fresh module graph: the server imports i18n-server elsewhere, which fills every table, so
-    // without this the lazy import below would never run.
+    // A fresh module graph, so no table has been read yet.
     vi.resetModules()
     const fresh = await import('../lib/i18n')
     const { loadTable: loadFresh } = await import('../lib/i18n-load')
     expect(fresh.hasTable('es')).toBe(false)
     await loadFresh('es')
     expect(fresh.hasTable('es')).toBe(true)
-    expect(fresh.translate('es', 'Удалить')).toBe('Eliminar')
+    expect(fresh.translate('es', 'Delete')).toBe((es as Record<string, string>).Delete)
     expect(loadFresh('es')).toBe(loadFresh('es'))
-    // Marked as done, so React reads it without waiting.
+    // Marked as done, so React reads it without waiting: the source language at once, the others once their file is here.
+    expect(loadFresh('en')).toMatchObject({ status: 'fulfilled' })
+    await loadFresh('ru')
     expect(loadFresh('ru')).toMatchObject({ status: 'fulfilled' })
     expect(loadFresh('es')).toMatchObject({ status: 'fulfilled' })
   })
 
   it('gives a pair kept beside its code the English one until the table has the Russian', () => {
-    addTable('es', { 'Свидетель': 'Testigo' })
-    expect(translatePair('es', 'Свидетель', 'Witness')).toBe('Testigo')
-    expect(translatePair('es', 'Друг', 'Friend')).toBe('Friend')
-    expect(translatePair('ru', 'Друг', 'Friend')).toBe('Друг')
-    expect(translatePair('en', 'Друг', 'Friend')).toBe('Friend')
+    addTable('es', { Witness: 'Testigo' })
+    expect(translate('es', 'Witness')).toBe('Testigo')
+    expect(translate('es', 'Friend')).toBe('Friend')
+    expect(translate('ru', 'Friend')).toBe('Друг')
+    expect(translate('en', 'Friend')).toBe('Friend')
   })
 
   it('names each language in itself, and reads a page or browser code', () => {
@@ -70,14 +73,14 @@ describe('a Spanish or Catalan archive', () => {
   it('writes its server lines in English where it has no words yet', () => {
     addTable('ca', {})
     setSetting('language', 'ca')
-    expect(say('Сохранить')).toBe('Save')
+    expect(say('A line nobody translated')).toBe('A line nobody translated')
     getDb().delete(schema.settings).where(eq(schema.settings.key, 'language')).run()
   })
 
   it('reads an old history line written in any of the four languages', () => {
     setSetting('language', 'en')
-    addTable('es', { 'Удалить человека': 'Eliminar persona' })
-    expect(readableSummary('Eliminar persona: Ana', [], (id) => id)).toBe(`${english['Удалён человек']}: Ana`)
+    addTable('es', { 'Delete person': 'Eliminar persona' })
+    expect(readableSummary('Eliminar persona: Ana', [], (id) => id)).toBe('Person deleted: Ana')
     getDb().delete(schema.settings).where(eq(schema.settings.key, 'language')).run()
   })
 })
@@ -99,7 +102,7 @@ describe('GEDCOM and the assistant in Spanish and Catalan', () => {
   })
 
   it('names no language in a Spanish or Catalan file either, and writes their dates and kinds of fact', () => {
-    addTable('es', { 'Перепись': 'Censo' })
+    addTable('es', { Census: 'Censo' })
     for (const lang of ['es', 'ca'] as const) expect(file(lang)).not.toContain('LANG')
     expect(file('es')).toContain('1 BIRT\n2 DATE 12 MAR 1890')
     expect(file('es')).toContain('1 DEAT\n2 DATE 20 MAR 1960')
@@ -115,7 +118,7 @@ describe('GEDCOM and the assistant in Spanish and Catalan', () => {
   })
 
   it('names imported facts in English until the table has them, never in Russian', () => {
-    addTable('es', { 'Перепись': 'Censo' })
+    addTable('es', { Census: 'Censo' })
     const kinds = parseGedcom(ged, 'es').persons[0].facts.map((f) => f.kind)
     expect(kinds).toContain('Censo')
     expect(kinds).toContain('Event')
@@ -161,12 +164,12 @@ describe('the words added for Spanish and Catalan', () => {
   // Each replaced Russian and English the code wrote itself; a Russian or English reader must see the same words as before.
   it('read in Russian and English as the code wrote them before', () => {
     const fill = (lang: 'ru' | 'en', key: string, slot: string, value: string) => translate(lang, key).replace(slot, value)
-    expect(fill('ru', 'до {date}', '{date}', '12 мая 2026 г.')).toBe(`${translate('ru', 'до')} 12 мая 2026 г.`)
-    expect(fill('en', 'до {date}', '{date}', '12 May 2026')).toBe(`${translate('en', 'до')} 12 May 2026`)
-    expect(fill('ru', 'от: {name}', '{name}', 'Анна')).toBe('от: Анна')
-    expect(fill('en', 'от: {name}', '{name}', 'Anna')).toBe('by Anna')
-    expect(fill('ru', '{price} в час', '{price}', '$0.36')).toBe('$0.36 в час')
-    expect(fill('en', '{price} в час', '{price}', '$0.36')).toBe('$0.36 an hour')
+    expect(fill('ru', 'before {date}', '{date}', '12 мая 2026 г.')).toBe(`${translate('ru', 'before')} 12 мая 2026 г.`)
+    expect(fill('en', 'before {date}', '{date}', '12 May 2026')).toBe(`${translate('en', 'before')} 12 May 2026`)
+    expect(fill('ru', 'by {name}', '{name}', 'Анна')).toBe('от: Анна')
+    expect(fill('en', 'by {name}', '{name}', 'Anna')).toBe('by Anna')
+    expect(fill('ru', '{price} an hour', '{price}', '$0.36')).toBe('$0.36 в час')
+    expect(fill('en', '{price} an hour', '{price}', '$0.36')).toBe('$0.36 an hour')
   })
 })
 

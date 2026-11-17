@@ -23,11 +23,11 @@ export function TranscribeButton({ getAudio, current, onText }: { getAudio: () =
     <div className="flex flex-col gap-2">
       {cloud.enabled && (
         <div className="flex flex-col gap-1.5 rounded-lg bg-muted px-3 py-2">
-          <p className="text-xs text-ink-soft">{t('Владелец архива подключил расшифровку в облаке. Запись уйдёт на сервер архива и дальше в')} {cloud.info?.where}. {t('Платит владелец, вам ничего скачивать не нужно.')}</p>
-          <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => cloud.set(true)}>{t('Расшифровывать в облаке')}</Button>
+          <p className="text-xs text-ink-soft">{t('The archive\'s owner connected cloud transcription. The recording goes to the archive\'s server and on to')} {cloud.info?.where}. {t('The owner pays; you need not download anything.')}</p>
+          <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => cloud.set(true)}>{t('Transcribe in the cloud')}</Button>
         </div>
       )}
-      <ModelPrompt pack="speech">{t('Чтобы запись сама превращалась в текст, скачайте модель. Она работает в этом браузере, голос никуда не уходит.')}</ModelPrompt>
+      <ModelPrompt pack="speech">{t('To turn a recording into text, download the model. It runs in this browser, and your voice goes nowhere.')}</ModelPrompt>
     </div>
   )
   const start = async () => {
@@ -40,18 +40,18 @@ export function TranscribeButton({ getAudio, current, onText }: { getAudio: () =
       const { transcribe } = await import('@/lib/smart/speech')
       const text = await transcribe(await getAudio(), archiveLang, (p) => { setProgress(p); if (p.stage === 'reading' && p.text) onText(join(p.text)) }, stop.current.signal)
       onText(join(text))
-      if (!text.trim()) setProblem(t('В записи не удалось разобрать речь'))
+      if (!text.trim()) setProblem(t('No speech could be made out in the recording'))
     } catch (e) {
-      if ((e as Error).name !== 'AbortError') { console.error(e); setProblem(e instanceof CloudError ? e.message : t('Не удалось расшифровать запись.')) }
+      if ((e as Error).name !== 'AbortError') { console.error(e); setProblem(e instanceof CloudError ? e.message : t('Could not transcribe the recording.')) }
     }
     setProgress(null)
   }
-  const words = !progress ? '' : progress.stage === 'preparing' ? t('Готовлюсь…') : progress.stage === 'download' ? t('Запускаю модель…') : `${t('Расшифровываю')}: ${Math.round(progress.share * 100)}%`
+  const words = !progress ? '' : progress.stage === 'preparing' ? t('Getting ready…') : progress.stage === 'download' ? t('Starting the model…') : `${t('Transcribing')}: ${Math.round(progress.share * 100)}%`
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs text-ink-soft">
       {progress
-        ? <><span role="status">{words}</span><Button type="button" variant="outline" size="sm" onClick={() => stop.current?.abort()}><Square /> {t('Остановить')}</Button></>
-        : <><Button type="button" variant="outline" size="sm" onClick={start}><AudioLines /> {t('Расшифровать запись')}</Button><span>{t('Работает на этом устройстве. Проверьте текст: нейросеть ошибается в именах.')}</span></>}
+        ? <><span role="status">{words}</span><Button type="button" variant="outline" size="sm" onClick={() => stop.current?.abort()}><Square /> {t('Stop')}</Button></>
+        : <><Button type="button" variant="outline" size="sm" onClick={start}><AudioLines /> {t('Transcribe recording')}</Button><span>{t('Runs on this device. Check the text: the network gets names wrong.')}</span></>}
       {problem && <p role="alert" className="w-full text-destructive">{problem}</p>}
     </div>
   )

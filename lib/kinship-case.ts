@@ -178,14 +178,14 @@ export function planCase(files: CaseFiles, lang: Lang = 'ru'): CasePlan {
   const disputed: { a: string; b: string }[] = []
   let openRelations = 0, broken = 0
   // A note on one card can be read while the other person is hidden, so a living relative stays a number.
-  const who = (p: PlannedPerson) => (p.living ? `${t('Живой человек')} ${p.caseId}` : [p.givenName, p.patronymic, p.surname].filter(Boolean).join(' '))
+  const who = (p: PlannedPerson) => (p.living ? `${t('Living person')} ${p.caseId}` : [p.givenName, p.patronymic, p.surname].filter(Boolean).join(' '))
   const keepOpen = (a: PlannedPerson, b: PlannedPerson, r: Row, kind: string) => {
     openRelations++
     const note = `${r.relationship_type}: ${who(a)} — ${who(b)}${r.rationale ? `. ${r.rationale}` : ''}`
     for (const p of [a, b]) p.facts.push({ kind, date: '', place: '', note })
   }
   const isAncestor = (candidate: string, of: string): boolean => parents.some((l) => l.child === of && (l.parent === candidate || isAncestor(candidate, l.parent)))
-  const relationCell = (r: Row) => `${t('Возможная связь')}, ${t(statusWord(r.status)).toLowerCase()}`
+  const relationCell = (r: Row) => `${t('Possible relation')}, ${t(statusWord(r.status)).toLowerCase()}`
   for (const r of relations) {
     const a = known.get(r.person_a_id), b = known.get(r.person_b_id)
     if (!a || !b) {
@@ -197,14 +197,14 @@ export function planCase(files: CaseFiles, lang: Lang = 'ru'): CasePlan {
     // A candidate's relation stays open too, whatever it says: the person it joins is not established.
     if (!certainty || a.candidate || b.candidate || a === b) { keepOpen(a, b, r, relationCell(r)); continue }
     const relation = relationOf(r.relationship_type ?? '')
-    if (!relation) { keepOpen(a, b, r, t('Связь из дела')); continue }
+    if (!relation) { keepOpen(a, b, r, t('Relation from the case')); continue }
     const how = (r.biological_legal_household ?? '').toLowerCase()
     if (relation.as === 'spouse') { unions.push({ a: a.caseId, b: b.caseId, kind: /civil|cohab|граждан/.test(how) ? 'civil' : 'marriage', certainty }); continue }
     const [parent, child] = relation.as === 'parent' ? [a, b] : [b, a]
     const kind: ParentKind = relation.kind ?? (/adopt|усынов|удочер/.test(how) ? 'adopted' : /step|household|отчим|мачех/.test(how) ? 'step' : 'birth')
     // Two people cannot descend from each other, and a third parent by birth is a contradiction: both are for a person to resolve.
     const third = kind === 'birth' && parents.filter((l) => l.child === child.caseId && l.kind === 'birth' && l.parent !== parent.caseId).length >= 2
-    if (isAncestor(child.caseId, parent.caseId) || third) { keepOpen(a, b, r, t('Связь противоречит другим')); continue }
+    if (isAncestor(child.caseId, parent.caseId) || third) { keepOpen(a, b, r, t('Relation contradicts others')); continue }
     parents.push({ parent: parent.caseId, child: child.caseId, kind, certainty })
   }
   // The archive would quietly drop a marriage between a parent and child or between siblings, so the note says it instead.
@@ -216,7 +216,7 @@ export function planCase(files: CaseFiles, lang: Lang = 'ru'): CasePlan {
   const sound = unions.filter((u) => {
     if (canPair(u.a, u.b)) return true
     const a = known.get(u.a)!, b = known.get(u.b)!
-    keepOpen(a, b, { relationship_type: 'spouse' }, t('Связь противоречит другим'))
+    keepOpen(a, b, { relationship_type: 'spouse' }, t('Relation contradicts others'))
     return false
   })
   // Two parents of one child share a dot on the chart, as when a person links them by hand. Marked as assumed: the case did not say they married.

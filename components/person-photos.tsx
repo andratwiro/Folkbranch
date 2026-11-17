@@ -23,7 +23,7 @@ export function PhotosTab({ person }: { person: Person }) {
     <div className="px-4 py-4">
       {canEdit && (
         <>
-          <button className="add-btn mb-3" disabled={upload.isPending} aria-busy={upload.isPending} onClick={() => input.current?.click()}>{t('Загрузить фото')}</button>
+          <button className="add-btn mb-3" disabled={upload.isPending} aria-busy={upload.isPending} onClick={() => input.current?.click()}>{t('Upload photo')}</button>
           <input ref={input} type="file" accept="image/*" multiple hidden onChange={async (e) => {
             const last = await upload.mutateAsync([...(e.target.files ?? [])])
             e.target.value = ''
@@ -31,7 +31,7 @@ export function PhotosTab({ person }: { person: Person }) {
           }} />
         </>
       )}
-      {!images.length && <p className="text-ink-faint text-sm">{t('Добавьте первое фото: снимки помогают узнать человека')}</p>}
+      {!images.length && <p className="text-ink-faint text-sm">{t('Add the first photo: pictures help you recognise a person')}</p>}
       <div className="grid grid-cols-3 gap-2">
         {images.map((m) => (
           <button key={m.id} className="min-w-0 text-left hover:opacity-90 transition" onClick={() => openPhoto(m.id, images.map((i) => i.id))}>

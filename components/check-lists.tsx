@@ -15,21 +15,21 @@ export function SameList() {
   const { data: all = [], isLoading } = useQuery({ queryKey: ['duplicates'], queryFn: () => api<{ a: string; b: string; why: string[] }[]>('duplicates') })
   const data = inView ? all.filter((d) => inView.has(d.a) || inView.has(d.b)) : all
   const [pair, setPair] = useState<{ a: string; b: string } | null>(null)
-  const person = (id: string) => { const p = byId.get(id); return p ? [personName(p) || t('Без названия'), lifeYears(p)].join(', ') : '' }
+  const person = (id: string) => { const p = byId.get(id); return p ? [personName(p) || t('Untitled'), lifeYears(p)].join(', ') : '' }
   /** The fuller card stays by default. */
   const fuller = (a: string, b: string) => { const n = (id: string) => Object.values(byId.get(id) ?? {}).filter((v) => (Array.isArray(v) ? v.length : !!v)).length; return n(a) >= n(b) ? { a, b } : { a: b, b: a } }
   return (
     <div className="flex-1 overflow-auto px-1.5 pb-2">
       <ScopeNote />
-      {!isLoading && !data.length && <p className="px-2 text-sm text-ink-soft">{t('Похожих людей не нашлось')}</p>}
+      {!isLoading && !data.length && <p className="px-2 text-sm text-ink-soft">{t('No similar people found')}</p>}
       {data.map((d) => (
         <div key={`${d.a}.${d.b}`} className="rounded-md px-2 py-1.5 text-sm flex flex-col gap-0.5">
           <span className="font-medium break-anywhere">{person(d.a)}</span>
           <span className="font-medium break-anywhere">{person(d.b)}</span>
-          {d.why.length > 0 && <span className="text-xs text-ink-soft">{t('Совпадает')}: {d.why.map(t).join(', ')}</span>}
+          {d.why.length > 0 && <span className="text-xs text-ink-soft">{t('Same')}: {d.why.map(t).join(', ')}</span>}
           <span className="mt-0.5 flex flex-wrap gap-1.5">
-            <button className="bar-btn border border-border !h-7" onClick={() => setPair(fuller(d.a, d.b))}>{t('Сравнить')}</button>
-            <button className="bar-btn !h-7 text-ink-soft" onClick={async () => { await api('duplicates/dismiss', { json: { a: d.a, b: d.b } }); qc.invalidateQueries({ queryKey: ['duplicates'] }) }}>{t('Это разные люди')}</button>
+            <button className="bar-btn border border-border !h-7" onClick={() => setPair(fuller(d.a, d.b))}>{t('Compare')}</button>
+            <button className="bar-btn !h-7 text-ink-soft" onClick={async () => { await api('duplicates/dismiss', { json: { a: d.a, b: d.b } }); qc.invalidateQueries({ queryKey: ['duplicates'] }) }}>{t('Different people')}</button>
           </span>
         </div>
       ))}
@@ -38,7 +38,7 @@ export function SameList() {
   )
 }
 
-const MISSING: Record<string, string> = { birthDate: 'дата рождения', birthPlace: 'место рождения', deathDate: 'дата смерти', deathPlace: 'место смерти', secondParent: 'второй родитель (у брата или сестры от того же родителя он записан)', parents: 'родители', sex: 'пол' }
+const MISSING: Record<string, string> = { birthDate: 'Date of birth', birthPlace: 'birthplace', deathDate: 'Date of death', deathPlace: 'place of death', secondParent: 'second parent (a brother or sister through the same parent has one recorded)', parents: 'parents', sex: 'sex' }
 
 /** People whose record is unfinished, those with conflicting versions first. */
 export function GapsList() {
@@ -48,16 +48,16 @@ export function GapsList() {
   return (
     <div className="flex-1 overflow-auto px-1.5 pb-2">
       <ScopeNote />
-      {!data.length && <p className="px-2 text-sm text-ink-soft">{t('Всё заполнено')}</p>}
+      {!data.length && <p className="px-2 text-sm text-ink-soft">{t('Everything is filled in')}</p>}
       {data.map((r) => {
         const p = byId.get(r.id)
         if (!p) return null
         return (
           <button key={r.id} className="block w-full rounded-md px-2 py-1.5 text-left hover:bg-muted" onClick={() => focus(r.id, { center: true })}>
-            <span className="block text-sm font-medium">{personName(p) || t('Без названия')}</span>
-            {r.conflicts.length > 0 && <span className="block text-xs text-destructive">{t('Версии расходятся')}: {r.conflicts.length}</span>}
-            {r.missing.length > 0 && <span className="block text-xs text-ink-soft">{t('Не указано')}: {r.missing.map((k) => t(MISSING[k])).join(', ')}</span>}
-            {r.unsourced > 0 && <span className="block text-xs text-ink-soft">{t('Нет источников')}: {r.unsourced}</span>}
+            <span className="block text-sm font-medium">{personName(p) || t('Untitled')}</span>
+            {r.conflicts.length > 0 && <span className="block text-xs text-destructive">{t('Versions differ')}: {r.conflicts.length}</span>}
+            {r.missing.length > 0 && <span className="block text-xs text-ink-soft">{t('Not given')}: {r.missing.map((k) => t(MISSING[k])).join(', ')}</span>}
+            {r.unsourced > 0 && <span className="block text-xs text-ink-soft">{t('No sources')}: {r.unsourced}</span>}
           </button>
         )
       })}

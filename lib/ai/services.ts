@@ -43,10 +43,10 @@ const addInput = z.object({
 export async function addKey(actor: Actor, raw: unknown) {
   requireRole(actor, 'owner')
   const parsed = addInput.safeParse(raw)
-  if (!parsed.success) throw new OpError(400, parsed.error.issues.some((i) => i.path[0] === 'key') ? tell('Ключ слишком короткий: скопируйте его целиком') : tell('Выберите сервис из списка'))
+  if (!parsed.success) throw new OpError(400, parsed.error.issues.some((i) => i.path[0] === 'key') ? tell('The key is too short: copy it whole') : tell('Choose a service from the list'))
   const b = parsed.data
-  if (b.folder && !/^[a-z0-9]{10,30}$/.test(b.folder)) throw new OpError(400, tell('Идентификатор каталога состоит из латинских букв и цифр, например b1g…'))
-  if (b.service === 'yandex' && !b.folder) throw new OpError(400, tell('Укажите идентификатор каталога Яндекса'))
+  if (b.folder && !/^[a-z0-9]{10,30}$/.test(b.folder)) throw new OpError(400, tell('The folder ID is Latin letters and digits, like b1g…'))
+  if (b.service === 'yandex' && !b.folder) throw new OpError(400, tell('Give the Yandex folder ID'))
   const agent = agentPreset(b.service)
   if (agent) await checkServiceKey(agent.id as PresetId, b.key, b.folder)
   else {

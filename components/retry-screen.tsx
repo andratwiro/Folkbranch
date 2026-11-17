@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { isLang, langFromCookie, matchLanguage } from '@/lib/languages'
+import { isLang, langFromCookie, matchLanguage, setPageLang } from '@/lib/languages'
 import type { Lang } from '@/lib/types'
 
 // Its own words, beside the code: this screen shows when the server cannot send anything, the tables included.
@@ -25,7 +25,7 @@ function pickLang(): Lang {
 export function RetryScreen({ onRetry }: { onRetry?: () => void }) {
   const [lang] = useState<Lang>(pickLang)
   const w = WORDS[lang] ?? WORDS.en
-  useEffect(() => { document.documentElement.lang = lang }, [lang])
+  useEffect(() => { setPageLang(lang) }, [lang])
   useEffect(() => {
     let stop = false
     const ask = async () => {

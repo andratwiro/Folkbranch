@@ -109,7 +109,7 @@ const input = z.object({
 
 async function ask(url: string, init: RequestInit, timeout = 30_000) {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeout) }).catch(() => null)
-  if (!res) throw new OpError(502, tell('Не удалось связаться с сервисом. Проверьте адрес и интернет на сервере'))
+  if (!res) throw new OpError(502, tell('Could not reach the service. Check the address and the server\'s internet'))
   return res
 }
 
@@ -140,11 +140,11 @@ function aws(c: { base: string; key: string; secret?: string }, method: string, 
 }
 
 function refused(res: Response): never {
-  if (res.status === 401 || res.status === 403) throw new OpError(502, tell('Сервис не принял ключ владельца. Сообщите ему'))
-  if (res.status === 402) throw new OpError(502, tell('На счёте сервиса закончились деньги. Сообщите владельцу'))
-  if (res.status === 413) throw new OpError(413, tell('Фото слишком большое для сервиса'))
-  if (res.status === 429) throw new OpError(429, tell('Сервис просит подождать. Попробуйте через минуту'))
-  throw new OpError(502, `${tell('Сервис ответил ошибкой')}: ${res.status}`)
+  if (res.status === 401 || res.status === 403) throw new OpError(502, tell('The service did not accept the owner\'s key. Tell them'))
+  if (res.status === 402) throw new OpError(502, tell('The service account is out of money. Tell the owner'))
+  if (res.status === 413) throw new OpError(413, tell('The photo is too large for the service'))
+  if (res.status === 429) throw new OpError(429, tell('The service asks you to wait. Try again in a minute'))
+  throw new OpError(502, `${tell('The service answered with an error')}: ${res.status}`)
 }
 
 const blob = (bytes: Buffer, mime = 'image/jpeg') => new Blob([new Uint8Array(bytes)], { type: mime })
@@ -172,7 +172,7 @@ async function detect(c: NonNullable<ReturnType<typeof config>>, bytes: Buffer, 
   }
   if (!res.ok) refused(res)
   const body = await res.json().catch(() => null)
-  if (!body) throw new OpError(502, tell('Сервис ответил непонятно'))
+  if (!body) throw new OpError(502, tell('The service\'s reply made no sense'))
   return c.preset.parseDetect(body, size)
 }
 
@@ -261,24 +261,24 @@ async function checkKey(c: NonNullable<ReturnType<typeof config>>) {
   }
   // AWS answers a wrong key with 400 and the reason in __type, not with 401.
   const awsBody = c.preset.style === 'rekognition' && res.status === 400 ? await res.clone().text().catch(() => '') : ''
-  if (/AccessDenied/.test(awsBody)) throw new OpError(400, tell('Ключ верный, но у него нет прав на Amazon Rekognition. Дайте пользователю IAM доступ к Rekognition'))
+  if (/AccessDenied/.test(awsBody)) throw new OpError(400, tell('The key is right, but it has no rights to Amazon Rekognition. Give the IAM user access to Rekognition'))
   const awsRefused = /UnrecognizedClient|InvalidSignature|SignatureDoesNotMatch|MissingAuthentication|InvalidClientTokenId|AuthFailure|ExpiredToken/.test(awsBody)
-  if (res.status === 401 || res.status === 403 || awsRefused) throw new OpError(400, tell('Сервис не принял этот ключ. Проверьте, что он скопирован целиком'))
-  if (res.status === 429) throw new OpError(429, tell('Сервис просит подождать. Попробуйте через минуту'))
-  if (!res.ok) throw new OpError(502, `${tell('Сервис ответил ошибкой')}: ${res.status}`)
+  if (res.status === 401 || res.status === 403 || awsRefused) throw new OpError(400, tell('The service did not accept this key. Check that it was copied whole'))
+  if (res.status === 429) throw new OpError(429, tell('The service asks you to wait. Try again in a minute'))
+  if (!res.ok) throw new OpError(502, `${tell('The service answered with an error')}: ${res.status}`)
 }
 
 export async function saveFaces(actor: Actor, raw: unknown) {
   requireRole(actor, 'owner')
-  if (fromEnv()) throw new OpError(409, tell('Лица в облаке заданы в настройках сервера'))
+  if (fromEnv()) throw new OpError(409, tell('Cloud faces are set in the server settings'))
   const b = input.parse(raw)
   const preset = facePreset(b.provider)!
   const old = fromApp()
-  if (preset.needsBase && !b.baseUrl && !(old?.provider === preset.id && old.baseUrl)) throw new OpError(400, tell('Укажите адрес сервера CompreFace'))
+  if (preset.needsBase && !b.baseUrl && !(old?.provider === preset.id && old.baseUrl)) throw new OpError(400, tell('Enter the CompreFace server address'))
   const key = b.key || (old?.provider === b.provider ? old.key : undefined)
   const secret = b.secret || (old?.provider === b.provider ? old.secret : undefined)
-  if (!key) throw new OpError(400, tell('Вставьте ключ сервиса'))
-  if (preset.needsSecret && !secret) throw new OpError(400, tell('Вставьте секрет сервиса'))
+  if (!key) throw new OpError(400, tell('Paste the service key'))
+  if (preset.needsSecret && !secret) throw new OpError(400, tell('Paste the service secret'))
   const cfg: Config = {
     provider: preset.id,
     baseUrl: b.baseUrl || (old?.provider === preset.id ? old.baseUrl : undefined),
@@ -294,7 +294,7 @@ export async function saveFaces(actor: Actor, raw: unknown) {
 
 export function removeFaces(actor: Actor) {
   requireRole(actor, 'owner')
-  if (fromEnv()) throw new OpError(409, tell('Лица в облаке заданы в настройках сервера'))
+  if (fromEnv()) throw new OpError(409, tell('Cloud faces are set in the server settings'))
   setSetting('faceConfig', '')
   return facesStatus(actor)
 }
@@ -308,10 +308,10 @@ const scanInput = z.object({
 
 function decode(p: z.infer<typeof picture>) {
   const m = /^data:([^;]+);base64,(.+)$/s.exec(p.data)
-  if (!m) throw new OpError(400, tell('Фото пришло в неверном виде'))
+  if (!m) throw new OpError(400, tell('The photo arrived in an unknown form'))
   const bytes = Buffer.from(m[2], 'base64')
-  if (!bytes.length) throw new OpError(400, tell('Фото пустое'))
-  if (bytes.length > MAX_BYTES) throw new OpError(413, tell('Фото слишком большое: до 10 МБ'))
+  if (!bytes.length) throw new OpError(400, tell('The photo is empty'))
+  if (bytes.length > MAX_BYTES) throw new OpError(413, tell('The photo is too large: up to 10 MB'))
   return { bytes, mime: m[1], size: { width: p.width, height: p.height } }
 }
 
@@ -321,21 +321,21 @@ function slowDown(userId: string, kind: string, limit: number) {
   const key = `${kind}:${userId}`
   const now = Date.now()
   const list = (recent.get(key) ?? []).filter((t) => now - t < 60_000)
-  if (list.length >= limit) throw new OpError(429, tell('Слишком много запросов подряд. Подождите минуту'))
+  if (list.length >= limit) throw new OpError(429, tell('Too many requests in a row. Wait a minute'))
   recent.set(key, [...list, now])
 }
 
 function checkLimit(c: NonNullable<ReturnType<typeof config>>, calls: number) {
   const cap = c.cfg.limitRequests
   const used = monthTotal('faces').requests
-  if (cap > 0 && used + calls > cap) throw new OpError(429, tell('В этом месяце исчерпан предел распознавания лиц, который поставил владелец'))
+  if (cap > 0 && used + calls > cap) throw new OpError(429, tell('This month\'s face recognition limit set by the owner is used up'))
 }
 
 /** One photo and a few already-tagged faces: the service finds every face, and says which known person each may be. */
 export async function scanFaces(actor: Actor, raw: unknown) {
   requireRole(actor, 'editor')
   const c = config()
-  if (!c) throw new OpError(409, tell('Распознавание лиц в облаке не настроено'))
+  if (!c) throw new OpError(409, tell('Cloud face recognition is not set up'))
   const b = scanInput.parse(raw)
   const photo = decode(b.photo)
   const references = b.references.map((r) => ({ personId: r.personId, ...decode(r.photo) }))
@@ -362,7 +362,7 @@ export async function scanFaces(actor: Actor, raw: unknown) {
 export async function testFaces(actor: Actor) {
   requireRole(actor, 'owner')
   const c = config()
-  if (!c) throw new OpError(409, tell('Сначала подключите сервис'))
+  if (!c) throw new OpError(409, tell('Connect a service first'))
   checkLimit(c, 1)
   const bytes = await sharp({ create: { width: 64, height: 64, channels: 3, background: '#ffffff' } }).jpeg().toBuffer()
   await detect(c, bytes, { width: 64, height: 64 })

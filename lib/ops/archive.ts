@@ -42,7 +42,7 @@ async function latestMigration() {
 
 async function roomFor(bytes: number) {
   const s = await fs.statfs(DATA_DIR)
-  if (s.bavail * s.bsize < bytes + SPARE_BYTES) throw refuse('На диске не хватает места для этой копии', 507)
+  if (s.bavail * s.bsize < bytes + SPARE_BYTES) throw refuse('Not enough disk space for this copy', 507)
 }
 
 let exporting = false
@@ -50,7 +50,7 @@ let exporting = false
 /** Everything needed to bring the archive back elsewhere, except the sign-ins of the moment. */
 export async function archiveStream(actor: Actor): Promise<{ stream: Readable; filename: string }> {
   requireRole(actor, 'owner')
-  if (exporting) throw refuse('Копия уже готовится. Подождите немного', 409)
+  if (exporting) throw refuse('A copy is already being made. Please wait', 409)
   exporting = true
   const snapshot = inData(`.archive-${nanoid(8)}.db`)
   const done = async () => {
@@ -113,27 +113,27 @@ export async function archiveStream(actor: Actor): Promise<{ stream: Readable; f
 }
 
 const openZip = (file: string) => new Promise<yauzl.ZipFile>((resolve, reject) => {
-  yauzl.open(file, { lazyEntries: true, autoClose: false, validateEntrySizes: true, strictFileNames: true }, (e, z) => (e || !z ? reject(refuse('Это не файл копии архива')) : resolve(z)))
+  yauzl.open(file, { lazyEntries: true, autoClose: false, validateEntrySizes: true, strictFileNames: true }, (e, z) => (e || !z ? reject(refuse('This is not an archive copy')) : resolve(z)))
 })
 
 const entriesOf = (zip: yauzl.ZipFile) => new Promise<yauzl.Entry[]>((resolve, reject) => {
   const list: yauzl.Entry[] = []
-  zip.on('error', () => reject(refuse('Файл копии повреждён')))
+  zip.on('error', () => reject(refuse('The copy file is damaged')))
   zip.on('end', () => resolve(list))
   zip.on('entry', (e: yauzl.Entry) => {
     list.push(e)
-    if (list.length > MAX_FILES) reject(refuse('В файле копии слишком много файлов'))
+    if (list.length > MAX_FILES) reject(refuse('The copy holds too many files'))
     else zip.readEntry()
   })
   zip.readEntry()
 })
 
 const streamOf = (zip: yauzl.ZipFile, entry: yauzl.Entry) => new Promise<Readable>((resolve, reject) => {
-  zip.openReadStream(entry, (e, s) => (e || !s ? reject(refuse('Файл копии повреждён')) : resolve(s)))
+  zip.openReadStream(entry, (e, s) => (e || !s ? reject(refuse('The copy file is damaged')) : resolve(s)))
 })
 
 async function readManifest(zip: yauzl.ZipFile, entry: yauzl.Entry): Promise<Manifest> {
-  if (entry.uncompressedSize > MAX_MANIFEST) throw refuse('Файл копии повреждён')
+  if (entry.uncompressedSize > MAX_MANIFEST) throw refuse('The copy file is damaged')
   const chunks: Buffer[] = []
   for await (const c of await streamOf(zip, entry)) chunks.push(c as Buffer)
   try {
@@ -143,7 +143,7 @@ async function readManifest(zip: yauzl.ZipFile, entry: yauzl.Entry): Promise<Man
   } catch {
     // Reported below, like any other broken manifest.
   }
-  throw refuse('Файл копии повреждён')
+  throw refuse('The copy file is damaged')
 }
 
 /** Writes one file out, stopping as soon as it grows past what the manifest promised. */
@@ -153,13 +153,13 @@ async function extract(zip: yauzl.ZipFile, entry: yauzl.Entry, expected: Manifes
   const check = new Transform({
     transform(chunk: Buffer, _, cb) {
       seen += chunk.length
-      if (seen > expected.size) return cb(refuse('Файл копии повреждён'))
+      if (seen > expected.size) return cb(refuse('The copy file is damaged'))
       sum.update(chunk)
       cb(null, chunk)
     },
   })
   await pipeline(await streamOf(zip, entry), check, createWriteStream(target, { flags: 'wx' }))
-  if (seen !== expected.size || sum.digest('hex') !== expected.sha256) throw refuse('Файл копии повреждён: не совпадает контрольная сумма')
+  if (seen !== expected.size || sum.digest('hex') !== expected.sha256) throw refuse('The copy file is damaged: a checksum does not match')
 }
 
 /** Only what this app could have written, and not from a newer version of it. Gives a one-time way back in for the owner. */
@@ -168,21 +168,21 @@ async function inspectDatabase(file: string, newestKnown: number, inCopy: Set<st
   try {
     db = new Database(file)
   } catch {
-    throw refuse('Файл копии повреждён')
+    throw refuse('The copy file is damaged')
   }
   try {
     const objects = db.prepare('select type, name from sqlite_master').all() as { type: string; name: string }[]
-    if (objects.some((o) => FORBIDDEN_KINDS.includes(o.type))) throw refuse('В файле копии есть то, чего не бывает в архиве')
+    if (objects.some((o) => FORBIDDEN_KINDS.includes(o.type))) throw refuse('The copy holds something an archive never has')
     const tables = new Set(objects.filter((o) => o.type === 'table').map((o) => o.name))
-    if (!REQUIRED_TABLES.every((t) => tables.has(t))) throw refuse('Это не копия семейного архива')
-    if (db.pragma('integrity_check', { simple: true }) !== 'ok') throw refuse('Файл копии повреждён')
+    if (!REQUIRED_TABLES.every((t) => tables.has(t))) throw refuse('This is not a copy of a family archive')
+    if (db.pragma('integrity_check', { simple: true }) !== 'ok') throw refuse('The copy file is damaged')
     const made = db.prepare('select max(created_at) from __drizzle_migrations').pluck().get() as number
-    if (made > newestKnown) throw refuse('Копия сделана более новой версией приложения. Сначала обновите приложение', 409)
+    if (made > newestKnown) throw refuse('The copy comes from a newer version of the app. Update the app first', 409)
     // A file name from the copy is later joined to the media folder: it must not lead out of it.
     const names = db.prepare('select filename from media').pluck().all() as string[]
-    if (names.some((n) => !isMediaFileName(n))) throw refuse('В файле копии есть лишние файлы')
+    if (names.some((n) => !isMediaFileName(n))) throw refuse('The copy holds unexpected files')
     // A photo the database names but the copy leaves out would be gone for good after the swap.
-    if (names.some((n) => !inCopy.has(`media/${n}`))) throw refuse('В копии не хватает файлов, которые называет база')
+    if (names.some((n) => !inCopy.has(`media/${n}`))) throw refuse('The copy is missing files its database names')
     const count = (t: string) => db.prepare(`select count(*) from ${t}`).pluck().get() as number
     const owner = db.prepare("select id, name from user where role = 'owner' limit 1").get() as { id: string; name: string } | undefined
     let login: string | null = null
@@ -210,7 +210,7 @@ let staging = false
 
 /** Checks a saved copy completely and lays it out next to the archive, which is not touched. The swap comes at the next start. */
 export async function stageRestore(zipFile: string) {
-  if (staging) throw refuse('Восстановление уже идёт', 409)
+  if (staging) throw refuse('A restore is already running', 409)
   staging = true
   const stage = inData(STAGING)
   let zip: yauzl.ZipFile | null = null
@@ -218,17 +218,17 @@ export async function stageRestore(zipFile: string) {
     await fs.rm(stage, { recursive: true, force: true })
     zip = await openZip(zipFile)
     const entries = await entriesOf(zip)
-    if (entries.some((e) => !SAFE_NAME.test(e.fileName))) throw refuse('В файле копии есть лишние файлы')
+    if (entries.some((e) => !SAFE_NAME.test(e.fileName))) throw refuse('The copy holds unexpected files')
     const names = entries.map((e) => e.fileName)
-    if (new Set(names).size !== names.length) throw refuse('В файле копии есть лишние файлы')
+    if (new Set(names).size !== names.length) throw refuse('The copy holds unexpected files')
     const manifestEntry = entries.find((e) => e.fileName === 'manifest.json')
-    if (!manifestEntry) throw refuse('Это не файл копии архива')
+    if (!manifestEntry) throw refuse('This is not an archive copy')
     const manifest = await readManifest(zip, manifestEntry)
     const body = entries.filter((e) => e !== manifestEntry)
     const promised = new Map(manifest.files.map((f) => [f.path, f]))
-    if (promised.size !== body.length || body.some((e) => !promised.has(e.fileName)) || !promised.has('family.db')) throw refuse('Файл копии повреждён: не хватает файлов')
+    if (promised.size !== body.length || body.some((e) => !promised.has(e.fileName)) || !promised.has('family.db')) throw refuse('The copy file is damaged: files are missing')
     const newest = await latestMigration()
-    if (manifest.schema > newest) throw refuse('Копия сделана более новой версией приложения. Сначала обновите приложение', 409)
+    if (manifest.schema > newest) throw refuse('The copy comes from a newer version of the app. Update the app first', 409)
     await roomFor(manifest.files.reduce((n, f) => n + f.size, 0))
     await fs.mkdir(path.join(/*turbopackIgnore: true*/ stage, 'media'), { recursive: true })
     for (const e of body) await extract(zip, e, promised.get(e.fileName)!, path.join(/*turbopackIgnore: true*/ stage, e.fileName))
@@ -238,7 +238,7 @@ export async function stageRestore(zipFile: string) {
     return report
   } catch (e) {
     await fs.rm(stage, { recursive: true, force: true })
-    if ((e as { code?: string }).code === 'ENOSPC') throw refuse('На диске не хватает места для этой копии', 507)
+    if ((e as { code?: string }).code === 'ENOSPC') throw refuse('Not enough disk space for this copy', 507)
     throw e
   } finally {
     zip?.close()

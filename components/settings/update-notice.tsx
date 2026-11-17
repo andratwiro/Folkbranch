@@ -42,7 +42,7 @@ export function UpdateNotice() {
 
   if (!data?.newer || !data.latest) return null
   const start = async () => {
-    if (!await confirm(t('Перед обновлением сервер сохранит копию базы и проверит её. Приложение будет недоступно около минуты, данные останутся на месте.'), t('Обновить'))) return
+    if (!await confirm(t('Before the update the server saves a copy of the database and checks it. The app will be away for about a minute; the data stays where it is.'), t('Update'))) return
     setPhase('starting')
     try {
       const r = await api<{ backup: string }>('update', { method: 'POST' })
@@ -55,17 +55,17 @@ export function UpdateNotice() {
   }
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-white px-3 py-2.5">
-      <p className="font-medium">{t('Вышла версия')} {data.latest} <span className="font-normal text-ink-soft">({t('у вас')} {data.current})</span></p>
-      {data.url && <a href={data.url} target="_blank" rel="noreferrer" className="self-start underline">{t('Что нового в этой версии')}</a>}
-      {phase === 'running' && <p role="status" className="text-ink-soft">{t('Обновляется. Копия базы сохранена')}: <span className="break-anywhere">{backup}</span>. {t('Страница обновится сама, когда новая версия запустится.')}</p>}
-      {phase === 'failed' && <p role="alert" className="text-destructive">{t('Обновление не удалось, и ничего не изменилось: работает прежняя версия, данные на месте. Что случилось, написано в logs/update.log в папке установки.')}</p>}
-      {phase === 'stuck' && <p role="alert" className="text-destructive">{t('Новая версия не запустилась за 10 минут. Данные на месте. Что случилось, написано в logs/update.log в папке установки, а прежняя версия лежит рядом в app.old.')}</p>}
+      <p className="font-medium">{t('Version released:')} {data.latest} <span className="font-normal text-ink-soft">({t('you have')} {data.current})</span></p>
+      {data.url && <a href={data.url} target="_blank" rel="noreferrer" className="self-start underline">{t('What\'s new in this version')}</a>}
+      {phase === 'running' && <p role="status" className="text-ink-soft">{t('Updating. A copy of the database is saved')}: <span className="break-anywhere">{backup}</span>. {t('The page reloads by itself once the new version is running.')}</p>}
+      {phase === 'failed' && <p role="alert" className="text-destructive">{t('The update did not work, and nothing changed: the previous version is running and the data is in place. What happened is in logs/update.log in the install folder.')}</p>}
+      {phase === 'stuck' && <p role="alert" className="text-destructive">{t('The new version did not start within 10 minutes. The data is in place. What happened is in logs/update.log in the install folder, and the previous version is next to it in app.old.')}</p>}
       {data.how?.button && (phase === 'idle' || phase === 'starting' || phase === 'failed') && (
-        <Button type="button" className="self-start" disabled={phase === 'starting'} onClick={start}><Download /> {t('Обновить сейчас')}</Button>
+        <Button type="button" className="self-start" disabled={phase === 'starting'} onClick={start}><Download /> {t('Update now')}</Button>
       )}
       {data.how && !data.how.button && data.how.command && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-ink-soft">{t('Чтобы обновить, выполните на сервере, где стоит архив:')}</p>
+          <p className="text-ink-soft">{t('To update, run this on the server where the archive is installed:')}</p>
           <code className="rounded bg-muted px-2 py-1 text-xs break-anywhere">{data.how.command}</code>
           <div><CopyButton value={data.how.command} /></div>
         </div>

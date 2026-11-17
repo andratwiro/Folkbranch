@@ -21,10 +21,10 @@ function useDescribe() {
     const ru = lang === 'ru'
     const name = ru ? c.ru || c.name : c.name
     const region = ru ? c.regionRu || c.region : c.region
-    const pop = c.pop ? `${new Intl.NumberFormat(lang, { notation: 'compact' }).format(c.pop)} ${t('жителей')}` : ''
-    const also = c.matched && c.matched !== name ? `${t('записано как')} «${c.matched}»` : ''
+    const pop = c.pop ? `${new Intl.NumberFormat(lang, { notation: 'compact' }).format(c.pop)} ${t('inhabitants')}` : ''
+    const also = c.matched && c.matched !== name ? `${t('written as')} «${c.matched}»` : ''
     // What should make a person look twice before pressing: said beside the candidate, not hidden in its rank.
-    const doubt = [c.why.includes('other-region') && t('не в той области, что записана'), c.why.includes('out-of-years') && t('так назывался в другие годы'), c.why.includes('typo') && t('похожее написание')].filter(Boolean)
+    const doubt = [c.why.includes('other-region') && t('not in the region written'), c.why.includes('out-of-years') && t('named so in other years'), c.why.includes('typo') && t('similar spelling')].filter(Boolean)
     return { name, rest: [region, countries?.of(c.cc) ?? c.cc, pop, also, ...doubt].filter(Boolean).join(', ') }
   }
 }
@@ -40,7 +40,7 @@ function useApply() {
       await Promise.all([qc.invalidateQueries({ queryKey: ['places'] }), qc.invalidateQueries({ queryKey: ['place-guesses'] })])
       qc.invalidateQueries({ queryKey: ['graph'] })
     } catch (e) {
-      notify(`${t('Не сохранилось')}: ${(e as Error).message}`)
+      notify(`${t('Not saved_failed')}: ${(e as Error).message}`)
     } finally {
       setBusy(false)
     }
@@ -55,8 +55,8 @@ export function PointCandidates({ guess }: { guess: PointGuess }) {
   const { apply, busy } = useApply()
   if (!guess.candidates.length) return null
   return (
-    <div className="flex flex-col gap-1 rounded-md bg-paper p-2 text-xs" aria-label={t('Где это может быть')}>
-      <span className="text-ink-soft">{t('Точки нет. Возможно, это:')}</span>
+    <div className="flex flex-col gap-1 rounded-md bg-paper p-2 text-xs" aria-label={t('Where this may be')}>
+      <span className="text-ink-soft">{t('No point yet. Perhaps it is:')}</span>
       <ul className="flex flex-col gap-1">
         {guess.candidates.map((c) => {
           const d = describe(c)
@@ -64,7 +64,7 @@ export function PointCandidates({ guess }: { guess: PointGuess }) {
             <li key={c.id} className="flex flex-wrap items-baseline gap-x-2">
               <span className="font-medium">{d.name}</span>
               <span className="text-ink-soft break-anywhere">{d.rest}</span>
-              <button type="button" disabled={busy} className="ml-auto underline underline-offset-2 hover:text-ink disabled:opacity-50" onClick={() => apply(guess, c)}>{t('Поставить точку')}</button>
+              <button type="button" disabled={busy} className="ml-auto underline underline-offset-2 hover:text-ink disabled:opacity-50" onClick={() => apply(guess, c)}>{t('Set the point')}</button>
             </li>
           )
         })}
@@ -84,12 +84,12 @@ export function PointGuessList({ data }: { data: { snapshot: string | null; gues
   const none = data.guesses.filter((g) => !g.candidates.length).length
   if (!data.snapshot || !data.guesses.length) return null
   return (
-    <section className="rounded-md border border-border p-2 text-sm" aria-label={t('Места без точки на карте')}>
+    <section className="rounded-md border border-border p-2 text-sm" aria-label={t('Places without a point on the map')}>
       <div className="flex flex-wrap items-baseline gap-x-2">
-        <h4 className="font-medium">{t('Места без точки на карте')}: {data.guesses.length}</h4>
-        {withGuess.length > 0 && <button type="button" className="text-xs underline underline-offset-2 hover:text-ink" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? t('Скрыть') : `${t('Проверить догадки')} (${withGuess.length})`}</button>}
+        <h4 className="font-medium">{t('Places without a point on the map')}: {data.guesses.length}</h4>
+        {withGuess.length > 0 && <button type="button" className="text-xs underline underline-offset-2 hover:text-ink" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? t('Hide') : `${t('Check the guesses')} (${withGuess.length})`}</button>}
       </div>
-      <p className="text-xs text-ink-soft">{t('Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.')}</p>
+      <p className="text-xs text-ink-soft">{t('Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it.')}</p>
       {open && (
         <ul className="mt-1 flex flex-col">
           {withGuess.map((g) => {
@@ -101,18 +101,18 @@ export function PointGuessList({ data }: { data: { snapshot: string | null; gues
                 <span className="font-medium break-anywhere">{g.text}</span>
                 <span className="text-ink-faint">→</span>
                 <span className="break-anywhere">{d.name}<span className="text-xs text-ink-soft">, {d.rest}</span></span>
-                {g.candidates.length > 1 && <span className="text-xs text-ink-faint">{t('и ещё вариантов')}: {g.candidates.length - 1}</span>}
+                {g.candidates.length > 1 && <span className="text-xs text-ink-faint">{t('more options')}: {g.candidates.length - 1}</span>}
                 <span className="ml-auto flex gap-3 text-xs">
-                  <button type="button" disabled={busy} className="underline underline-offset-2 hover:text-ink disabled:opacity-50" onClick={() => apply(g, best)}>{t('Подтвердить')}</button>
-                  <button type="button" className="text-ink-soft hover:text-ink" onClick={() => setSkipped(new Set([...skipped, k]))}>{t('Пропустить')}</button>
+                  <button type="button" disabled={busy} className="underline underline-offset-2 hover:text-ink disabled:opacity-50" onClick={() => apply(g, best)}>{t('Confirm')}</button>
+                  <button type="button" className="text-ink-soft hover:text-ink" onClick={() => setSkipped(new Set([...skipped, k]))}>{t('Skip')}</button>
                 </span>
               </li>
             )
           })}
         </ul>
       )}
-      {none > 0 && <p className="text-xs text-ink-faint">{t('Без догадки')}: {none}. {t('Их точку можно указать в сведениях о месте.')}</p>}
-      <p className="text-xs text-ink-faint">{t('Список мест')}: <a className="underline" href="https://www.geonames.org" target="_blank" rel="noreferrer noopener">GeoNames</a>, CC BY 4.0, {data.snapshot}</p>
+      {none > 0 && <p className="text-xs text-ink-faint">{t('No guess')}: {none}. {t('Their point can be set in the place details.')}</p>}
+      <p className="text-xs text-ink-faint">{t('Place list')}: <a className="underline" href="https://www.geonames.org" target="_blank" rel="noreferrer noopener">GeoNames</a>, CC BY 4.0, {data.snapshot}</p>
     </section>
   )
 }

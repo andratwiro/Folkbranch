@@ -11,7 +11,7 @@ import { hiddenFor, hiddenIn, isPrivate, maskPerson } from './privacy'
 
 export { hiddenFor }
 
-const label = (p: { givenName: string; surname: string } | undefined) => (p && personName(p)) || say('Без названия')
+const label = (p: { givenName: string; surname: string } | undefined) => (p && personName(p)) || say('Untitled')
 
 /** A chart that shows a death before a birth lies, whichever way the card was saved. */
 export function assertDates(birth?: string | null, death?: string | null) {
@@ -192,7 +192,7 @@ export function createPerson(
     if (!relation.to.startsWith('tmp_')) getPersonRow(relation.to)
     if (relation.otherParentId && !relation.otherParentId.startsWith('tmp_')) getPersonRow(relation.otherParentId)
   }
-  return mutate(actor, { summary: `${say('Добавить')}: ${name}`, personIds }, (c) => {
+  return mutate(actor, { summary: `${say('Add')}: ${name}`, personIds }, (c) => {
     const sex: Sex | undefined = relation?.type === 'father' || relation?.type === 'son' ? 'M' : relation?.type === 'mother' || relation?.type === 'daughter' ? 'F' : undefined
     const id = insertPerson(c, { ...input, sex: input.sex ?? sex })
     // A reader's history leaves out entries naming nobody, so the new person must be named here.
@@ -253,8 +253,8 @@ export function addUnion(c: Changes, aId: string, bId: string, kind: UnionKind =
 }
 
 export const FIELD: Record<string, string> = {
-  givenName: 'Имя', surname: 'Фамилия', maidenName: 'Девичья фамилия', patronymic: 'Отчество', otherNames: 'Другие имена', tags: 'Название группы', facts: 'Факты', sources: 'Источники', claims: 'Версии', sex: 'Пол', birthDate: 'Рождение', birthPlace: 'Место рождения',
-  deathDate: 'Смерть', deathPlace: 'Место смерти', living: 'Жив', keepPrivate: 'Скрыт от читателей', noChildren: 'Детей не было', neverMarried: 'В браке не состоял', certainty: 'Уверенность',
+  givenName: 'Given name', surname: 'Surname', maidenName: 'Maiden name', patronymic: 'Patronymic', otherNames: 'Other names', tags: 'Group or label', facts: 'Facts', sources: 'Sources_plural', claims: 'Versions', sex: 'Sex', birthDate: 'Birth', birthPlace: 'Birthplace',
+  deathDate: 'Death', deathPlace: 'Place of death', living: 'Living_male', keepPrivate: 'Hidden from readers', noChildren: 'Had no children', neverMarried: 'Never married', certainty: 'Certainty',
 }
 
 export function updatePerson(actor: Actor, id: string, input: PersonInput, seen?: Record<string, unknown>) {
@@ -274,7 +274,7 @@ export function deletePerson(actor: Actor, id: string) {
   requireRole(actor, 'editor')
   const db = getDb()
   const p = getPersonRow(id)
-  mutate(actor, { summary: `${say('Удалить человека')}: ${label(p)}`, personIds: [id] }, (c) => {
+  mutate(actor, { summary: `${say('Delete person')}: ${label(p)}`, personIds: [id] }, (c) => {
     for (const r of db.select().from(schema.parentChild).where(or(eq(schema.parentChild.parentId, id), eq(schema.parentChild.childId, id))).all()) c.remove('parentChild', r.id)
     for (const r of db.select().from(schema.unions).where(or(eq(schema.unions.aId, id), eq(schema.unions.bId, id))).all()) c.remove('unions', r.id)
     for (const r of db.select().from(schema.mediaTags).where(eq(schema.mediaTags.personId, id)).all()) c.remove('mediaTags', r.id)
@@ -309,7 +309,7 @@ export function updateRelation(actor: Actor, type: 'parent' | 'union', id: strin
     const u = row as typeof schema.unions.$inferSelect
     linked.placeId = placeLink(patch.place ?? u.place, allPlaces(), 'placeId' in patch ? patch.placeId : u.placeId)
   }
-  mutate(actor, { summary: `${say('Связь')}: ${Object.values(patch).filter(Boolean).join(', ')}`, personIds: ids }, (c) => c.update(table, id, linked))
+  mutate(actor, { summary: `${say('Link_relation')}: ${Object.values(patch).filter(Boolean).join(', ')}`, personIds: ids }, (c) => c.update(table, id, linked))
 }
 
 export function removeRelation(actor: Actor, type: 'parent' | 'union', id: string) {
@@ -321,7 +321,7 @@ export function removeRelation(actor: Actor, type: 'parent' | 'union', id: strin
   if (!row) throw new OpError(404, 'not found')
   const ids = 'parentId' in row ? [row.parentId, row.childId] : [row.aId, row.bId]
   const names = ids.map((i) => label(db.select().from(schema.persons).where(eq(schema.persons.id, i)).get())).join(' — ')
-  mutate(actor, { summary: `${say('Удалить связь')}: ${names}`, personIds: ids }, (c) => c.remove(type === 'parent' ? 'parentChild' : 'unions', id))
+  mutate(actor, { summary: `${say('Remove relation')}: ${names}`, personIds: ids }, (c) => c.remove(type === 'parent' ? 'parentChild' : 'unions', id))
 }
 
 /** Takes a child off several parents as one change, so one undo brings it all back. */
@@ -332,13 +332,13 @@ export function removeParentLinks(actor: Actor, ids: string[]) {
   if (rows.some((r) => !r)) throw new OpError(404, 'not found')
   const people = [...new Set(rows.flatMap((r) => [r!.parentId, r!.childId]))]
   const names = [rows[0]!.childId, ...rows.map((r) => r!.parentId)].map((i) => label(db.select().from(schema.persons).where(eq(schema.persons.id, i)).get())).join(' — ')
-  mutate(actor, { summary: `${say('Удалить связь')}: ${names}`, personIds: people }, (c) => ids.forEach((id) => c.remove('parentChild', id)))
+  mutate(actor, { summary: `${say('Remove relation')}: ${names}`, personIds: people }, (c) => ids.forEach((id) => c.remove('parentChild', id)))
 }
 
 export function setAvatar(actor: Actor, personId: string, mediaId: string | null, crop: unknown) {
   if (!can(actor, 'editor')) throw new OpError(403, 'forbidden')
   const p = getPersonRow(personId)
-  mutate(actor, { summary: `${label(p)}: ${say('Сделать аватаркой')}`, personIds: [personId] }, (c) =>
+  mutate(actor, { summary: `${label(p)}: ${say('Set as avatar')}`, personIds: [personId] }, (c) =>
     c.update('persons', personId, { avatarMediaId: mediaId, avatarCrop: crop ? JSON.stringify(crop) : null, updatedAt: Date.now() }),
   )
 }

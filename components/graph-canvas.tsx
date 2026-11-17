@@ -70,7 +70,7 @@ export const GraphCanvas = forwardRef<CanvasHandle, { pathIds: string[] | null; 
       const first = family.relation(childId, parentIds[0], lang)?.label
       const second = parentIds[1] ? family.relation(childId, parentIds[1], lang)?.label : null
       const down = family.relation(parentIds[0], childId, lang)?.label
-      return `${[first, second].filter(Boolean).join(', ')} → ${down ?? ''}${child ? ` · ${personName(child) || t('Скрыто')}` : ''}`
+      return `${[first, second].filter(Boolean).join(', ')} → ${down ?? ''}${child ? ` · ${personName(child) || t('Hidden_neuter')}` : ''}`
     }
 
     const tipAt = (e: React.MouseEvent, text: string) => setTip({ x: e.clientX, y: e.clientY, text })
@@ -85,14 +85,14 @@ export const GraphCanvas = forwardRef<CanvasHandle, { pathIds: string[] | null; 
       move: startMove,
       unfold: scope.toggleCollapse,
       add(type, id) {
-        if (type === 'parent' && (family.parents.get(id) ?? []).length >= 2) return app.notify(t('У этого человека уже двое родителей. Чтобы заменить одного, сначала удалите связь с ним'))
+        if (type === 'parent' && (family.parents.get(id) ?? []).length >= 2) return app.notify(t('This person already has two parents'))
         app.quickAdd(type, id)
       },
       enterLine(familyKey, ids) { setHoverFamily(familyKey); setHoverIds(ids) },
       leaveLine() { setTip(null); setHoverFamily(null); setHoverIds([]) },
       tipEdge(ev, e) { if (!sel) tipAt(ev, edgeText(e.parentIds, e.childId)) },
       tipUnion(ev, u) { tipAt(ev, `${family.relation(u.union.bId, u.union.aId, lang)?.label ?? ''}, ${family.relation(u.union.aId, u.union.bId, lang)?.label ?? ''}${u.union.startDate ? ` · ${u.union.startDate}` : ''}`) },
-      tipDot(ev) { if (app.canEdit) tipAt(ev, t('Добавить ребёнка этой пары')) },
+      tipDot(ev) { if (app.canEdit) tipAt(ev, t('Add a child of this couple')) },
       hideTip() { setTip(null) },
       pick,
       startDot(e, u) { startLink(e, { parents: [u.union.aId, u.union.bId] }, u.x, u.y, () => app.quickAdd('child', u.union.aId, u.union.bId)) },
@@ -155,49 +155,49 @@ export const GraphCanvas = forwardRef<CanvasHandle, { pathIds: string[] | null; 
             <div className="float linkbar" style={{ left: sel.ax, top: sel.ay }} onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
               {selEdges.length > 0 && (
                 <>
-                  <Select look="quiet" aria-label={t('Родство')} value={selEdges[0].links[0]?.kind} onChange={(kind) => patchSelected({ kind })} options={[{ value: 'birth', label: t('родной') }, { value: 'adopted', label: t('приёмный') }, { value: 'step', label: t('отчим или мачеха') }]} />
-                  {selEdges.length > 1 && <span className="linkbar-count">{t('Выбрано')}: {selEdges.length}</span>}
+                  <Select look="quiet" aria-label={t('Relationship')} value={selEdges[0].links[0]?.kind} onChange={(kind) => patchSelected({ kind })} options={[{ value: 'birth', label: t('birth_masculine') }, { value: 'adopted', label: t('adopted_masculine') }, { value: 'step', label: t('step') }]} />
+                  {selEdges.length > 1 && <span className="linkbar-count">{t('Selected')}: {selEdges.length}</span>}
                 </>
               )}
               {selUnion && (
                 <>
-                  <Select look="quiet" aria-label={t('Родство')} value={selUnion.union.kind} onChange={(kind) => patchSelected({ kind })} options={[{ value: 'marriage', label: t('брак') }, { value: 'civil', label: t('гражданский') }]} />
+                  <Select look="quiet" aria-label={t('Relationship')} value={selUnion.union.kind} onChange={(kind) => patchSelected({ kind })} options={[{ value: 'marriage', label: t('marriage') }, { value: 'civil', label: t('civil union') }]} />
                 </>
               )}
-              <button className="linkbar-del" title={`${t('Удалить связь')} (Delete)`} aria-label={t('Удалить связь')} onClick={removeSelected}><Trash2 size={14} /></button>
+              <button className="linkbar-del" title={`${t('Remove relation')} (Delete)`} aria-label={t('Remove relation')} onClick={removeSelected}><Trash2 size={14} /></button>
             </div>
           )}
         </div>
         {draft && <div className="fixed z-50 pointer-events-none float px-2 py-1 text-xs" style={{ left: draft.cx + 14, top: draft.cy + 14 }}>{t(draft.label)}</div>}
-        {clipped && !hintSeen && !panelOpen && !leftInset && <div className="float chart-hint fixed left-1/2 -translate-x-1/2 bottom-[68px] z-10 px-3 py-1.5 text-xs text-ink-soft pointer-events-none whitespace-nowrap">{t('Схема шире экрана: тяните, чтобы сдвинуть')}</div>}
+        {clipped && !hintSeen && !panelOpen && !leftInset && <div className="float chart-hint fixed left-1/2 -translate-x-1/2 bottom-[68px] z-10 px-3 py-1.5 text-xs text-ink-soft pointer-events-none whitespace-nowrap">{t('The chart is wider than the screen: drag to move it')}</div>}
         {tip && <div className="fixed z-50 pointer-events-none float px-2 py-1 text-xs" style={{ left: tip.x + 12, top: tip.y + 12 }}>{tip.text}</div>}
         {menu && (
           <div data-canvas-menu role="menu" className="float fixed z-[60] min-w-56 p-1 text-sm" style={{ left: menu.x, top: menu.y }} onContextMenu={(e) => e.preventDefault()}>
             {menu.id ? (
               <>
-                <div className="px-2.5 py-1.5 text-xs text-ink-soft truncate max-w-64">{personName(byId.get(menu.id)!) || t('Без названия')}</div>
-                <button role="menuitem" className="menu-item" onClick={() => { const id = menu.id!; setMenu(null); app.focus(id, { center: true }) }}><UserRound size={15} /> {t('Открыть карточку')}</button>
+                <div className="px-2.5 py-1.5 text-xs text-ink-soft truncate max-w-64">{personName(byId.get(menu.id)!) || t('Untitled')}</div>
+                <button role="menuitem" className="menu-item" onClick={() => { const id = menu.id!; setMenu(null); app.focus(id, { center: true }) }}><UserRound size={15} /> {t('Open the card')}</button>
                 {app.canEdit && (
                   <>
-                    <button role="menuitem" className="menu-item" onClick={() => { const id = menu.id!; setMenu(null); acts.current.add('parent', id) }}><Users size={15} /> {t('Добавить родителя')}</button>
-                    <button role="menuitem" className="menu-item" onClick={() => { const id = menu.id!; setMenu(null); acts.current.add('spouse', id) }}><Heart size={15} /> {t('Добавить супруга')}</button>
-                    <button role="menuitem" className="menu-item" onClick={() => { const id = menu.id!; setMenu(null); acts.current.add('child', id) }}><Baby size={15} /> {t('Добавить ребёнка')}</button>
+                    <button role="menuitem" className="menu-item" onClick={() => { const id = menu.id!; setMenu(null); acts.current.add('parent', id) }}><Users size={15} /> {t('Add parent')}</button>
+                    <button role="menuitem" className="menu-item" onClick={() => { const id = menu.id!; setMenu(null); acts.current.add('spouse', id) }}><Heart size={15} /> {t('Add spouse')}</button>
+                    <button role="menuitem" className="menu-item" onClick={() => { const id = menu.id!; setMenu(null); acts.current.add('child', id) }}><Baby size={15} /> {t('Add child')}</button>
                     <div className="my-1 h-px bg-border" />
-                    <button role="menuitem" className="menu-item !text-destructive" onClick={() => { const id = menu.id!; setMenu(null); app.commands.deletePerson(id) }}><Trash2 size={15} /> {t('Удалить человека')}</button>
+                    <button role="menuitem" className="menu-item !text-destructive" onClick={() => { const id = menu.id!; setMenu(null); app.commands.deletePerson(id) }}><Trash2 size={15} /> {t('Delete person')}</button>
                   </>
                 )}
               </>
             ) : (
               <>
-                {app.canEdit && <button role="menuitem" className="menu-item" onClick={() => { const at = menu.at; setMenu(null); app.commands.addPerson(at) }}><UserPlus size={15} /> {t('Добавить человека без родства')}</button>}
-                {app.canEdit && <button role="menuitem" className="menu-item" onClick={() => { setMenu(null); app.commands.importFile() }}><FileUp size={15} /> {t('Добавить людей из файла')}</button>}
-                <button role="menuitem" className="menu-item" onClick={() => { setMenu(null); app.commands.search() }}><Search size={15} /> {t('Найти человека')}</button>
-                <button role="menuitem" className="menu-item" onClick={() => { setMenu(null); view.refit() }}><Maximize2 size={15} /> {t('Показать всех')}</button>
-                <button role="menuitem" className="menu-item" onClick={() => { setMenu(null); app.commands.flip() }}><ArrowUpDown size={15} /> {t('Перевернуть схему')}</button>
+                {app.canEdit && <button role="menuitem" className="menu-item" onClick={() => { const at = menu.at; setMenu(null); app.commands.addPerson(at) }}><UserPlus size={15} /> {t('Add a person with no relation')}</button>}
+                {app.canEdit && <button role="menuitem" className="menu-item" onClick={() => { setMenu(null); app.commands.importFile() }}><FileUp size={15} /> {t('Add people from a file')}</button>}
+                <button role="menuitem" className="menu-item" onClick={() => { setMenu(null); app.commands.search() }}><Search size={15} /> {t('Find a person')}</button>
+                <button role="menuitem" className="menu-item" onClick={() => { setMenu(null); view.refit() }}><Maximize2 size={15} /> {t('Show everyone')}</button>
+                <button role="menuitem" className="menu-item" onClick={() => { setMenu(null); app.commands.flip() }}><ArrowUpDown size={15} /> {t('Flip the chart')}</button>
                 {me.role === 'owner' && graph.persons.length > 0 && (
                   <>
                     <div className="my-1 h-px bg-border" />
-                    <button role="menuitem" className="menu-item !text-destructive" onClick={() => { setMenu(null); app.commands.clearAll() }}><Trash2 size={15} /> {t('Удалить всю схему')}</button>
+                    <button role="menuitem" className="menu-item !text-destructive" onClick={() => { setMenu(null); app.commands.clearAll() }}><Trash2 size={15} /> {t('Delete the whole chart')}</button>
                   </>
                 )}
               </>

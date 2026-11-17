@@ -57,22 +57,22 @@ export function exportAiSettings(actor: Actor): AiSettingsFile {
 export async function importAiSettings(actor: Actor, raw: unknown) {
   requireRole(actor, 'owner')
   const parsed = schema.safeParse(raw)
-  if (!parsed.success) throw new OpError(400, tell('Это не файл настроек ИИ приложения'))
+  if (!parsed.success) throw new OpError(400, tell('This is not an AI settings file of the app'))
   const f = parsed.data
   const applied: string[] = []
   const skipped: { what: string; why: string }[] = []
-  if (f.version > VERSION) skipped.push({ what: tell('Файл из более новой версии приложения'), why: tell('Применено то, что эта версия понимает') })
+  if (f.version > VERSION) skipped.push({ what: tell('A file from a newer version of the app'), why: tell('What this version understands was applied') })
   /** One part of the file, or null when this version cannot read it (said in skipped). */
   const part = <T,>(what: string, value: unknown, shape: z.ZodType<T>): T | null => {
     if (value === undefined || value === null) return null
     const r = shape.safeParse(value)
     if (r.success) return r.data
-    skipped.push({ what, why: tell('Эта версия приложения не может прочитать эту часть файла') })
+    skipped.push({ what, why: tell('This version of the app cannot read this part of the file') })
     return null
   }
   const known = (what: string, id: string, ids: string[]) => {
     if (ids.includes(id)) return true
-    skipped.push({ what, why: tell('Этого сервиса в этой версии приложения нет') })
+    skipped.push({ what, why: tell('This version of the app does not have this service') })
     return false
   }
   const attempt = async (what: string, run: () => unknown | Promise<unknown>) => {
@@ -85,32 +85,32 @@ export async function importAiSettings(actor: Actor, raw: unknown) {
     }
   }
 
-  const a = part(tell('Ассистент'), f.assistant, assistantPart)
-  if (a?.enabled !== undefined) { setSetting('assistantEnabled', a.enabled ? '1' : '0'); applied.push(tell('Ассистент: включён или выключен')) }
-  if (a?.forReaders !== undefined) { setSetting('assistantForReaders', a.forReaders ? '1' : '0'); applied.push(tell('Ассистент: доступ для читателей')) }
+  const a = part(tell('Assistant'), f.assistant, assistantPart)
+  if (a?.enabled !== undefined) { setSetting('assistantEnabled', a.enabled ? '1' : '0'); applied.push(tell('Assistant: on or off')) }
+  if (a?.forReaders !== undefined) { setSetting('assistantForReaders', a.forReaders ? '1' : '0'); applied.push(tell('Assistant: access for readers')) }
   if (a?.model) {
-    const what = tell('Ассистент: модель')
+    const what = tell('Assistant: model')
     const now = providerStatus(actor)
     // Another service is taken when its key is already on the list of keys; keys never travel in the file.
-    if (a.provider && a.provider !== now.provider && !vaultKey(a.provider)) skipped.push({ what, why: tell('Сначала подключите этого провайдера: ключи в файл не попадают') })
+    if (a.provider && a.provider !== now.provider && !vaultKey(a.provider)) skipped.push({ what, why: tell('Connect this provider first: keys do not go into the file') })
     else if (a.provider && a.provider !== now.provider) await attempt(what, () => chooseModel(actor, { provider: a.provider, ...(a.model && a.model !== 'auto' ? { model: a.model } : {}) }))
     else await attempt(what, () => chooseModel(actor, a.model === 'auto' ? { auto: true } : { model: a.model }))
   }
-  const s = part(tell('Расшифровка в облаке'), f.speech, speechPart)
-  if (s && known(tell('Расшифровка в облаке'), s.provider, STT_PRESETS.map((x) => x.id))) {
+  const s = part(tell('Cloud transcription'), f.speech, speechPart)
+  if (s && known(tell('Cloud transcription'), s.provider, STT_PRESETS.map((x) => x.id))) {
     const now = speechSetup()
     // The file carries no key, so the one saved here would be checked against, and later sent to, a server it names.
     if (now && s.baseUrl != null && s.baseUrl.replace(/\/+$/, '') !== (now.baseUrl ?? '').replace(/\/+$/, '')) {
-      skipped.push({ what: tell('Расшифровка в облаке'), why: tell('Файл указывает другой адрес сервиса, а ключ остаётся здесь: подключите сервис заново') })
-    } else await attempt(tell('Расшифровка в облаке'), () => saveTranscription(actor, { provider: s.provider, model: s.model, baseUrl: s.baseUrl ?? undefined, sameKey: s.sameKey, limitMinutes: s.limitMinutes }))
+      skipped.push({ what: tell('Cloud transcription'), why: tell('The file names another server, and the key stays here: connect the service again') })
+    } else await attempt(tell('Cloud transcription'), () => saveTranscription(actor, { provider: s.provider, model: s.model, baseUrl: s.baseUrl ?? undefined, sameKey: s.sameKey, limitMinutes: s.limitMinutes }))
   }
-  const c = part(tell('Распознавание лиц в облаке'), f.faces, facesPart)
-  if (c && known(tell('Распознавание лиц в облаке'), c.provider, FACE_PRESETS.map((x) => x.id))) {
+  const c = part(tell('Cloud faces'), f.faces, facesPart)
+  if (c && known(tell('Cloud faces'), c.provider, FACE_PRESETS.map((x) => x.id))) {
     const now = faceSetup()
     // The same for faces: a server named by the file must not receive the saved key and secret.
     if (now && c.baseUrl != null && c.baseUrl.replace(/\/+$/, '') !== (now.baseUrl ?? '').replace(/\/+$/, '')) {
-      skipped.push({ what: tell('Распознавание лиц в облаке'), why: tell('Файл указывает другой адрес сервиса, а ключ остаётся здесь: подключите сервис заново') })
-    } else await attempt(tell('Распознавание лиц в облаке'), () => saveFaces(actor, { provider: c.provider, baseUrl: c.baseUrl ?? undefined, limitRequests: c.limitRequests }))
+      skipped.push({ what: tell('Cloud faces'), why: tell('The file names another server, and the key stays here: connect the service again') })
+    } else await attempt(tell('Cloud faces'), () => saveFaces(actor, { provider: c.provider, baseUrl: c.baseUrl ?? undefined, limitRequests: c.limitRequests }))
   }
-  return { applied, skipped, onDevice: part(tell('Модели на устройстве'), f.onDevice, onDevicePart) }
+  return { applied, skipped, onDevice: part(tell('Models on the device'), f.onDevice, onDevicePart) }
 }

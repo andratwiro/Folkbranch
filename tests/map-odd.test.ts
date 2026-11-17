@@ -98,11 +98,11 @@ describe('why an event is not on the map', () => {
   it('lists an event outside the life and keeps the life itself on the map', () => {
     const g = graph([person('early', { birthDate: '1900', birthPlace: 'Кукуево', deathDate: '1970', deathPlace: 'Кукуево', facts: [{ kind: 'Переезд', date: '1850', place: 'Санкт-Петербург', note: '' }] })])
     const tl = mapTimeline(g, places)
-    expect(tl.tracks[0].stops.map((s) => s.what)).toEqual(['Рождение', 'Смерть'])
+    expect(tl.tracks[0].stops.map((s) => s.what)).toEqual(['Birth', 'Death'])
     expect(tl.missing.map((m) => [m.what, m.gap])).toEqual([['Переезд', 'outside-span']])
     // A death before a birth is a slip in one of the two: the life stays at its birthplace and the death is listed.
     const inverted = mapTimeline(graph([person('db', { birthDate: '1900', birthPlace: 'Кукуево', deathDate: '1880', deathPlace: 'Кукуево' })]), places)
-    expect(inverted.tracks.map((t) => t.stops.map((s) => s.what))).toEqual([['Рождение']])
+    expect(inverted.tracks.map((t) => t.stops.map((s) => s.what))).toEqual([['Birth']])
     expect(inverted.missing.map((x) => x.gap)).toEqual(['death-before-birth'])
   })
   it('reads "ок. 1890" and leaves "?" without a year', () => {

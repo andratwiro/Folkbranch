@@ -13,7 +13,7 @@ import { parseFamilyText, planFamilyText } from '@/lib/textformat'
 import { MiniGraph, PlanSummary } from './text-dialog'
 import { Select } from '@/components/ui/select'
 
-const KIND_LABEL: Record<ImportKind, string> = { gedcom: 'GEDCOM', gramps: 'Gramps XML', table: 'таблица CSV', xlsx: 'таблица Excel', json: 'JSON', text: 'текстовый формат' }
+const KIND_LABEL: Record<ImportKind, string> = { gedcom: 'GEDCOM', gramps: 'Gramps XML', table: 'CSV table', xlsx: 'Excel table', json: 'JSON', text: 'text format' }
 
 type Loaded =
   | { kind: 'gedcom'; name: string; text: string; format?: 'gramps'; preview: { version: string; format?: 'gedcom' | 'gramps'; persons: number; families: number; sample: string[]; existing: number; unread: { tag: string; count: number }[]; points?: number; inArchive: number; matched: number; added: number; newLinks: number; knownLinks: number; people: FilePerson[]; media: FileLink[]; pairs: { xref: string; file: string; fileYear: number | null; card: string; cardYear: number | null }[] } }
@@ -28,7 +28,7 @@ async function grampsText(f: File) {
 }
 
 /** One way in for every format: pick or drop a file, see what will change, then decide. */
-const TAG_WORDS: Record<string, string> = { OBJE: 'ссылки на файлы', ASSO: 'связи с другими людьми', ALIA: 'другие записи о человеке', SUBM: 'сведения об авторе' }
+const TAG_WORDS: Record<string, string> = { OBJE: 'links to files', ASSO: 'links to other people', ALIA: 'other records of the person', SUBM: 'details of the author' }
 
 export function ImportDialog({ open, files, onOpenChange }: { open: boolean; files?: File[] | null; onOpenChange: (v: boolean) => void }) {
   const { t, lang, graph, familyName, notify, undoLast, confirm } = useApp()
@@ -60,7 +60,7 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
       if (kind === 'xlsx') {
         const { readSheet } = await import('read-excel-file/browser')
         const sheet = (await readSheet(f)).map((r) => r.map(sheetCell)).filter((r) => r.some(Boolean))
-        if (sheet.length < 2) throw new Error(t('В таблице нет строк с людьми'))
+        if (sheet.length < 2) throw new Error(t('The table has no rows with people'))
         setMapping(guessMapping(sheet[0]))
         return setLoaded({ kind, name: f.name, headers: sheet[0], rows: sheet.slice(1) })
       }
@@ -73,11 +73,11 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
       if (kind === 'gedcom') return setLoaded({ kind, name: f.name, text, preview: await api('gedcom/preview', { method: 'POST', body: text }) })
       if (kind === 'text') return setLoaded({ kind, name: f.name, text })
       const table = kind === 'json' ? jsonToTable(text) : (() => { const rows = parseCsv(text); return rows.length > 1 ? { headers: rows[0], rows: rows.slice(1) } : null })()
-      if (!table) throw new Error(t(kind === 'json' ? 'В этом JSON не нашлось списка людей' : 'В таблице нет строк с людьми'))
+      if (!table) throw new Error(t(kind === 'json' ? 'No list of people in this JSON' : 'The table has no rows with people'))
       setMapping(guessMapping(table.headers))
       setLoaded({ kind, name: f.name, ...table })
     } catch (e) {
-      setError(`${t('Не удалось прочитать файл')}: ${(e as Error).message}`)
+      setError(`${t('Could not read the file')}: ${(e as Error).message}`)
     } finally {
       setReading(false)
     }
@@ -87,7 +87,7 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
     const { tree, rest } = splitDropped(list)
     if (tree) { void read(tree); setExtra(rest); return }
     if (loaded?.kind === 'gedcom') setExtra((e) => [...e, ...list])
-    else setError(t('Нет файла с деревом: добавьте GEDCOM, Gramps, таблицу или текст'))
+    else setError(t('No tree file: add a GEDCOM or Gramps file, a table or text'))
   }
   useEffect(() => { if (open && files?.length) take(files) }, [open, files]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -142,7 +142,7 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
   const apply = async () => {
     // Replacing the tree takes every card away, so it is asked once more with the count, as a delete is.
     if (loaded?.kind === 'gedcom' && loaded.preview.inArchive && mode === 'replace'
-      && !(await confirm(t('Заменить дерево? Удалится: {n}').replace('{n}', () => peopleWords(loaded.preview.inArchive, lang)), t('Заменить дерево'), t('Останется то, что в файле. Вернуть можно в разделе «История».')))) return
+      && !(await confirm(t('Replace the tree? {n} will be deleted.').replace('{n}', () => peopleWords(loaded.preview.inArchive, lang)), t('Replace the tree'), t('Only what is in the file will remain. You can bring it back in History.')))) return
     setBusy(true)
     setError('')
     try {
@@ -152,12 +152,12 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
       const failed = await sendFiles(ids)
       if (failed.length) {
         await qc.invalidateQueries()
-        setError(`${t('Дерево загружено, но не удалось загрузить файлы')}: ${failed.slice(0, 5).join(', ')}${failed.length > 5 ? ` (+${failed.length - 5})` : ''}`)
+        setError(`${t('The tree is loaded, but these files failed')}: ${failed.slice(0, 5).join(', ')}${failed.length > 5 ? ` (+${failed.length - 5})` : ''}`)
         return
       }
       await qc.invalidateQueries()
       onOpenChange(false)
-      notify(t('Импорт завершён'), [{ label: t('Отменить'), run: () => void undoLast() }])
+      notify(t('Import finished'), [{ label: t('Undo'), run: () => void undoLast() }])
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -168,11 +168,11 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[min(1000px,calc(100vw-32px))] sm:max-w-[min(1000px,calc(100vw-32px))] max-h-[calc(100vh-64px)] overflow-auto flex flex-col gap-3 text-sm">
-        <DialogTitle className="font-serif font-medium text-lg">{t('Добавить людей из файла')}</DialogTitle>
+        <DialogTitle className="font-serif font-medium text-lg">{t('Add people from a file')}</DialogTitle>
         <input ref={input} type="file" multiple hidden onChange={(e) => { const list = [...(e.target.files ?? [])]; e.target.value = ''; if (list.length) take(list) }} />
         <input ref={more} type="file" multiple hidden onChange={(e) => { const list = [...(e.target.files ?? [])]; e.target.value = ''; if (list.length) setExtra((x) => [...x, ...list]) }} />
 
-        {reading && <p role="status" className="flex items-center gap-2 text-ink-soft py-6 justify-center"><Loader2 size={16} className="animate-spin" /> {t('Читаю файл…')}</p>}
+        {reading && <p role="status" className="flex items-center gap-2 text-ink-soft py-6 justify-center"><Loader2 size={16} className="animate-spin" /> {t('Reading the file…')}</p>}
 
         {!loaded && !reading && (
           <button
@@ -183,8 +183,8 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
             onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setOver(false); const list = [...e.dataTransfer.files]; if (list.length) take(list) }}
           >
             <Upload size={22} className="text-ink-soft" />
-            <span className="font-medium">{t('Перетащите файлы сюда или выберите их')}</span>
-            <span className="text-ink-soft">{t('Файл дерева (GEDCOM, Gramps, таблица, текст) и, если есть, фотографии и документы к нему')}</span>
+            <span className="font-medium">{t('Drop files here or choose them')}</span>
+            <span className="text-ink-soft">{t('The tree file (GEDCOM, Gramps, table, text) and, if you have them, the photos and documents that go with it')}</span>
           </button>
         )}
 
@@ -192,13 +192,13 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
           <p className="flex flex-wrap items-center gap-2">
             <b className="font-medium truncate max-w-[60%]">{loaded.name}</b>
             <span className="rounded-full bg-muted px-2 text-xs text-ink-soft">{t(KIND_LABEL[loaded.kind === 'gedcom' && loaded.format ? loaded.format : loaded.kind])}</span>
-            <button className="pick text-xs text-ink-soft underline hover:text-ink" onClick={reset}>{t('Другой файл')}</button>
+            <button className="pick text-xs text-ink-soft underline hover:text-ink" onClick={reset}>{t('Another file')}</button>
           </p>
         )}
 
         {table && (
           <section className="flex flex-col gap-1.5">
-            <h4 className="text-xs text-ink-soft">{t('Что лежит в столбцах')} · {t('строк')}: {table.rows.length}</h4>
+            <h4 className="text-xs text-ink-soft">{t('What the columns hold')} · {t('rows')}: {table.rows.length}</h4>
             <div className="overflow-auto rounded-lg border border-border max-h-64">
               <table className="text-xs border-collapse w-full">
                 <thead className="sticky top-0 bg-muted">
@@ -212,11 +212,11 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
                 <tbody>{table.rows.slice(0, 4).map((r, i) => <tr key={i} className="border-t border-border">{table.headers.map((_, j) => <td key={j} className={`p-1.5 whitespace-nowrap max-w-48 truncate ${mapping[j] ? '' : 'text-ink-faint'}`}>{r[j]}</td>)}</tr>)}</tbody>
               </table>
             </div>
-            {!named && <p className="text-xs text-destructive">{t('Укажите, в каком столбце имя')}</p>}
+            {!named && <p className="text-xs text-destructive">{t('Choose the column with the name')}</p>}
             {built?.warnings.map((w) => <p key={w.key} className="text-xs text-rust">⚠ {t(w.key)}: {w.detail}</p>)}
             {offMap.length > 0 && (
               <p className="text-xs text-rust" data-testid="import-off-map">
-                ⚠ {t('Не будет на карте, пока у этих мест нет координат')}: {offMap.join(', ')}
+                ⚠ {t('Not on the map until these places have coordinates')}: {offMap.join(', ')}
               </p>
             )}
           </section>
@@ -227,10 +227,10 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
         {loaded?.kind === 'gedcom' && (
           <section className="flex flex-col gap-1.5" data-testid="files-with-tree">
             <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-xs text-ink-soft">{t('Фотографии и файлы к людям')}{extra.length ? ` · ${t('привяжутся')}: ${attached} ${t('из')} ${extra.length}` : ''}</h4>
-              <button className="pick text-xs text-ink-soft underline hover:text-ink" onClick={() => more.current?.click()}>{t('Добавить файлы')}</button>
+              <h4 className="text-xs text-ink-soft">{t('Photos and files for people')}{extra.length ? ` · ${t('will be attached')}: ${attached} ${t('of')} ${extra.length}` : ''}</h4>
+              <button className="pick text-xs text-ink-soft underline hover:text-ink" onClick={() => more.current?.click()}>{t('Add files')}</button>
             </div>
-            {!extra.length && <p className="text-xs text-ink-faint">{loaded.preview.media.length ? `${t('В дереве указано ссылок на файлы')}: ${loaded.preview.media.length}. ` : ''}{t('Файл подойдёт к человеку, если он указан в дереве, если в имени файла есть номер человека из дерева (P012) или его имя и фамилия. Остальных можно выбрать вручную.')}</p>}
+            {!extra.length && <p className="text-xs text-ink-faint">{loaded.preview.media.length ? `${t('File links in the tree')}: ${loaded.preview.media.length}. ` : ''}{t('A file goes to a person if the tree names it, if its name holds the person\'s number from the tree (P012) or their given name and surname. The others can be chosen by hand.')}</p>}
             {extra.length > 0 && (
               <ul className="max-h-48 overflow-auto rounded-md border border-border bg-paper text-xs divide-y divide-border">
                 {extra.map((f, i) => {
@@ -240,9 +240,9 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
                     <li key={key(f) + i} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2 px-2 py-1">
                       <span className="truncate" title={f.name}>{f.name}</span>
                       {who.length ? <span className="truncate text-ink-soft">→ {who.map(name).join(', ')}</span> : (
-                        <Select look="small" aria-label={f.name} value={chosen[key(f)] ?? ''} onChange={(v) => setChosen({ ...chosen, [key(f)]: v })} options={[{ value: '', label: t('Выбрать человека…') }, ...(tree?.people ?? []).map((p) => ({ value: p.xref, label: `${p.name}${p.year ? ` · ${p.year}` : ''}` }))]} />
+                        <Select look="small" aria-label={f.name} value={chosen[key(f)] ?? ''} onChange={(v) => setChosen({ ...chosen, [key(f)]: v })} options={[{ value: '', label: t('Choose a person…') }, ...(tree?.people ?? []).map((p) => ({ value: p.xref, label: `${p.name}${p.year ? ` · ${p.year}` : ''}` }))]} />
                       )}
-                      <button className="text-ink-faint hover:text-ink" aria-label={t('Убрать')} title={t('Убрать')} onClick={() => setExtra(extra.filter((_, j) => j !== i))}>×</button>
+                      <button className="text-ink-faint hover:text-ink" aria-label={t('Remove')} title={t('Remove')} onClick={() => setExtra(extra.filter((_, j) => j !== i))}>×</button>
                     </li>
                   )
                 })}
@@ -261,9 +261,9 @@ export function ImportDialog({ open, files, onOpenChange }: { open: boolean; fil
         {error && <p className="text-xs text-destructive">{error}</p>}
         {loaded && (
           <div className="flex items-center justify-end gap-2">
-            <span className="mr-auto text-xs text-ink-faint">{t('Импорт можно отменить одним действием')}</span>
-            <button className="bar-btn" onClick={() => onOpenChange(false)}>{t('Отмена')}</button>
-            <button className="bar-btn on disabled:opacity-40" disabled={!ready || busy} aria-busy={busy} onClick={apply}>{busy ? (sending ? `${t('Загружаю файлы')} ${sending.done} ${t('из')} ${sending.total}` : t('Обрабатываю…')) : loaded?.kind === 'gedcom' && loaded.preview.inArchive && mode === 'replace' ? t('Заменить дерево') : loaded?.kind === 'gedcom' && loaded.preview.inArchive && mode === 'merge' ? t('Объединить') : t('Импортировать')}</button>
+            <span className="mr-auto text-xs text-ink-faint">{t('One action undoes the import')}</span>
+            <button className="bar-btn" onClick={() => onOpenChange(false)}>{t('Cancel')}</button>
+            <button className="bar-btn on disabled:opacity-40" disabled={!ready || busy} aria-busy={busy} onClick={apply}>{busy ? (sending ? `${t('Uploading files')} ${sending.done} ${t('of')} ${sending.total}` : t('Working…')) : loaded?.kind === 'gedcom' && loaded.preview.inArchive && mode === 'replace' ? t('Replace the tree') : loaded?.kind === 'gedcom' && loaded.preview.inArchive && mode === 'merge' ? t('Merge') : t('Import')}</button>
           </div>
         )}
       </DialogContent>
@@ -279,18 +279,18 @@ function GedcomPlan({ preview: p, mode, onMode, withFiles }: { preview: Preview;
   const empty = p.inArchive === 0
   type M = 'add' | 'merge' | 'replace'
   const modes: [M, string, string][] = [
-    ['merge', 'Объединить', 'Те, кто уже есть, не повторятся: карточки сольются, недостающее дополнится.'],
-    ['add', 'Добавить как новых', 'Всё из файла станет отдельными карточками, возможны повторы.'],
+    ['merge', 'Merge', 'People already here are not repeated: cards merge and gaps are filled.'],
+    ['add', 'Add as new', 'Everything in the file becomes separate cards; repeats are possible.'],
   ]
-  if (me.role === 'owner') modes.push(['replace', 'Заменить всё', 'Нынешнее дерево удалится, останется то, что в файле.'])
+  if (me.role === 'owner') modes.push(['replace', 'Replace everything', 'The current tree is deleted; what is in the file stays.'])
   return (
     <div className="rounded-lg bg-muted p-3 flex flex-col gap-2">
-      <p>{t('В файле')}: <b>{peopleWords(p.persons, lang)}</b>, <b>{familyWords(p.families, lang)}</b> <span className="text-ink-faint">({p.format === 'gramps' ? p.version : `GEDCOM ${p.version}`})</span>
-        {!empty && <> · {t('В архиве сейчас')}: <b>{peopleWords(p.inArchive, lang)}</b></>}</p>
+      <p>{t('In the file')}: <b>{peopleWords(p.persons, lang)}</b>, <b>{familyWords(p.families, lang)}</b> <span className="text-ink-faint">({p.format === 'gramps' ? p.version : `GEDCOM ${p.version}`})</span>
+        {!empty && <> · {t('In the archive now')}: <b>{peopleWords(p.inArchive, lang)}</b></>}</p>
       <p className="text-xs text-ink-soft truncate">{p.sample.join(', ')}</p>
       {!empty && (
         <>
-          <div role="radiogroup" aria-label={t('Что сделать с деревом')} className="grid sm:grid-cols-3 gap-2">
+          <div role="radiogroup" aria-label={t('What to do with the tree')} className="grid sm:grid-cols-3 gap-2">
             {modes.map(([id, title, hint]) => (
               <button key={id} role="radio" aria-checked={mode === id} onClick={() => onMode(id)} className={`text-left rounded-lg border p-2 transition-colors ${mode === id ? 'border-ink bg-paper' : 'border-border hover:border-ink-faint'} ${id === 'replace' ? 'text-destructive' : ''}`}>
                 <b className="font-medium block">{t(title)}</b>
@@ -301,29 +301,29 @@ function GedcomPlan({ preview: p, mode, onMode, withFiles }: { preview: Preview;
           {mode === 'merge' && (
             <div className="flex flex-col gap-2" data-testid="merge-scheme">
               <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <span className="rounded-md bg-paper border border-border p-1.5"><b className="block text-base">{p.matched}</b>{t('сольются с имеющимися')}</span>
-                <span className="rounded-md bg-paper border border-border p-1.5"><b className="block text-base">{p.added}</b>{t('добавятся новыми')}</span>
-                <span className="rounded-md bg-paper border border-border p-1.5"><b className="block text-base">{p.newLinks}</b>{t('новых связей')}</span>
+                <span className="rounded-md bg-paper border border-border p-1.5"><b className="block text-base">{p.matched}</b>{t('merge into existing')}</span>
+                <span className="rounded-md bg-paper border border-border p-1.5"><b className="block text-base">{p.added}</b>{t('added as new')}</span>
+                <span className="rounded-md bg-paper border border-border p-1.5"><b className="block text-base">{p.newLinks}</b>{t('new links')}</span>
               </div>
               {p.pairs.length > 0 && (
                 <ul className="max-h-40 overflow-auto rounded-md border border-border bg-paper text-xs divide-y divide-border">
                   {p.pairs.map((x) => (
                     <li key={x.xref} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-2 py-1">
-                      <span className="truncate">{x.file}{x.fileYear ? ` · ${x.fileYear}` : ''} <span className="text-ink-faint">{t('в файле')}</span></span>
+                      <span className="truncate">{x.file}{x.fileYear ? ` · ${x.fileYear}` : ''} <span className="text-ink-faint">{t('in the file')}</span></span>
                       <ArrowRight size={12} className="text-ink-faint" />
-                      <span className="truncate">{x.card}{x.cardYear ? ` · ${x.cardYear}` : ''} <span className="text-ink-faint">{t('в архиве')}</span></span>
+                      <span className="truncate">{x.card}{x.cardYear ? ` · ${x.cardYear}` : ''} <span className="text-ink-faint">{t('in the archive')}</span></span>
                     </li>
                   ))}
                 </ul>
               )}
-              <p className="text-xs text-ink-soft">{t('Совпадение ищется по имени, фамилии, полу и году рождения. Неоднозначных не трогаем: они добавятся новыми.')}</p>
+              <p className="text-xs text-ink-soft">{t('A match is found by name, surname, sex and birth year. Doubtful ones are not touched: they are added as new.')}</p>
             </div>
           )}
-          {mode === 'replace' && <p className="text-xs text-destructive">{t('Все нынешние карточки, связи и тексты о людях удалятся. Фотографии останутся, но без отметок. Аккаунты отвяжутся от карточек. Отменить можно сразу после.')}</p>}
+          {mode === 'replace' && <p className="text-xs text-destructive">{t('All current cards, links and texts about people are deleted. Photos stay, without tags. Accounts are unlinked from cards. You can undo right after.')}</p>}
         </>
       )}
-      {!!p.points && <p className="text-xs text-ink-soft">{t('Точек на карте для мест')}: {p.points}. {t('Места без точки в архиве получат их; уже поставленные точки не меняются.')}</p>}
-      {p.unread.filter((u) => !(withFiles && u.tag === 'OBJE')).length > 0 && <p className="text-xs text-rust">⚠ {t('Не перенесётся')}: {p.unread.filter((u) => !(withFiles && u.tag === 'OBJE')).map((u) => `${TAG_WORDS[u.tag] ? t(TAG_WORDS[u.tag]) : u.tag} (${u.count})`).join(', ')}</p>}
+      {!!p.points && <p className="text-xs text-ink-soft">{t('Map points for places')}: {p.points}. {t('Places without a point in the archive will get them; points already set are not changed.')}</p>}
+      {p.unread.filter((u) => !(withFiles && u.tag === 'OBJE')).length > 0 && <p className="text-xs text-rust">⚠ {t('Will not be imported')}: {p.unread.filter((u) => !(withFiles && u.tag === 'OBJE')).map((u) => `${TAG_WORDS[u.tag] ? t(TAG_WORDS[u.tag]) : u.tag} (${u.count})`).join(', ')}</p>}
     </div>
   )
 }

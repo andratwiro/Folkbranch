@@ -2,37 +2,39 @@
 // name and a question mark; Russian and English must read exactly as that did, character for character.
 import { describe, expect, it } from 'vitest'
 import { translate } from '../lib/i18n'
-import ca from '../lib/i18n-ca'
-import es from '../lib/i18n-es'
+import ca from '../locales/ca.json'
+import es from '../locales/es.json'
 
-// Each question, and how the code built it before from the button's line. `name` is what the code puts in.
-const QUESTIONS: [string, (t: (k: string) => string, name: string) => string][] = [
-  ['Удалить человека «{name}»?', (t, n) => `${t('Удалить человека')} «${n}»?`],
-  ['Удалить «{name}»?', (t, n) => `${t('Удалить')} «${n}»?`],
-  ['Удалить рассказ «{name}»?', (t, n) => `${t('Удалить рассказ')} «${n}»?`],
-  ['Удалить рассказ?', (t) => `${t('Удалить рассказ')}?`],
-  ['Удалить сведения о месте «{name}»?', (t, n) => `${t('Удалить сведения о месте')} «${n}»?`],
-  ['Удалить архив «{name}»?', (t, n) => `${t('Удалить архив')} «${n}»?`],
-  ['Удалить модель: {name}?', (t, n) => `${t('Удалить модель')}: ${n}?`],
-  ['Закрыть доступ: {name}?', (t, n) => `${t('Закрыть доступ')}: ${n}?`],
-  ['Выключить вход: {name}?', (t, n) => `${t('Выключить вход')}: ${n}?`],
-  ['Закрыть ссылку: {name}?', (t, n) => `${t('Закрыть ссылку')}: ${n}?`],
+// Each question, and the words of the button label the code glued the name to before: [key, shape, Russian label, English label].
+// shape: 'q' is `label «name»?`, 'c' is `label: name?`, 'n' is `label?` with no name.
+const QUESTIONS: [string, 'q' | 'c' | 'n', string, string][] = [
+  ['Delete person «{name}»?', 'q', 'Удалить человека', 'Delete person'],
+  ['Delete «{name}»?', 'q', 'Удалить', 'Delete'],
+  ['Delete the story «{name}»?', 'q', 'Удалить рассказ', 'Delete the story'],
+  ['Delete the story?', 'n', 'Удалить рассказ', 'Delete the story'],
+  ['Delete the place\'s details «{name}»?', 'q', 'Удалить сведения о месте', 'Delete the place\'s details'],
+  ['Delete archive «{name}»?', 'q', 'Удалить архив', 'Delete archive'],
+  ['Remove model: {name}?', 'c', 'Удалить модель', 'Remove model'],
+  ['Remove access: {name}?', 'c', 'Закрыть доступ', 'Remove access'],
+  ['Turn off sign-in: {name}?', 'c', 'Выключить вход', 'Turn off sign-in'],
+  ['Close the link: {name}?', 'c', 'Закрыть ссылку', 'Close the link'],
 ]
+const built = (shape: 'q' | 'c' | 'n', label: string, name: string) => (shape === 'q' ? `${label} «${name}»?` : shape === 'c' ? `${label}: ${name}?` : `${label}?`)
 // Names as the code may meet them, including the characters String.replace would read as patterns.
 const NAMES = ['Anna Soler', 'Тётя Лена', 'A $& B $1 $$', '']
 
 describe('confirm questions', () => {
   it.each(['ru', 'en'] as const)('read in %s exactly as before', (lang) => {
     const t = (k: string) => translate(lang, k)
-    for (const [key, before] of QUESTIONS) for (const name of NAMES) {
-      expect(t(key).replace('{name}', () => name)).toBe(before(t, name))
+    for (const [key, shape, ru, en] of QUESTIONS) for (const name of NAMES) {
+      expect(t(key).replace('{name}', () => name)).toBe(built(shape, lang === 'ru' ? ru : en, name))
     }
   })
 
   it('ask as a question in Spanish and Catalan', () => {
     for (const [key] of QUESTIONS) {
-      expect(es[key]).toMatch(/^¿.*\?$/)
-      expect(ca[key]).toMatch(/^Vols .*\?$/)
+      expect((es as Record<string, string>)[key]).toMatch(/^¿.*\?$/)
+      expect((ca as Record<string, string>)[key]).toMatch(/^Vols .*\?$/)
     }
   })
 })

@@ -10,9 +10,9 @@ const recent = new Map<string, number[]>()
 /** What stops this request, in words, or null. */
 export function overLimit(userId: string, now = Date.now()) {
   const kept = (recent.get(userId) ?? []).filter((t) => now - t < 60_000)
-  if (kept.length >= PER_MINUTE) return tell('Слишком много запросов подряд. Подождите минуту.')
+  if (kept.length >= PER_MINUTE) return tell('Too many requests in a row. Wait a minute.')
   recent.set(userId, [...kept, now])
-  if (Number(getSetting(dayKey()) ?? 0) >= dailyLimit()) return tell('Дневной лимит ассистента исчерпан. Он заработает завтра, либо владелец может поднять AGENT_DAILY_TOKENS.')
+  if (Number(getSetting(dayKey()) ?? 0) >= dailyLimit()) return tell('The assistant\'s daily limit is used up. It works again tomorrow, or the owner can raise AGENT_DAILY_TOKENS.')
   return null
 }
 

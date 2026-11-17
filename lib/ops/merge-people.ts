@@ -45,23 +45,23 @@ function relatives(keepId: string, dropId: string) {
 
 /** Why these two cannot be one person, in words, or null when they can. */
 function whyNot(keepId: string, dropId: string) {
-  if (keepId === dropId) return tell('Это одна и та же карточка')
+  if (keepId === dropId) return tell('It is the same card')
   const { above, below } = relatives(keepId, dropId)
-  if (above.has(keepId) || below.has(keepId)) return tell('Один из них предок другого: человек стал бы своим собственным предком')
-  if ([...above].some((id) => below.has(id))) return tell('Человек оказался бы и предком, и потомком одного родственника')
+  if (above.has(keepId) || below.has(keepId)) return tell('One is an ancestor of the other: a person would become their own ancestor')
+  if ([...above].some((id) => below.has(id))) return tell('A person would be both ancestor and descendant of one relative')
   const u = schema.unions
   const unions = getDb().select().from(u).where(or(eq(u.aId, keepId), eq(u.bId, keepId), eq(u.aId, dropId), eq(u.bId, dropId))).all()
   const partners = unions.map((x) => ({ a: x.aId === dropId ? keepId : x.aId, b: x.bId === dropId ? keepId : x.bId }))
-  if (partners.some((p) => p.a === p.b)) return tell('Они указаны супругами: человек не может быть женат на себе')
+  if (partners.some((p) => p.a === p.b)) return tell('They are spouses: a person cannot be married to themself')
   const spouses = partners.map((p) => (p.a === keepId ? p.b : p.a))
-  if (spouses.some((id) => above.has(id) || below.has(id))) return tell('Супругом человека оказался бы его предок или потомок')
+  if (spouses.some((id) => above.has(id) || below.has(id))) return tell('A person would be married to their own ancestor or descendant')
   const parentsOf = (id: string) => {
     const pc = schema.parentChild
     const where = id === keepId ? or(eq(pc.childId, keepId), eq(pc.childId, dropId)) : eq(pc.childId, id)
     return getDb().select({ p: pc.parentId }).from(pc).where(where).all().map((r) => (r.p === dropId ? keepId : r.p))
   }
   const keepParents = new Set(parentsOf(keepId))
-  if (spouses.some((id) => keepParents.has(id) || parentsOf(id).some((p) => p === keepId || keepParents.has(p)))) return tell('После объединения человек оказался бы супругом своего родственника')
+  if (spouses.some((id) => keepParents.has(id) || parentsOf(id).some((p) => p === keepId || keepParents.has(p)))) return tell('After the merge the person would be married to their own relative')
   return null
 }
 
@@ -87,12 +87,12 @@ export function previewMerge(actor: Actor, keepId: string, dropId: string) {
   const keep = getPersonRow(keepId), drop = getPersonRow(dropId)
   const warnings: string[] = []
   const parents = new Set([...birthParents(keepId), ...birthParents(dropId)])
-  if (parents.size > 2) warnings.push(tell('У человека станет больше двух родных родителей. Проверьте их после объединения.'))
-  if (keep.sex !== drop.sex && !blank('sex', keep.sex) && !blank('sex', drop.sex)) warnings.push(tell('На карточках разный пол'))
+  if (parents.size > 2) warnings.push(tell('The person will have more than two birth parents. Check them after merging.'))
+  if (keep.sex !== drop.sex && !blank('sex', keep.sex) && !blank('sex', drop.sex)) warnings.push(tell('The cards give different sexes'))
   const a = keep.birthYear, b = drop.birthYear
-  if (a && b && Math.abs(a - b) > 10) warnings.push(`${tell('Годы рождения расходятся на')} ${Math.abs(a - b)}`)
+  if (a && b && Math.abs(a - b) > 10) warnings.push(`${tell('Birth years differ by')} ${Math.abs(a - b)}`)
   const accounts = getDb().select({ id: schema.user.id }).from(schema.user).where(eq(schema.user.personId, dropId)).all()
-  if (accounts.length) warnings.push(tell('К убираемой карточке привязан аккаунт: он перейдёт на оставшуюся'))
+  if (accounts.length) warnings.push(tell('An account is linked to the card going away: it moves to the one that stays'))
   return {
     blocked: whyNot(keepId, dropId),
     warnings,
@@ -199,11 +199,11 @@ export function mergePeople(actor: Actor, raw: unknown) {
   requireRole(actor, 'editor')
   if (actor.tokenId || actor.assistant) throw new OpError(403, 'only a person can merge')
   const { keepId, dropId, choose, seen } = input.parse(raw)
-  const summary = `${say('Объединить')}: ${personName(getPersonRow(dropId) as never)} → ${personName(getPersonRow(keepId) as never)}`
+  const summary = `${say('Merge')}: ${personName(getPersonRow(dropId) as never)} → ${personName(getPersonRow(keepId) as never)}`
   const { historyId } = mutateGroup(actor, summary, () => mutate(actor, { summary, personIds: [keepId, dropId] }, (c) => {
     // Read inside the write: what was shown for confirmation must still be true.
     const keep = getPersonRow(keepId), drop = getPersonRow(dropId)
-    if (keep.updatedAt !== seen.keep || drop.updatedAt !== seen.drop) throw new OpError(409, tell('Карточку только что изменили. Посмотрите сравнение ещё раз.'))
+    if (keep.updatedAt !== seen.keep || drop.updatedAt !== seen.drop) throw new OpError(409, tell('The card has just been changed. Look at the comparison again.'))
     const why = whyNot(keepId, dropId)
     if (why) throw new OpError(409, why)
     const chosen: Record<string, unknown> = {}
@@ -254,19 +254,19 @@ function likeness(a: Row, b: Row) {
   let score = 0
   const why: string[] = []
   const surnames = (p: Row) => [p.surname, p.maidenName].map(plain).filter(Boolean)
-  if (surnames(a).some((s) => surnames(b).includes(s))) { score += 3; why.push('фамилия') }
+  if (surnames(a).some((s) => surnames(b).includes(s))) { score += 3; why.push('surname') }
   const ga = plain(a.givenName), gb = plain(b.givenName)
-  if (ga && ga === gb) { score += 3; why.push('имя') }
+  if (ga && ga === gb) { score += 3; why.push('given name') }
   else if (ga.length > 2 && gb.length > 2 && (ga.startsWith(gb.slice(0, 3)) || gb.startsWith(ga.slice(0, 3)))) score += 1
   else if (ga && gb) score -= 2
   const pa = plain(a.patronymic), pb = plain(b.patronymic)
-  if (pa && pa === pb) { score += 2; why.push('отчество') } else if (pa && pb) score -= 2
+  if (pa && pa === pb) { score += 2; why.push('patronymic') } else if (pa && pb) score -= 2
   if (a.birthYear && b.birthYear) {
     const d = Math.abs(a.birthYear - b.birthYear)
-    if (d === 0) { score += 3; why.push('год рождения') } else if (d <= 2) score += 1
+    if (d === 0) { score += 3; why.push('birth year') } else if (d <= 2) score += 1
     else if (d > 5) score -= 4
   }
-  if (a.deathYear && a.deathYear === b.deathYear) { score += 1; why.push('год смерти') }
+  if (a.deathYear && a.deathYear === b.deathYear) { score += 1; why.push('death year') }
   if (a.sex !== 'U' && b.sex !== 'U' && a.sex !== b.sex) score -= 5
   return { score, why }
 }

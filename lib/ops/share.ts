@@ -74,15 +74,15 @@ const cookieFor = (r: Link) => `${r.id}.${hash(`${r.tokenHash}:${r.passwordHash 
 
 export function openShare(token: string, password: string | undefined) {
   const r = byToken(token)
-  if (!live(r)) throw new OpError(404, tell('Ссылка недействительна'))
+  if (!live(r)) throw new OpError(404, tell('This link is not valid'))
   if (r.passwordHash) {
     const t = tries.get(r.id)
     if (t && Date.now() - t.since > TRY_WINDOW) tries.delete(r.id)
-    if ((tries.get(r.id)?.failed ?? 0) >= MAX_TRIES) throw new OpError(429, tell('Слишком много попыток. Попробуйте позже.'))
+    if ((tries.get(r.id)?.failed ?? 0) >= MAX_TRIES) throw new OpError(429, tell('Too many tries. Try again later.'))
     if (!password || !opens(r.passwordHash, password)) {
       const now = tries.get(r.id) ?? { failed: 0, since: Date.now() }
       tries.set(r.id, { ...now, failed: now.failed + 1 })
-      throw new OpError(403, tell('Неверный пароль'))
+      throw new OpError(403, tell('Wrong password'))
     }
     tries.delete(r.id)
   }
@@ -125,5 +125,5 @@ export function guestFromCookie(value: string | undefined): Actor | null {
     if (!view) return null
     only = peopleOf(view)
   }
-  return { userId: `guest:${r.id}`, name: tell('Гость'), role: 'reader', personId: null, guest: { viewId: r.viewId, only } }
+  return { userId: `guest:${r.id}`, name: tell('Guest'), role: 'reader', personId: null, guest: { viewId: r.viewId, only } }
 }

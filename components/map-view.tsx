@@ -137,7 +137,7 @@ export interface Followed { mode: 'life' | 'line'; ids: string[] }
 /** Why someone has no place on the map yet, in a few words: their first two gaps ("Birth — place unknown"). */
 function missingFor(data: MapTimeline, id: string, t: (k: string) => string): string {
   const gaps = data.absent.find((a) => a.personId === id)?.gaps ?? data.missing.filter((m) => m.personId === id)
-  if (!gaps.length) return t('событий не записано')
+  if (!gaps.length) return t('no events written')
   return gaps.slice(0, 2).map((g) => `${g.what} — ${t(GAP_LABEL[g.gap])}`).join('; ') + (gaps.length > 2 ? ` +${gaps.length - 2}` : '')
 }
 
@@ -222,7 +222,7 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
   // Someone hidden from this reader is followed no more than an id nobody has: no chip, no marks.
   const who = useMemo<Followed | null>(() => (line ? { mode: 'line', ids: line.ids } : focusId && byId.has(focusId) && !byId.get(focusId)!.hidden ? { mode: 'life', ids: [focusId] } : null), [line, focusId, byId])
   const focusTrack = useMemo(() => (who?.mode === 'life' ? data.tracks.find((tr) => tr.personId === who.ids[0]) ?? null : null), [data, who])
-  const nameOf = (id: string) => data.tracks.find((x) => x.personId === id)?.name ?? (byId.get(id) ? personName(byId.get(id)!) || t('Без имени') : '')
+  const nameOf = (id: string) => data.tracks.find((x) => x.personId === id)?.name ?? (byId.get(id) ? personName(byId.get(id)!) || t('No name') : '')
   const firstName = (id: string) => (byId.get(id)?.givenName.trim().split(/\s+/)[0] || nameOf(id))
   /** The line's own events, as the bar steps through them: each bearer's during their stretch, and each handover as a birth. */
   const lineSteps = useMemo<BarEvent[] | null>(() => {
@@ -232,7 +232,7 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
       const tr = data.tracks.find((x) => x.personId === s.personId)
       const h = thread.handovers.find((x) => x.child === s.personId)
       const last = i === thread.stretches.length - 1
-      if (h?.birth) out.push({ year: h.year, moved: false, what: t('Рождение'), name: nameOf(s.personId), place: h.bornAt || t('место неизвестно'), personId: s.personId })
+      if (h?.birth) out.push({ year: h.year, moved: false, what: t('Birth'), name: nameOf(s.personId), place: h.bornAt || t('place unknown'), personId: s.personId })
       for (const st of tr?.stops ?? []) {
         if (st.year < s.from || (last ? st.year > s.to : st.year >= s.to)) continue
         if (h?.birth && st.kind === 'birth') continue
@@ -702,17 +702,17 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
   // line, the line in a few words.
   const chipPerson = who ? byId.get(who.ids[0]) : undefined
   const missing = !chipPerson || focusTrack || line ? null : missingFor(data, chipPerson.id, t)
-  const endName = offered ? (offered.you ? t('вы') : nameOf(offered.ids.at(-1)!)) : ''
+  const endName = offered ? (offered.you ? t('you') : nameOf(offered.ids.at(-1)!)) : ''
   const nowYear = new Date().getFullYear()
   const chipLine = offered && {
     on: !!line,
-    choice: offered.you ? t('Линия до вас') : `${t('Линия')} → ${endName}`,
+    choice: offered.you ? t('Line to you') : `${t('Line')} → ${endName}`,
     onChange: chooseLine,
-    summary: thread ? `${generationWords(offered.ids.length, lang)} · ${Math.floor(thread.start)}–${thread.end >= nowYear ? t('н. в.') : thread.end}` : line ? t('Никого из этой линии пока нет на карте') : undefined,
-    notOnMap: lineGapIds?.size ? { count: lineGapIds.size, words: `${peopleWords(lineGapIds.size, lang)} ${t('не на карте')}`, onShow: () => setGapsOpen(true) } : undefined,
+    summary: thread ? `${generationWords(offered.ids.length, lang)} · ${Math.floor(thread.start)}–${thread.end >= nowYear ? t('now') : thread.end}` : line ? t('Nobody in this line is on the map yet') : undefined,
+    notOnMap: lineGapIds?.size ? { count: lineGapIds.size, words: `${peopleWords(lineGapIds.size, lang)} ${t('not on the map')}`, onShow: () => setGapsOpen(true) } : undefined,
   }
   const chip = chipPerson && isSuccess && (
-    <FollowChip name={personName(chipPerson) || t('Без имени')} to={line ? endName : null} face={faceFor(chipPerson.id)} years={lifeYears(chipPerson, '?', t('н. в.'))}
+    <FollowChip name={personName(chipPerson) || t('No name')} to={line ? endName : null} face={faceFor(chipPerson.id)} years={lifeYears(chipPerson, '?', t('now'))}
       missing={missing} cardOpen={cardOpen} onOpen={openCard} onStop={unfollow} line={chipLine || null} />
   )
 
@@ -791,16 +791,16 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
 
   return (
     <>
-      <div ref={box} role="region" aria-label={t('Карта семьи')} className="family-map map-waiting fixed inset-0 z-0" />
+      <div ref={box} role="region" aria-label={t('Family map')} className="family-map map-waiting fixed inset-0 z-0" />
       {isSuccess && !data.tracks.length && (
         <div className="float fixed left-1/2 top-1/2 z-10 max-w-sm -translate-x-1/2 -translate-y-1/2 p-4 text-sm text-ink-soft">
-          {t('Ни у одного события нет сразу года и места с координатами. Добавьте координаты местам в разделе «Места».')}
+          {t('No event has both a place with coordinates and a year yet. Add coordinates to places under Places.')}
         </div>
       )}
       {atlasLost && (
         <div role="alert" className="float fixed left-1/2 top-16 z-20 flex max-w-[calc(100vw-24px)] -translate-x-1/2 items-center gap-2 py-1 pl-3 pr-1 text-sm max-sm:top-16">
-          <span>{t('Карта мира не загрузилась. Люди и пути видны и без неё.')}</span>
-          <button type="button" className="bar-btn flex-none" onClick={() => retryAtlas.current()}>{t('Повторить')}</button>
+          <span>{t('The world map did not load. People and routes still show without it.')}</span>
+          <button type="button" className="bar-btn flex-none" onClick={() => retryAtlas.current()}>{t('Try again')}</button>
         </div>
       )}
       {/* Before the bar in the page, as it is on the screen: top left, then the bar at the bottom. */}
@@ -812,7 +812,7 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
       </div>
       {!following && (
         <button type="button" className="map-follow float bar-btn fixed right-3 top-16 z-10 !h-9 text-ink max-sm:top-3" onClick={followAgain}>
-          <LocateFixed size={14} /> {t('Следить')}
+          <LocateFixed size={14} /> {t('Follow')}
         </button>
       )}
       {card && <MapPlaceCard x={card.x} y={card.y} place={card.place} year={card.year} people={card.people} onClose={closeCard} onZoom={zoomCard} onPick={(id) => { setCard(null); follow(id) }} />}

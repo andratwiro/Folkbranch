@@ -25,7 +25,7 @@ export function Pages({ person, full, startAt, onDetails }: { person: Person; fu
     setOpenId(p.id)
   }
   const remove = async (p: PageMeta) => {
-    if (await confirm(t('Удалить «{name}»?').replace('{name}', () => p.title || t('Без названия')), t('Удалить'))) {
+    if (await confirm(t('Delete «{name}»?').replace('{name}', () => p.title || t('Untitled')), t('Delete'))) {
       await api(`pages/${p.id}`, { method: 'DELETE' })
       if (openId === p.id) setOpenId(null)
       refresh()
@@ -55,16 +55,16 @@ export function Pages({ person, full, startAt, onDetails }: { person: Person; fu
     <div className={cn('h-full', full ? 'grid grid-cols-[260px_1fr]' : 'flex flex-col')}>
       <div className={cn('px-3 py-1', full ? 'border-r border-border overflow-auto' : 'border-b border-border')}>
         {(pages.length > 1 || full) && <div className={full ? '' : 'max-h-24 overflow-auto'}>{tree}</div>}
-        {canEdit && pages.length > 0 && <button className="add-btn my-1" onClick={() => add()}><FilePlus2 size={14} /> {t('Новая страница')}</button>}
-        {!canEdit && !pages.length && <p className="text-ink-faint text-sm px-2 py-1">{t('Страниц пока нет')}</p>}
+        {canEdit && pages.length > 0 && <button className="add-btn my-1" onClick={() => add()}><FilePlus2 size={14} /> {t('New page')}</button>}
+        {!canEdit && !pages.length && <p className="text-ink-faint text-sm px-2 py-1">{t('No pages yet')}</p>}
       </div>
       <div className="flex-1 min-h-0 overflow-auto">
         {selected && <div className={cn('mx-auto py-2', full ? 'max-w-3xl px-10' : '')}><PageEditor key={selected.id} pageId={selected.id} personId={person.id} onChanged={refresh} /></div>}
         {!selected && canEdit && (
           <div className="px-6 py-8 flex flex-col items-start gap-2">
-            <p className="text-base font-medium text-ink">{t('Расскажите о человеке')}</p>
+            <p className="text-base font-medium text-ink">{t('Tell their story')}</p>
             <div className="flex flex-wrap gap-2">
-              <button className="bar-btn on" onClick={() => add()}><FilePlus2 size={14} /> {t('Начать биографию')}</button>
+              <button className="bar-btn on" onClick={() => add()}><FilePlus2 size={14} /> {t('Start a biography')}</button>
             </div>
           </div>
         )}
@@ -98,7 +98,7 @@ function PageTree({ pages, selected, onOpen, onAdd, onRemove, onMove }: { pages:
           onClick={() => onOpen(p.id)}
         >
           <Popover>
-            <PopoverTrigger asChild disabled={!canEdit}><button className="w-6 min-h-6 flex-none text-center" aria-label={t('Значок страницы')} title={t('Значок страницы')} onClick={(e) => e.stopPropagation()}>{p.icon || '📄'}</button></PopoverTrigger>
+            <PopoverTrigger asChild disabled={!canEdit}><button className="w-6 min-h-6 flex-none text-center" aria-label={t('Page icon')} title={t('Page icon')} onClick={(e) => e.stopPropagation()}>{p.icon || '📄'}</button></PopoverTrigger>
             <PopoverContent className="w-auto p-1.5 grid grid-cols-6 gap-0.5">
               {ICONS.map((i) => (
                 <button key={i} className="w-7 h-7 rounded hover:bg-muted" onClick={async (e) => {
@@ -109,11 +109,11 @@ function PageTree({ pages, selected, onOpen, onAdd, onRemove, onMove }: { pages:
               ))}
             </PopoverContent>
           </Popover>
-          <span className="line-clamp-2 flex-1 min-w-0 break-anywhere" title={p.title}>{p.title || <span className="text-ink-faint">{t('Без названия')}</span>}</span>
+          <span className="line-clamp-2 flex-1 min-w-0 break-anywhere" title={p.title}>{p.title || <span className="text-ink-faint">{t('Untitled')}</span>}</span>
           {canEdit && (
             <span className="flex gap-0.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
-              <button title={t('Подстраница')} className="grid place-items-center size-6 rounded hover:bg-background text-ink-faint hover:text-ink" aria-label={t('Подстраница')} onClick={(e) => { e.stopPropagation(); onAdd(p.id) }}><Plus size={13} /></button>
-              <button title={t('Удалить')} className="grid place-items-center size-6 rounded hover:bg-background text-ink-faint hover:text-destructive" aria-label={t('Удалить')} onClick={(e) => { e.stopPropagation(); onRemove(p) }}><Trash2 size={13} /></button>
+              <button title={t('Subpage')} className="grid place-items-center size-6 rounded hover:bg-background text-ink-faint hover:text-ink" aria-label={t('Subpage')} onClick={(e) => { e.stopPropagation(); onAdd(p.id) }}><Plus size={13} /></button>
+              <button title={t('Delete')} className="grid place-items-center size-6 rounded hover:bg-background text-ink-faint hover:text-destructive" aria-label={t('Delete')} onClick={(e) => { e.stopPropagation(); onRemove(p) }}><Trash2 size={13} /></button>
             </span>
           )}
         </div>

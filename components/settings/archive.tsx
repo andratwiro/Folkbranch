@@ -23,9 +23,9 @@ export function Archive({ familyName, lang }: { familyName: string; lang: Lang }
   return (
     <div className="flex min-w-0 max-w-md flex-col gap-7 text-sm">
       <div className="flex flex-col gap-3">
-        <Field label={t('Название семьи')} hint={t('Видно всем в верхней панели. Сохраняется само.')}><Input value={name} onChange={(e) => setName(e.target.value)} onBlur={() => name !== familyName && name && save({ familyName: name })} /></Field>
-        <Field label={t('Язык архива')} hint={t('Язык данных архива: даты, виды событий и ответы ассистента. Каждый выбирает язык интерфейса себе сам.')}><Select aria-label={t('Язык архива')} value={lang} onChange={(language) => save({ language })} options={LANGS.map((l) => ({ value: l, label: LANG_NAMES[l] }))} /></Field>
-        {saved && <p role="status" className="flex items-center gap-1 text-xs text-ink-soft"><Check size={13} /> {t('Сохранено')}</p>}
+        <Field label={t('Family name')} hint={t('Everyone sees it in the top bar. It saves by itself.')}><Input value={name} onChange={(e) => setName(e.target.value)} onBlur={() => name !== familyName && name && save({ familyName: name })} /></Field>
+        <Field label={t('Archive language')} hint={t('The archive\'s data language: dates, kinds of fact and the assistant\'s answers. Each person chooses their own interface language.')}><Select aria-label={t('Archive language')} value={lang} onChange={(language) => save({ language })} options={LANGS.map((l) => ({ value: l, label: LANG_NAMES[l] }))} /></Field>
+        {saved && <p role="status" className="flex items-center gap-1 text-xs text-ink-soft"><Check size={13} /> {t('Saved')}</p>}
       </div>
     </div>
   )

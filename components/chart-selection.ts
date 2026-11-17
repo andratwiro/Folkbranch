@@ -31,12 +31,12 @@ export function useLineSelection(layout: Layout, onPick: () => void) {
       if (unionId) await api(`relations/union/${unionId}`, { method: 'DELETE' })
       else await api('relations/remove', { json: { ids: linkIds } })
     } catch (e) {
-      return app.notify(`${t('Не удалось сохранить')}: ${(e as Error).message}`)
+      return app.notify(`${t('Could not save')}: ${(e as Error).message}`)
     }
     await qc.invalidateQueries({ queryKey: ['graph'] })
     qc.invalidateQueries({ queryKey: ['history'] })
     const id = await lastChangeId()
-    app.notify(t('Связь удалена'), [{ label: t('Отменить'), run: async () => { await api(`history/${id}/undo`, { json: {} }); await qc.invalidateQueries() } }])
+    app.notify(t('Link removed_deleted'), [{ label: t('Undo'), run: async () => { await api(`history/${id}/undo`, { json: {} }); await qc.invalidateQueries() } }])
   }
   const patchSelected = async (patch: Record<string, string>) => {
     const calls: Promise<unknown>[] = selEdges.flatMap((e) => e.links.map((l) => api(`relations/parent/${l.id}`, { method: 'PATCH', json: patch })))

@@ -11,7 +11,7 @@ import { useSmart } from '@/lib/smart/settings'
 import { useCloud } from '@/lib/smart/cloud'
 import { useFaceCloud } from '@/lib/smart/face-cloud'
 
-const TIER: Record<Tier, string> = { weak: 'Слабое устройство: берите только нужное, работать будет медленнее', normal: 'Обычное устройство: всё будет работать, без спешки', strong: 'Мощное устройство: подойдут и самые точные модели' }
+const TIER: Record<Tier, string> = { weak: 'A modest device: take only what you need, it will run more slowly', normal: 'An average device: everything will run, without hurry', strong: 'A powerful device: it can run the most accurate models' }
 const mb = (n: number) => Math.ceil(n / 1024 / 1024)
 
 function ModelRow({ v, inUse, only }: { v: Variant; inUse: boolean; only: boolean }) {
@@ -22,23 +22,23 @@ function ModelRow({ v, inUse, only }: { v: Variant; inUse: boolean; only: boolea
     <div className={`flex min-w-0 flex-col gap-1.5 rounded-lg border p-2.5 ${inUse && ready ? 'border-ink' : 'border-border'}`}>
       <div className="flex flex-wrap items-center gap-x-2">
         <span className="font-medium">{t(v.name)}</span>
-        {recommended(v) && !only && <span className="text-xs text-ink-soft">{t('Рекомендуем для этого устройства')}</span>}
+        {recommended(v) && !only && <span className="text-xs text-ink-soft">{t('Recommended for this device')}</span>}
       </div>
       <p className="text-xs leading-snug text-ink-soft">{t(v.facts)}</p>
       <div className="flex flex-wrap items-center gap-1.5">
         {m.status === 'busy' && (
           <div className="flex min-w-48 flex-1 items-center gap-2" role="status">
             <div className="h-1.5 min-w-16 flex-1 overflow-hidden rounded-full bg-input"><div className="h-full bg-ink transition-[width]" style={{ width: `${m.total ? Math.min(100, (m.loaded / m.total) * 100) : 4}%` }} /></div>
-            <span className="text-xs tabular-nums text-ink-soft">{m.total ? `${mb(m.loaded)} ${t('из')} ${mb(m.total)} ${t('МБ')}` : t('Готовлюсь…')}</span>
-            <Button variant="ghost" size="sm" onClick={() => cancelVariant(v.id)}><Square /> {t('Остановить')}</Button>
+            <span className="text-xs tabular-nums text-ink-soft">{m.total ? `${mb(m.loaded)} ${t('of')} ${mb(m.total)} ${t('MB')}` : t('Getting ready…')}</span>
+            <Button variant="ghost" size="sm" onClick={() => cancelVariant(v.id)}><Square /> {t('Stop')}</Button>
           </div>
         )}
-        {m.status === 'none' && <Button variant="outline" size="sm" onClick={() => downloadVariant(v.id)}><Download /> {t('Скачать модель')}, {variantSize(v.id)} {t('МБ')}</Button>}
-        {ready && !only && (inUse ? <span className="flex items-center gap-1 pr-1 text-xs"><Check size={13} /> {t('Используется')}</span> : <Button variant="outline" size="sm" onClick={() => choose(v.id)}>{t('Использовать')}</Button>)}
-        {ready && <Button variant="ghost" size="sm" onClick={async () => { if (await ask(t('Удалить модель: {name}?').replace('{name}', () => t(v.name)), t('Удалить'), t('Её можно будет скачать снова.'))) removeVariant(v.id) }}><Trash2 /> {t('Удалить модель')}, {variantSize(v.id)} {t('МБ')}</Button>}
-        {m.status === 'unavailable' && <span className="text-xs text-ink-soft">{t('Модели можно скачать только по защищённому адресу (https) или на этом компьютере.')}</span>}
+        {m.status === 'none' && <Button variant="outline" size="sm" onClick={() => downloadVariant(v.id)}><Download /> {t('Download model')}, {variantSize(v.id)} {t('MB')}</Button>}
+        {ready && !only && (inUse ? <span className="flex items-center gap-1 pr-1 text-xs"><Check size={13} /> {t('In use')}</span> : <Button variant="outline" size="sm" onClick={() => choose(v.id)}>{t('Use')}</Button>)}
+        {ready && <Button variant="ghost" size="sm" onClick={async () => { if (await ask(t('Remove model: {name}?').replace('{name}', () => t(v.name)), t('Delete'), t('You can download it again.'))) removeVariant(v.id) }}><Trash2 /> {t('Remove model')}, {variantSize(v.id)} {t('MB')}</Button>}
+        {m.status === 'unavailable' && <span className="text-xs text-ink-soft">{t('Models can only be downloaded on a secure address (https) or on this computer.')}</span>}
       </div>
-      {m.failed && <p role="alert" className="text-xs text-destructive">{t('Не удалось скачать модель. Проверьте соединение и попробуйте ещё раз.')}</p>}
+      {m.failed && <p role="alert" className="text-xs text-destructive">{t('Could not download the model. Check your connection and try again.')}</p>}
     </div>
   )
 }
@@ -63,7 +63,7 @@ export function SmartSettings() {
   const faces = useFaceCloud()
   const [device, setDevice] = useState<Device | null>(null)
   useEffect(() => { setDevice(readDevice()) }, [])
-  const facts = device && [device.cores && `${t('ядер')}: ${device.cores}`, device.memoryGB && `${t('память')}: ${device.memoryGB}${device.memoryGB >= 8 ? '+' : ''} ${t('ГБ')}`, device.saveData && t('включена экономия трафика')].filter(Boolean).join(' · ')
+  const facts = device && [device.cores && `${t('cores')}: ${device.cores}`, device.memoryGB && `${t('memory')}: ${device.memoryGB}${device.memoryGB >= 8 ? '+' : ''} ${t('GB')}`, device.saveData && t('data saver is on')].filter(Boolean).join(' · ')
   return (
     <div className="flex flex-col gap-6 text-sm">
       {device && (
@@ -73,22 +73,22 @@ export function SmartSettings() {
         </div>
       )}
       {cloud.enabled && (
-        <Section title={t('Расшифровка в облаке')} description={t('Владелец архива подключил сервис распознавания речи и платит за него сам. Скачивать ничего не нужно, работает на любом устройстве и обычно точнее.')}>
-          <SwitchRow title={t('Расшифровывать в облаке на этом устройстве')} description={`${t('Запись уйдёт на сервер архива и дальше в')} ${t(cloud.info?.where ?? '')}. ${t('Если выключено, голос остаётся на устройстве и читается моделью ниже.')}`} checked={cloud.chosen} onChange={cloud.set} />
+        <Section title={t('Cloud transcription')} description={t('The archive\'s owner connected a speech recognition service and pays for it. Nothing to download; it works on any device and is usually more accurate.')}>
+          <SwitchRow title={t('Transcribe in the cloud on this device')} description={`${t('The recording goes to the archive\'s server and on to')} ${t(cloud.info?.where ?? '')}. ${t('If off, the voice stays on the device and is read by the model below.')}`} checked={cloud.chosen} onChange={cloud.set} />
         </Section>
       )}
       {faces.enabled && (
-        <Section title={t('Распознавание лиц в облаке')} description={t('Владелец архива подключил сервис распознавания лиц и платит за него сам. Скачивать модель не нужно, работает на любом устройстве.')}>
-          <SwitchRow title={t('Искать и узнавать лица в облаке на этом устройстве')} description={`${t('Фото уйдёт на сервер архива и дальше в')} ${t(faces.info?.where ?? '')}. ${faces.info?.keeps ? t(faces.info.keeps) : ''} ${t('Если выключено, лица остаются на устройстве и читаются моделью ниже.')}`.replace(/\s+/g, ' ').trim()} checked={faces.chosen} onChange={faces.set} />
+        <Section title={t('Cloud faces')} description={t('The archive\'s owner connected a face recognition service and pays for it. No model to download; it works on any device.')}>
+          <SwitchRow title={t('Find and recognise faces in the cloud on this device')} description={`${t('The photo goes to the archive\'s server and on to')} ${t(faces.info?.where ?? '')}. ${faces.info?.keeps ? t(faces.info.keeps) : ''} ${t('If off, faces stay on the device and are read by the model below.')}`.replace(/\s+/g, ' ').trim()} checked={faces.chosen} onChange={faces.set} />
         </Section>
       )}
-      <Section title={t('Модели на этом устройстве')} description={t('Ничего не скачивается само. Модели работают в этом браузере, а фото и голос остаются у вас. На другом устройстве модели скачиваются отдельно.')}>
+      <Section title={t('Models on this device')} description={t('Nothing downloads by itself. Models run in this browser, and your photos and voice stay with you. Another device downloads its own.')}>
         <div className="flex flex-col gap-4">
-          <Feature feature="faces" title="Поиск лиц на фото" about="Находит лица и на старых групповых снимках, чтобы не обводить их вручную." />
-          <Feature feature="recognize" title="Узнавание родственников на фото" about="Подсказывает, кто на новом фото, по уже отмеченным лицам. Имя появится, только если вы его подтвердите." />
-          <Feature feature="speech" title="Расшифровка голоса" about="Превращает запись рассказа в текст и позволяет говорить с ассистентом голосом. Пока идёт расшифровка, приложением можно пользоваться." />
+          <Feature feature="faces" title={'Finding faces in photos'} about={'Finds faces, even in old group photos, so you need not outline them by hand.'} />
+          <Feature feature="recognize" title={'Recognising relatives in photos'} about={'Suggests who is in a new photo from faces already tagged. A name appears only once you confirm it.'} />
+          <Feature feature="speech" title={'Voice to text_transcription'} about={'Turns a recorded story into text and lets you speak to the assistant. You can keep using the app while it runs.'} />
         </div>
-        <p className="text-xs text-ink-soft">{t('Цифры из наших замеров на старых снимках и русских записях, на компьютере с 12 ядрами. На вашем устройстве скорость будет другой.')}</p>
+        <p className="text-xs text-ink-soft">{t('Figures from our measurements on old photos and Russian recordings, on a 12-core computer. Your device will differ in speed.')}</p>
       </Section>
     </div>
   )

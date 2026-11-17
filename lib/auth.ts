@@ -1,3 +1,4 @@
+import { LANG_ENUM } from './languages'
 import { randomBytes } from 'node:crypto'
 import { betterAuth, type BetterAuthPlugin } from 'better-auth'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter'
@@ -41,14 +42,14 @@ const familyAccess = () =>
         body: z.object({
           name: z.string().min(1),
           familyName: z.string().min(1),
-          language: z.enum(['ru', 'en', 'es', 'ca']),
+          language: z.enum(LANG_ENUM),
           demo: z.boolean().optional(),
           code: z.string().optional(),
         }),
       }, async (ctx) => {
         if (hasUsers()) throw new APIError('FORBIDDEN', { message: 'already set up' })
         // On a public host, SETUP_TOKEN stops a stranger from claiming the empty instance.
-        if (!setupCodeMatches(ctx.body.code)) throw new APIError('FORBIDDEN', { message: tell('Код настройки не подошёл') })
+        if (!setupCodeMatches(ctx.body.code)) throw new APIError('FORBIDDEN', { message: tell('The setup code did not match') })
         const u = await createFamilyUser(ctx, ctx.body.name, 'owner', null)
         setSetting('familyName', ctx.body.familyName)
         setSetting('language', ctx.body.language)

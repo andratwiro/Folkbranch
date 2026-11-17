@@ -1,3 +1,4 @@
+import { LANG_ENUM } from '@/lib/languages'
 import { exportAiSettings, importAiSettings } from '@/lib/ops/ai-config'
 import { z } from 'zod'
 import { chooseModel, connectProvider, modelChoices, currentProvider, disconnectProvider, keyBalance, providerStatus, answerChoices } from '@/lib/agent/provider-key'
@@ -48,7 +49,7 @@ export const accessRoutes: Route[] = [
   human('GET', 'settings', 'Archive settings', () => ({ familyName: settings.getSetting('familyName') ?? '', language: settings.getSetting('language') ?? 'ru', assistantEnabled: settings.getSetting('assistantEnabled') === '1', assistantForReaders: settings.getSetting('assistantForReaders') === '1', assistantProvider: currentProvider()?.label ?? null, assistantModel: currentProvider()?.model ?? null })),
   human('PATCH', 'settings', 'Change archive settings', async ({ actor, body }) => {
     requireRole(actor, 'owner')
-    const b = z.object({ familyName: z.string().min(1), language: z.enum(['ru', 'en', 'es', 'ca']), assistantEnabled: z.enum(['0', '1']), assistantForReaders: z.enum(['0', '1']), }).partial().parse(await body())
+    const b = z.object({ familyName: z.string().min(1), language: z.enum(LANG_ENUM), assistantEnabled: z.enum(['0', '1']), assistantForReaders: z.enum(['0', '1']), }).partial().parse(await body())
     Object.entries(b).forEach(([k, v]) => settings.setSetting(k, v!))
   }),
   human('GET', 'invites', 'Open invitations', ({ actor }) => settings.listInvites(actor)),
