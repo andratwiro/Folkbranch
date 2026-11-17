@@ -145,6 +145,9 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
         <ConversationContent className="gap-3 p-3">
           {messages.map((m) => {
             if (m.role === 'user' && m.id.startsWith('taken-')) return <p key={m.id} className="text-center text-xs text-ink-soft">{t('Правки из этого ответа отменены')}</p>
+            // An answer with nothing to show yet (the stream has opened, no text or step has come) takes no room:
+            // an empty one would push the "Thinking" line down and the answer back up once it began.
+            if (m.role === 'assistant' && !m.parts.some((p) => (p.type === 'text' && p.text) || p.type === 'file' || isToolUIPart(p))) return null
             const ids = m.role === 'assistant' ? historyIds(m) : []
             const finished = m !== messages.at(-1) || !busy
             return (

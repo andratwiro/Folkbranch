@@ -164,6 +164,15 @@ describe('what asking costs', () => {
     expect((before.m.doStreamCalls[0].tools ?? []).map((t) => t.name)).not.toContain('get_relatives')
   })
 
+  it('reads twelve cards in one trimmed call for a fraction of twelve get_person answers', async () => {
+    const ids = (await call(owner, 'get_relatives', { id: root.id })).slice(0, 12).map((x: any) => x.id)
+    const before = await ask([calls(...ids.map((id: string): [string, unknown] => ['get_person', { id }])), say('Готово')])
+    const after = await ask([calls(['get_people', { ids }]), say('Готово')])
+    if (process.env.MEASURE) process.stderr.write(`\n12 cards: get_person x12 ${before.perRequest.join(' + ')} = ${before.tokens} tokens; get_people ${after.perRequest.join(' + ')} = ${after.tokens} tokens\n`)
+    expect(after.requests).toBe(2)
+    expect(after.perRequest[1] - after.perRequest[0]).toBeLessThan((before.perRequest[1] - before.perRequest[0]) / 2)
+  })
+
   it('keeps the answer small however big the family: the whole list is many times larger', async () => {
     const counts = JSON.stringify(await call(owner, 'count_relatives', { id: root.id }))
     const list = JSON.stringify(await call(owner, 'get_relatives', { id: root.id }))

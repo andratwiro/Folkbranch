@@ -23,12 +23,12 @@ async function waitUp(B, ms = 90000) {
  * Starts `next start` on a free-ish port with the demo family (or `people` invented people from gen-family.py on top).
  * Returns the address, an owner's cookie, and `stop()`.
  */
-export async function startApp({ port = 3590, language = 'en', people = 0 } = {}) {
+export async function startApp({ port = 3590, language = 'en', people = 0, env = {} } = {}) {
   const data = mkdtempSync(path.join(tmpdir(), 'folkbranch-ui-'))
   const B = `http://127.0.0.1:${port}`
   const child = spawn('pnpm', ['exec', 'next', 'start', '-H', '127.0.0.1', '-p', String(port)], {
     cwd: root, stdio: ['ignore', 'ignore', 'pipe'],
-    env: { ...process.env, DATA_DIR: data, BETTER_AUTH_URL: B, SETUP_TOKEN: 'ui-check', BETTER_AUTH_SECRET: 'u'.repeat(64), NODE_ENV: 'production' },
+    env: { ...process.env, DATA_DIR: data, BETTER_AUTH_URL: B, SETUP_TOKEN: 'ui-check', BETTER_AUTH_SECRET: 'u'.repeat(64), NODE_ENV: 'production', ...env },
   })
   let err = ''
   child.stderr.on('data', (d) => { err = (err + d).slice(-2000) })

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- the tools' answers are read untyped, as the model reads them */
 // Whole sets in one call: many cards read at once, the same fact added to many people with one confirmation and one
 // undo, and what a running step says it is about.
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -25,7 +26,8 @@ describe('get_people', () => {
     const r = await run(owner, 'get_people', { ids: [f.ivan.id, 'nobody', f.nikolai.id] })
     expect(r.map((x: any) => x.id)).toEqual([f.ivan.id, 'nobody', f.nikolai.id])
     expect(r[1]).toEqual({ id: 'nobody', missing: true })
-    expect(r[0]).toMatchObject({ name: 'Иван Соколов', parentIds: [f.nikolai.id, f.varvara.id].sort(), spouseIds: [f.maria.id], childIds: [f.pyotr.id] })
+    expect(r[0]).toMatchObject({ name: 'Иван Соколов', spouseIds: [f.maria.id], childIds: [f.pyotr.id] })
+    expect([...r[0].parentIds].sort()).toEqual([f.nikolai.id, f.varvara.id].sort())
     // The long parts of a card (sources, versions, pages) stay in get_person.
     expect(Object.keys(r[0])).not.toContain('sources')
     expect(Object.keys(r[0])).not.toContain('claims')
