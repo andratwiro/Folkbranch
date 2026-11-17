@@ -2219,5 +2219,6 @@ const es: Record<string, string> = {
   'точка из GeoNames': 'punto de GeoNames',
   'Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.': 'Sugerencias a partir de una lista de ciudades y pueblos guardada en la propia aplicación: los nombres de lugares no se envían a ninguna parte. El punto solo se pone cuando lo confirmas.',
 
+  'У этого человека уже есть родитель вне этой пары. Чтобы заменить его, сначала удалите связь с ним': 'Esta persona ya tiene un progenitor fuera de esta pareja. Para sustituirlo, quita antes ese vínculo',
 }
 export default es

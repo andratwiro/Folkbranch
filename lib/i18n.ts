@@ -1284,6 +1284,7 @@ const en: Record<string, string> = {
   'точка из GeoNames': 'point from GeoNames',
   'Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.': 'Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it.',
 
+  'У этого человека уже есть родитель вне этой пары. Чтобы заменить его, сначала удалите связь с ним': 'This person already has a parent outside this couple. To replace them, remove that link first',
 }
 
 /** Spanish and Catalan live in lib/i18n-es.ts and lib/i18n-ca.ts, and reach a browser only when it reads in them (lib/i18n-load.ts). */
