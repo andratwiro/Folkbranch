@@ -5,7 +5,7 @@ import { type EdgePos, type Layout } from '@/lib/graph/layout'
 import { avatarUrl, useApp, type QuickType } from '@/lib/client'
 import { cn } from '@/lib/utils'
 import { translate } from '@/lib/i18n'
-import { lifeYears, personName, type Lang, type Person } from '@/lib/types'
+import { lifeYears, personName, unionEnd, type Lang, type Person } from '@/lib/types'
 
 export const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`)
 
@@ -66,7 +66,7 @@ export const Lines = memo(function Lines({ families, unions, active, hotPairs, l
         const lit = wave?.pairs.get(pairKey(u.union.aId, u.union.bId))
         return (
           <g key={u.id}>
-            <path d={u.path} className={cn('union', u.union.certainty === 'assumed' && 'assumed', !wave && hot && 'hot', selIds.has(u.id) && 'selected', hoverIds.includes(u.id) && 'hover')} />
+            <path d={u.path} className={cn('union', u.union.kind === 'civil' && 'civil', u.union.certainty === 'assumed' && 'assumed', !wave && hot && 'hot', selIds.has(u.id) && 'selected', hoverIds.includes(u.id) && 'hover')} />
             {lit && <path d={u.path} pathLength={1} className="flow union-flow" style={{ '--wd': waitFor(lit.d) } as React.CSSProperties} />}
           </g>
         )
@@ -155,6 +155,7 @@ export const HitAreas = memo(function HitAreas({ layout, edges, unions, groupHea
         <path
           key={`o${e.id}`}
           d={e.own}
+          data-edge-child={e.childId}
           className="line-hit"
           onMouseEnter={() => acts.current.enterLine(e.familyKey, [e.id])}
           onMouseMove={(ev) => acts.current.tipEdge(ev, e)}
@@ -166,6 +167,7 @@ export const HitAreas = memo(function HitAreas({ layout, edges, unions, groupHea
         <path
           key={u.id}
           d={u.path}
+          data-union-hit={u.id}
           onClick={(ev) => acts.current.pick(ev, 'union', [u.id], u.x, u.y - 14)}
           onMouseEnter={() => acts.current.enterLine(null, [u.id])}
           className="line-hit"
@@ -177,8 +179,8 @@ export const HitAreas = memo(function HitAreas({ layout, edges, unions, groupHea
   )
 })
 
-/** Two slashes across the line of a union that ended, as genograms cross out a divorce. */
-export const endMarks = (x: number, y: number) => [-3, 3].map((d) => `M${x + d - 3.5} ${y + 7}L${x + d + 3.5} ${y - 7}`).join('')
+/** Slashes across the line of a union that ended, as genograms draw them: two for a divorce, one for a separation. */
+export const endMarks = (x: number, y: number, n = 2) => (n === 1 ? [0] : [-3, 3]).map((d) => `M${x + d - 3.5} ${y + 7}L${x + d + 3.5} ${y - 7}`).join('')
 
 export const FamilyDots = memo(function FamilyDots({ unions, active, canEdit, acts }: { unions: UnionItem[]; active: Set<string> | null; canEdit: boolean; acts: Acts }) {
   return unions.map((u) => {
@@ -187,7 +189,7 @@ export const FamilyDots = memo(function FamilyDots({ unions, active, canEdit, ac
       <g key={u.id} data-union={u.union.id} className={cn('dot-group link-start', canEdit && 'can-add')} onPointerDown={(e) => acts.current.startDot(e, u)} onClick={canEdit ? (e) => { e.stopPropagation(); acts.current.addChild(u) } : undefined} onMouseEnter={(ev) => acts.current.tipDot(ev)} onMouseLeave={() => acts.current.hideTip()}>
         <circle cx={u.x} cy={u.y} r={13} className="dot-hit" />
         <circle cx={u.x} cy={u.y} r={5} className={cn('dot', u.union.kind === 'civil' && 'open', hot && 'hot')} />
-        {u.union.endDate && <path d={endMarks(u.endAt[0], u.endAt[1])} className="union-end" data-union-end={u.union.id} />}
+        {(unionEnd(u.union) === 'divorced' || unionEnd(u.union) === 'separated') && <path d={endMarks(u.endAt[0], u.endAt[1], unionEnd(u.union) === 'separated' ? 1 : 2)} className="union-end" data-union-end={u.union.id} data-end={unionEnd(u.union)} />}
         {canEdit && <path d={`M${u.x - 4} ${u.y}H${u.x + 4}M${u.x} ${u.y - 4}V${u.y + 4}`} className="dot-plus" />}
       </g>
     )
@@ -225,9 +227,11 @@ export function Legend() {
       {row(ring('sex-M'), 'Мужчина')}
       {row(ring('sex-F'), 'Женщина')}
       {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot" /></svg>, 'Брак. От точки идут линии к детям')}
-      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot open" /></svg>, 'Без регистрации брака')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union civil" /><circle cx="20" cy="6" r="5" className="dot open" /></svg>, 'Без регистрации брака: пунктирная линия')}
       {row(line('line'), 'Родной ребёнок')}
-      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><path d={endMarks(26, 6)} className="union-end" /></svg>, 'Союз закончился (развод или разлука)')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><path d={endMarks(26, 6)} className="union-end" /></svg>, 'Развод: две косые черты на линии')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><path d={endMarks(26, 6, 1)} className="union-end" /></svg>, 'Разлука без развода: одна косая черта')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot" /></svg>, 'Овдовели: линия не перечёркнута, смерть видна на карточке')}
       {row(line('line adopted'), 'Приёмный ребёнок')}
       {row(line('line foster'), 'Ребёнок под опекой')}
       {row(line('line step'), 'Пасынок или падчерица')}

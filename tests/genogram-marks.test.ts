@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { parseGedcom, writeGedcom } from '../lib/gedcom'
 import { layoutFamily } from '../lib/graph/layout'
-import type { Graph, ParentKind, Person } from '../lib/types'
+import { unionEnd, type Graph, type ParentKind, type Person, type UnionEnd } from '../lib/types'
 
 // Invented family: two parents, a child of each kind, and a former partner of the father.
 const person = (id: string, sex: 'M' | 'F', birthYear: number) => ({ id, sex, birthYear, givenName: id, surname: 'Test', living: false, facts: [], sources: [], otherNames: '', birthDate: String(birthYear), deathDate: '' } as unknown as Person)
-const graph = (kinds: Record<string, ParentKind>, endDate = ''): Graph => ({
+const graph = (kinds: Record<string, ParentKind>, endDate = '', endKind: UnionEnd = ''): Graph => ({
   persons: [person('dad', 'M', 1950), person('mum', 'F', 1952), ...Object.keys(kinds).map((id, i) => person(id, 'M', 1980 + i))],
   parentChild: Object.entries(kinds).flatMap(([childId, kind]) => ['dad', 'mum'].map((parentId) => ({ id: `${parentId}-${childId}`, parentId, childId, kind, certainty: 'family' }))),
-  unions: [{ id: 'u1', aId: 'dad', bId: 'mum', kind: 'marriage', startDate: '1975', endDate, place: '', certainty: 'family' }],
+  unions: [{ id: 'u1', aId: 'dad', bId: 'mum', kind: 'marriage', startDate: '1975', endDate, endKind, place: '', certainty: 'family' }],
 }) as unknown as Graph
 
 describe('how a child is linked shows on the chart', () => {
@@ -45,5 +45,27 @@ describe('GEDCOM carries foster children', () => {
     expect(kids.filter((c) => c.foster)).toHaveLength(1)
     expect(kids.filter((c) => c.adopted)).toHaveLength(1)
     expect(Object.keys(byXref)).toHaveLength(3)
+  })
+})
+
+describe('how a union ended', () => {
+  it('reads an end date with no stated reason as a divorce, as older files wrote it', () => {
+    expect(unionEnd({ endDate: '1990' })).toBe('divorced')
+    expect(unionEnd({ endDate: '1990', endKind: 'widowed' })).toBe('widowed')
+    expect(unionEnd({ endDate: '' })).toBe('')
+  })
+  const written = (endDate: string, endKind: UnionEnd) => writeGedcom(graph({ kid: 'birth' }, endDate, endKind), { hideLiving: false, source: 'test' })
+  it('writes a divorce as DIV and a separation as an event, and a widowhood as neither', () => {
+    expect(written('1990', 'divorced')).toMatch(/1 DIV/)
+    expect(written('1990', '')).toMatch(/1 DIV/)
+    const sep = written('1990', 'separated')
+    expect(sep).toMatch(/1 EVEN\n2 TYPE Separation\n2 DATE 1990/)
+    expect(sep).not.toMatch(/1 DIV/)
+    expect(written('1990', 'widowed')).not.toMatch(/DIV|Separation/)
+  })
+  it('reads them back: a DIV leaves the reason open, a separation says so', () => {
+    expect(parseGedcom(written('1990', 'divorced')).families[0]).toMatchObject({ end: '1990' })
+    expect(parseGedcom(written('1990', 'divorced')).families[0].endKind).toBeUndefined()
+    expect(parseGedcom(written('1990', 'separated')).families[0]).toMatchObject({ end: '1990', endKind: 'separated' })
   })
 })

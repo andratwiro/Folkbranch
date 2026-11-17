@@ -8,7 +8,9 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 - On the chart, dropping a couple's dot on a child who had only one of them now adds the other parent (as mother or father by sex). Before, it did nothing and said the people were already linked. A child who has a parent outside the couple, or two parents already, is refused with a reason.
 
 ### Added
-- **Marks as in a genogram.** A union that ended (the **The union ended** box on its card) is crossed out with two slashes on the chart. Adopted, foster and step children each have their own line style, and the legend, in all four languages, explains each. **Foster** is a new kind of link, next to birth, adopted and step; GEDCOM and Gramps files carry it both ways (`PEDI foster`).
+- **An existing link can be moved.** Click a line on the chart and a handle appears on each end; drag one onto another person to move that end there: the wrong parent becomes the right one, the wrong child the right one, a partner is replaced. It is one entry in History and one Undo. A child with two parents replaces the one of the same sex as the new person. The assistant and the API have `move_relation` for the same.
+- **Unions as in a genogram.** Unmarried partners have a dashed line (a marriage a solid one). A divorce is two slashes across the line, a separation one slash; a union ended by a death is not crossed out, since the death shows on the card. The state is set from the line's bar or the couple's card (**together, separated, divorced, widowed**); an older end date with no reason reads as a divorce. GEDCOM writes a divorce as `DIV` and a separation as an event of type Separation, and reads both.
+- **Foster children** are a kind of link next to birth, adopted and step. Adopted, foster and step each have their own line style, and the legend, in all four languages, explains every mark. GEDCOM and Gramps files carry foster children both ways (`PEDI foster`).
 
 ## 1.7.0 - 2026-11-17
 

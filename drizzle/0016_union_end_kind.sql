@@ -1,0 +1,1 @@
+ALTER TABLE `unions` ADD `end_kind` text DEFAULT '' NOT NULL;

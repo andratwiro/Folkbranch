@@ -147,7 +147,7 @@ export function importGedcom(actor: Actor, text: string, mode: ImportMode = 'add
       // Exports with hidden people can drop both parents; a placeholder keeps the children siblings.
       const placeholder = !a && !b && f.children.length > 1
       if (placeholder) { a = insertPerson(c, { givenName: '?', living: false, certainty: 'assumed' }); personIds.push(a) }
-      if (a && b) addUnion(c, a, b, f.kind, f.date, f.end, f.place)
+      if (a && b) addUnion(c, a, b, f.kind, f.date, f.end, f.place, undefined, f.endKind)
       for (const ch of f.children) {
         const cid = ids.get(ch.xref)
         if (!cid) continue

@@ -68,5 +68,6 @@ export const familyRoutes: Route[] = [
   op('POST', 'relations', 'add_relation'),
   op('POST', 'relations/remove', 'remove_parent_links'),
   op('PATCH', 'relations/:type/:id', 'update_relation', ({ params }, b) => ({ ...b, type: params.type, id: params.id })),
+  op('POST', 'relations/:type/:id/move', 'move_relation', ({ params }, b) => ({ ...b, type: params.type, id: params.id })),
   op('DELETE', 'relations/:type/:id', 'remove_relation', ({ params }) => ({ type: params.type, id: params.id })),
 ]

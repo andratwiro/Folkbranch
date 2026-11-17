@@ -25,13 +25,16 @@ const CORNER = 8
 export type LineStyle = 'solid' | 'adopted' | 'foster' | 'step' | 'assumed'
 export interface CardPos { id: string; x: number; y: number }
 export interface UnionPos { id: string; union: Union; x: number; y: number; path: string; x1: number; x2: number; box: Box
-  /** A point on a straight stretch of the line beside the dot, where an ended union is crossed out. */ endAt: [number, number] }
+  /** A point on a straight stretch of the line beside the dot, where an ended union is crossed out. */ endAt: [number, number]
+  /** Where the line meets each of its two people, for the handles that move an end. */ ends: { id: string; x: number; y: number }[] }
 export interface EdgePos { id: string; childId: string; parentIds: string[]; path: string; style: LineStyle; links: ParentLink[]; familyKey: string
   /** Around the whole bar with its trunk and all the siblings, so the shared part is never cut. */ box: Box
   /** The stretch that belongs to this child alone, from its bar down to it. */ own: string
   /** Where the line goes on under the estimated caption, to the point it enters the card: clickable below the cards, where the real caption is shorter than the estimate. */ tail: string
   /** The part shared with siblings: from the parents down to the bar, and the bar itself. */ shared: string
   /** Siblings hanging from one bar share a group. */ group: string
+  /** Where the line meets the child, and where it leaves its parents: the handles that move an end. */ childAt: [number, number]
+  parentAt: [number, number]
   barAt: [number, number]
   groupAt: [number, number] }
 export interface Layout {
@@ -517,16 +520,16 @@ export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = 
     const common = { id: br.u.id, union: br.u, x1: l.x, x2: r.x }
     // Beside the dot, on the line: where the slashes of an ended union go.
     const beside = (x: number, toward: number, y: number): [number, number] => [x + Math.sign(toward - x) * Math.min(20, Math.abs(toward - x) / 2), y]
-    if (br.kind === 'side') return { ...common, endAt: beside(br.x, l.x + edge, y1), x: br.x, y: y1, path: `M${l.x + edge} ${y1}H${r.x - edge}`, box: boxOf([[l.x, y1], [r.x, y1]]) }
+    if (br.kind === 'side') return { ...common, ends: [{ id: br.l, x: l.x + edge, y: y1 }, { id: br.r, x: r.x - edge, y: y1 }], endAt: beside(br.x, l.x + edge, y1), x: br.x, y: y1, path: `M${l.x + edge} ${y1}H${r.x - edge}`, box: boxOf([[l.x, y1], [r.x, y1]]) }
     if (br.kind === 'over') {
       const top = l.y - 14
       const points: [number, number][] = [[l.x, y1 - edge], [l.x, top], [r.x, top], [r.x, y2 - edge]]
-      return { ...common, endAt: beside(br.x, l.x, top), x: br.x, y: top, path: orthogonal(points), box: boxOf(points) }
+      return { ...common, ends: [{ id: br.l, x: l.x, y: y1 - edge }, { id: br.r, x: r.x, y: y2 - edge }], endAt: beside(br.x, l.x, top), x: br.x, y: top, path: orthogonal(points), box: boxOf(points) }
     }
     const hi = cards.get(br.hi!)!, lo = cards.get(br.lo!)!
     const midY = netY(br.gap!, br.net!)
     const points: [number, number][] = [[hi.x + br.dir! * edge, hi.y + AVATAR_CY], [br.x, hi.y + AVATAR_CY], [br.x, midY], [br.side!, midY], [br.side!, lo.y + AVATAR_CY]]
-    return { ...common, endAt: beside(br.x, br.side!, midY), x: br.x, y: midY, path: orthogonal(points), box: boxOf(points) }
+    return { ...common, ends: [{ id: br.hi!, x: hi.x + br.dir! * edge, y: hi.y + AVATAR_CY }, { id: br.lo!, x: br.side!, y: lo.y + AVATAR_CY }], endAt: beside(br.x, br.side!, midY), x: br.x, y: midY, path: orthogonal(points), box: boxOf(points) }
   })
   const unionById = new Map(unions.map((u) => [u.id, u]))
 
@@ -568,6 +571,8 @@ export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = 
         tail: hitEndY(t) === entryY(t) ? '' : `M${t.x} ${hitEndY(t)}V${entryY(t)}`,
         shared,
         group: `${f.key}@${g2.rank}`,
+        childAt: [t.x, entryY(t)],
+        parentAt: path[0],
         barAt: [t.x, barY],
         groupAt: [(lo + hi) / 2, barY],
       })

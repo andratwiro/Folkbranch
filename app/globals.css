@@ -120,6 +120,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, [contentedita
 .line.adopted { stroke-dasharray: 8 5; }
 .line.foster { stroke-dasharray: 3 3.5; }
 .line.step { stroke-dasharray: 14 4 2 4; }
+.link-handle { fill: var(--paper); stroke: var(--accent); stroke-width: 2; cursor: grab; pointer-events: all; }
+.link-handle:hover { fill: var(--accent); }
+.union.civil { stroke-dasharray: 7 4; }
 .union-end { stroke: var(--ink); stroke-width: 1.75; stroke-linecap: round; pointer-events: none; }
 .line.assumed, .union.assumed { stroke-dasharray: 1.5 5; }
 .line-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }

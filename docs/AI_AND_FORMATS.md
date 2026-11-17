@@ -20,7 +20,7 @@ Clients that need OAuth, such as claude.ai connectors, are not supported yet: th
 
 Reading: `search_people`, `get_person`, `get_relatives`, `how_related`, `list_pages`, `get_page`, `list_photos`, `list_places`, `export_text`, `preview_text`, `export_gedcom`, `preview_gedcom`, `get_history`, `my_proposals`.
 
-Writing (not listed for a read-only token): `create_person`, `update_person`, `delete_person`, `add_relation`, `update_relation`, `remove_relation`, `remove_parent_links`, `create_page`, `update_page`, `move_page`, `delete_page`, `upload_photo`, `update_photo`, `delete_photo`, `tag_photo`, `untag_photo`, `set_avatar`, `create_place`, `update_place`, `import_text`, `import_gedcom`, `undo`.
+Writing (not listed for a read-only token): `create_person`, `update_person`, `delete_person`, `add_relation`, `update_relation`, `move_relation`, `remove_relation`, `remove_parent_links`, `create_page`, `update_page`, `move_page`, `delete_page`, `upload_photo`, `update_photo`, `delete_photo`, `tag_photo`, `untag_photo`, `set_avatar`, `create_place`, `update_place`, `import_text`, `import_gedcom`, `undo`.
 
 Agents read and write pages in Markdown: a mention is `[@Name](person:ID)`, a photo is `![caption](/api/v1/media/ID/file?size=medium)`. Blocks Markdown cannot express, such as tables, are visible only with `raw: true`, and new text replaces the whole page.
 
@@ -65,7 +65,7 @@ A related project to compare with: Genmark (flat text compiled to GEDCOM 5.5.1),
 
 ## GEDCOM
 
-Import understands 5.5.1 and 7.0, export writes 5.5.1. A child's link is written as `PEDI adopted` or `PEDI foster`, and an ended union as `DIV`. GEDCOM has no tag for a stepchild, so that kind comes back as a birth child. Notes, events and sources become a Biography page on import. Export does not include pages and photos yet. This lets you move from and to MyHeritage, Gramps and FamilySearch. Import is deterministic, with no model involved, and has a preview. Export can hide living people.
+Import understands 5.5.1 and 7.0, export writes 5.5.1. A child's link is written as `PEDI adopted` or `PEDI foster`, a divorce as `DIV` and a separation as an event of type Separation (GEDCOM has no tag for it). A union ended by a death is written as neither. GEDCOM has no tag for a stepchild, so that kind comes back as a birth child. Notes, events and sources become a Biography page on import. Export does not include pages and photos yet. This lets you move from and to MyHeritage, Gramps and FamilySearch. Import is deterministic, with no model involved, and has a preview. Export can hide living people.
 
 ## Importing files
 

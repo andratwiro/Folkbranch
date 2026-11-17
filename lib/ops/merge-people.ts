@@ -138,7 +138,7 @@ function movePeopleLinks(c: Changes, keepId: string, dropId: string) {
     }
     // The same marriage twice becomes one, and what only the second one knew stays.
     const fill: Record<string, string> = {}
-    for (const k of ['startDate', 'endDate', 'place'] as const) if (!twin[k] && x[k]) fill[k] = x[k]
+    for (const k of ['startDate', 'endDate', 'endKind', 'place'] as const) if (!twin[k] && x[k]) fill[k] = x[k]
     if (fill.place && x.placeId) fill.placeId = x.placeId
     c.remove('unions', x.id)
     if (Object.keys(fill).length) c.update('unions', twin.id, fill)
