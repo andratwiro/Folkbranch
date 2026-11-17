@@ -153,8 +153,8 @@ export function importGedcom(actor: Actor, text: string, mode: ImportMode = 'add
         if (!cid) continue
         // Merging into a tree that already has these people: a link that would make someone their own ancestor is left out.
         const safe = (fn: () => void) => { if (mode !== 'merge') return fn(); try { fn() } catch (e) { if (!(e instanceof OpError)) throw e } }
-        if (a) safe(() => addParent(c, a, cid, ch.adopted ? 'adopted' : 'birth', placeholder ? 'assumed' : 'family'))
-        if (b) safe(() => addParent(c, b, cid, ch.adopted ? 'adopted' : 'birth', 'family'))
+        if (a) safe(() => addParent(c, a, cid, ch.adopted ? 'adopted' : ch.foster ? 'foster' : 'birth', placeholder ? 'assumed' : 'family'))
+        if (b) safe(() => addParent(c, b, cid, ch.adopted ? 'adopted' : ch.foster ? 'foster' : 'birth', 'family'))
       }
     }
     const placed = filePoints(c, g.places, say(gramps ? 'Точка из файла Gramps' : 'Точка из файла GEDCOM'))

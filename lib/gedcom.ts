@@ -151,7 +151,7 @@ export interface ImportedPerson {
 export interface Imported {
   version: string
   persons: ImportedPerson[]
-  families: { husb?: string; wife?: string; children: { xref: string; adopted: boolean }[]; date: string; end: string; place: string; kind: 'marriage' | 'civil'; hasEvent: boolean }[]
+  families: { husb?: string; wife?: string; children: { xref: string; adopted: boolean; foster?: boolean }[]; date: string; end: string; place: string; kind: 'marriage' | 'civil'; hasEvent: boolean }[]
   /**
    * Every distinct place text that has a point in the file, once each (the first point given for it wins). A Gramps
    * file gives every place, with or without a point: its own name, kind, the place it is part of and its other names.
@@ -232,6 +232,7 @@ export function parseGedcom(text: string, lang: Lang = 'ru'): Imported {
 
   // Adoption is written on the child: 1 ADOP / 2 FAMC @F1@, or 1 FAMC / 2 PEDI adopted.
   const adopted = new Set<string>()
+  const foster = new Set<string>()
   const persons = roots.filter((r) => r.tag === 'INDI').map((r): ImportedPerson => {
     const name = child(r, 'NAME')
     const nm = name?.value.match(/^([^/]*)(?:\/([^/]*)\/)?/) ?? []
@@ -246,6 +247,7 @@ export function parseGedcom(text: string, lang: Lang = 'ru'): Imported {
     for (const c of r.children) {
       if (c.tag === 'ADOP') { const f = val(c, 'FAMC'); if (f) adopted.add(`${r.xref}|${f}`) }
       if (c.tag === 'FAMC' && val(c, 'PEDI').toLowerCase() === 'adopted') adopted.add(`${r.xref}|${c.value}`)
+      if (c.tag === 'FAMC' && val(c, 'PEDI').toLowerCase() === 'foster') foster.add(`${r.xref}|${c.value}`)
     }
     const sex = val(r, 'SEX').toUpperCase()
     return {
@@ -301,7 +303,7 @@ export function parseGedcom(text: string, lang: Lang = 'ru'): Imported {
     return {
       husb: child(r, 'HUSB')?.value,
       wife: child(r, 'WIFE')?.value,
-      children: r.children.filter((c) => c.tag === 'CHIL').map((c) => ({ xref: c.value, adopted: adopted.has(`${c.value}|${r.xref}`) })),
+      children: r.children.filter((c) => c.tag === 'CHIL').map((c) => ({ xref: c.value, adopted: adopted.has(`${c.value}|${r.xref}`), ...(foster.has(`${c.value}|${r.xref}`) ? { foster: true } : {}) })),
       date: fromGedDate(val(marr, 'DATE')),
       end: child(r, 'DIV') ? fromGedDate(val(child(r, 'DIV'), 'DATE')) || '?' : '',
       place: val(marr, 'PLAC'),
@@ -384,7 +386,7 @@ export function writeGedcom(graph: Graph, opts: { hideLiving: boolean; source: s
   const hide = (p: Person) => opts.hideLiving && (p.living || !!p.keepPrivate)
   const xref = new Map(graph.persons.map((p, i) => [p.id, `@I${i + 1}@`]))
   const people = new Map(graph.persons.map((p) => [p.id, p]))
-  const fams = new Map<string, { a?: string; b?: string; children: { id: string; adopted: boolean }[]; start: string; end?: string; place?: string; placeId?: string | null; kind?: string }>()
+  const fams = new Map<string, { a?: string; b?: string; children: { id: string; adopted: boolean; foster?: boolean }[]; start: string; end?: string; place?: string; placeId?: string | null; kind?: string }>()
   const famKey = (a: string, b?: string) => (b ? [a, b].sort().join('|') : a)
   for (const u of graph.unions) fams.set(famKey(u.aId, u.bId), { a: u.aId, b: u.bId, children: [], start: u.startDate, end: u.endDate, place: u.place, placeId: u.placeId, kind: u.kind })
   const byChild = new Map<string, typeof graph.parentChild>()
@@ -392,7 +394,7 @@ export function writeGedcom(graph: Graph, opts: { hideLiving: boolean; source: s
   for (const [child, links] of byChild) {
     const key = famKey(links[0].parentId, links[1]?.parentId)
     if (!fams.has(key)) fams.set(key, { a: links[0].parentId, b: links[1]?.parentId, children: [], start: '' })
-    fams.get(key)!.children.push({ id: child, adopted: links.some((l) => l.kind === 'adopted') })
+    fams.get(key)!.children.push({ id: child, adopted: links.some((l) => l.kind === 'adopted'), foster: !links.some((l) => l.kind === 'adopted') && links.some((l) => l.kind === 'foster') })
   }
   const famList = [...fams.values()]
   const famRef = (i: number) => `@F${i + 1}@`
@@ -434,7 +436,7 @@ export function writeGedcom(graph: Graph, opts: { hideLiving: boolean; source: s
     famList.forEach((f, i) => {
       if (f.a === p.id || f.b === p.id) out.push(`1 FAMS ${famRef(i)}`)
       const c = f.children.find((x) => x.id === p.id)
-      if (c) { out.push(`1 FAMC ${famRef(i)}`); if (c.adopted) out.push('2 PEDI adopted') }
+      if (c) { out.push(`1 FAMC ${famRef(i)}`); if (c.adopted) out.push('2 PEDI adopted'); else if (c.foster) out.push('2 PEDI foster') }
     })
   }
   famList.forEach((f, i) => {

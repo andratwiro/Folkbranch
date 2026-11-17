@@ -104,7 +104,7 @@ export const OPS: Record<string, Def> = {
     description: 'Link two existing people: `other` becomes the father, mother, son, daughter or spouse of `to`.',
     input: z.object({
       type: relationType, to: z.string(), other: z.string(), otherParentId: z.string().nullish(),
-      kind: z.enum(['birth', 'adopted', 'step']).optional(), certainty: certainty.optional(),
+      kind: z.enum(['birth', 'adopted', 'foster', 'step']).optional(), certainty: certainty.optional(),
       unionKind: z.enum(['marriage', 'civil']).optional(), startDate: z.string().optional(), endDate: z.string().optional(),
     }),
     refs: { to: 'persons', other: 'persons' },
@@ -130,7 +130,7 @@ export const OPS: Record<string, Def> = {
       if (!Object.keys(patch).length) throw new OpError(400, 'nothing to change')
       const table = type === 'parent' ? schema.parentChild : schema.unions
       if (!getDb().select({ id: table.id }).from(table).where(eq(table.id, id)).get()) throw new OpError(404, `link ${id} not found`)
-      if (x.kind && !(type === 'parent' ? ['birth', 'adopted', 'step'] : ['marriage', 'civil']).includes(x.kind)) throw new OpError(400, `${x.kind} is not a kind of ${type} link`)
+      if (x.kind && !(type === 'parent' ? ['birth', 'adopted', 'foster', 'step'] : ['marriage', 'civil']).includes(x.kind)) throw new OpError(400, `${x.kind} is not a kind of ${type} link`)
       if (type === 'parent' && (x.startDate !== undefined || x.endDate !== undefined || x.place !== undefined)) throw new OpError(400, 'dates and place belong to a union, not a parent link')
       return x
     },

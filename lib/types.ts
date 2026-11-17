@@ -1,7 +1,7 @@
 export type Role = 'owner' | 'editor' | 'reader'
 export type Sex = 'M' | 'F' | 'U'
 export type Certainty = 'documented' | 'family' | 'assumed'
-export type ParentKind = 'birth' | 'adopted' | 'step'
+export type ParentKind = 'birth' | 'adopted' | 'foster' | 'step'
 export type UnionKind = 'marriage' | 'civil'
 export type Lang = 'ru' | 'en' | 'es' | 'ca'
 

@@ -29,6 +29,7 @@ const checks = [
   { file: 'tests/ui/layout.mjs', port: 3590 },
   { file: 'tests/ui/map-layers.mjs', port: 3591 },
   { file: 'tests/ui/chart-drag.mjs', port: 3594 },
+  { file: 'tests/ui/chart-marks.mjs', port: 3595 },
   { file: 'tests/e2e/map.mjs', port: 3592 },
   { file: 'tests/ui/map-reload.mjs', port: 3593, people: 2000, perf: true },
 ].filter((c) => (perf || !c.perf) && (!only.length || only.some((o) => c.file.includes(o))))

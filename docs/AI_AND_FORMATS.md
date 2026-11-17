@@ -65,7 +65,7 @@ A related project to compare with: Genmark (flat text compiled to GEDCOM 5.5.1),
 
 ## GEDCOM
 
-Import understands 5.5.1 and 7.0, export writes 5.5.1. Notes, events and sources become a Biography page on import. Export does not include pages and photos yet. This lets you move from and to MyHeritage, Gramps and FamilySearch. Import is deterministic, with no model involved, and has a preview. Export can hide living people.
+Import understands 5.5.1 and 7.0, export writes 5.5.1. A child's link is written as `PEDI adopted` or `PEDI foster`, and an ended union as `DIV`. GEDCOM has no tag for a stepchild, so that kind comes back as a birth child. Notes, events and sources become a Biography page on import. Export does not include pages and photos yet. This lets you move from and to MyHeritage, Gramps and FamilySearch. Import is deterministic, with no model involved, and has a preview. Export can hide living people.
 
 ## Importing files
 

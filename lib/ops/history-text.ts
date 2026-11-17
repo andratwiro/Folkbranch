@@ -10,7 +10,7 @@ type NameOf = (id: string) => string
 
 /** Stored as a command; read as what happened. Older entries are in the archive's language of the day, so both are matched. */
 const DONE: [string, string][] = [['Добавить', 'Добавлен человек'], ['Удалить человека', 'Удалён человек'], ['Удалить связь', 'Удалена связь'], ['Удалить', 'Удалено'], ['Изменить сразу', 'Изменено сразу']]
-const KIND: Record<string, string> = { birth: 'родной', adopted: 'приёмный', step: 'отчим или мачеха', marriage: 'брак', civil: 'гражданский' }
+const KIND: Record<string, string> = { birth: 'родной', adopted: 'приёмный', foster: 'опекун', step: 'отчим или мачеха', marriage: 'брак', civil: 'гражданский' }
 const CERTAIN: Record<string, string> = { documented: 'по документу', family: 'со слов семьи', assumed: 'предположение' }
 const PLAIN = ['givenName', 'surname', 'maidenName', 'patronymic', 'birthDate', 'birthPlace', 'deathDate', 'deathPlace']
 const LONGEST = 60

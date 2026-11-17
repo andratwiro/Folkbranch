@@ -177,6 +177,9 @@ export const HitAreas = memo(function HitAreas({ layout, edges, unions, groupHea
   )
 })
 
+/** Two slashes across the line of a union that ended, as genograms cross out a divorce. */
+export const endMarks = (x: number, y: number) => [-3, 3].map((d) => `M${x + d - 3.5} ${y + 7}L${x + d + 3.5} ${y - 7}`).join('')
+
 export const FamilyDots = memo(function FamilyDots({ unions, active, canEdit, acts }: { unions: UnionItem[]; active: Set<string> | null; canEdit: boolean; acts: Acts }) {
   return unions.map((u) => {
     const hot = !!active && active.has(u.union.aId) && active.has(u.union.bId)
@@ -184,6 +187,7 @@ export const FamilyDots = memo(function FamilyDots({ unions, active, canEdit, ac
       <g key={u.id} data-union={u.union.id} className={cn('dot-group link-start', canEdit && 'can-add')} onPointerDown={(e) => acts.current.startDot(e, u)} onClick={canEdit ? (e) => { e.stopPropagation(); acts.current.addChild(u) } : undefined} onMouseEnter={(ev) => acts.current.tipDot(ev)} onMouseLeave={() => acts.current.hideTip()}>
         <circle cx={u.x} cy={u.y} r={13} className="dot-hit" />
         <circle cx={u.x} cy={u.y} r={5} className={cn('dot', u.union.kind === 'civil' && 'open', hot && 'hot')} />
+        {u.union.endDate && <path d={endMarks(u.endAt[0], u.endAt[1])} className="union-end" data-union-end={u.union.id} />}
         {canEdit && <path d={`M${u.x - 4} ${u.y}H${u.x + 4}M${u.x} ${u.y - 4}V${u.y + 4}`} className="dot-plus" />}
       </g>
     )
@@ -223,7 +227,10 @@ export function Legend() {
       {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot" /></svg>, 'Брак. От точки идут линии к детям')}
       {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot open" /></svg>, 'Без регистрации брака')}
       {row(line('line'), 'Родной ребёнок')}
-      {row(line('line adopted'), 'Приёмный ребёнок, отчим или мачеха')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><path d={endMarks(26, 6)} className="union-end" /></svg>, 'Союз закончился (развод или разлука)')}
+      {row(line('line adopted'), 'Приёмный ребёнок')}
+      {row(line('line foster'), 'Ребёнок под опекой')}
+      {row(line('line step'), 'Пасынок или падчерица')}
       {row(line('line assumed'), 'Связь под вопросом')}
       {row(ring('assumed'), 'Человек под вопросом')}
       <ul className="mt-2 pt-2 border-t border-border text-sm flex flex-col gap-2">

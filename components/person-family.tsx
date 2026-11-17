@@ -44,7 +44,7 @@ export function FamilyTab({ person }: { person: Person }) {
     <Select look="quiet" title={t('Родство')} aria-label={t('Родство')} value={`${l.kind}:${l.certainty}`} onChange={(v) => {
       const [kind, certainty] = v.split(':')
       setCertainty.mutate({ type: 'parent', id: l.id, kind, certainty })
-    }} options={(['birth', 'adopted', 'step'] as const).flatMap((k) => (Object.keys(CERTAINTY) as Certainty[]).map((c) => ({ value: `${k}:${c}`, label: `${t(k === 'birth' ? (female ? 'родная' : 'родной') : k === 'adopted' ? (female ? 'приёмная' : 'приёмный') : stepWord)} · ${t(CERTAINTY[c])}` })))} />
+    }} options={(['birth', 'adopted', 'foster', 'step'] as const).flatMap((k) => (Object.keys(CERTAINTY) as Certainty[]).map((c) => ({ value: `${k}:${c}`, label: `${t(k === 'birth' ? (female ? 'родная' : 'родной') : k === 'adopted' ? (female ? 'приёмная' : 'приёмный') : k === 'foster' ? 'опекун' : stepWord)} · ${t(CERTAINTY[c])}` })))} />
   )
   const group = (title: string, items: React.ReactNode[], add?: [string, string]) => (!canEdit && !items.length ? null : (
     <section className="mb-4">

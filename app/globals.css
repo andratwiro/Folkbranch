@@ -118,6 +118,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, [contentedita
 .union { stroke-width: 2.5; stroke: #a79d88; }
 .line-halo { fill: none; stroke: var(--paper); stroke-width: 6; }
 .line.adopted { stroke-dasharray: 8 5; }
+.line.foster { stroke-dasharray: 3 3.5; }
+.line.step { stroke-dasharray: 14 4 2 4; }
+.union-end { stroke: var(--ink); stroke-width: 1.75; stroke-linecap: round; pointer-events: none; }
 .line.assumed, .union.assumed { stroke-dasharray: 1.5 5; }
 .line-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
 .line.hover, .union.hover { stroke: var(--accent); }

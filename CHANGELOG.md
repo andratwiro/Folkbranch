@@ -7,6 +7,9 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 ### Fixed
 - On the chart, dropping a couple's dot on a child who had only one of them now adds the other parent (as mother or father by sex). Before, it did nothing and said the people were already linked. A child who has a parent outside the couple, or two parents already, is refused with a reason.
 
+### Added
+- **Marks as in a genogram.** A union that ended (the **The union ended** box on its card) is crossed out with two slashes on the chart. Adopted, foster and step children each have their own line style, and the legend, in all four languages, explains each. **Foster** is a new kind of link, next to birth, adopted and step; GEDCOM and Gramps files carry it both ways (`PEDI foster`).
+
 ## 1.7.0 - 2026-11-17
 
 The family on a map, year by year. It began as [pull request #14](https://github.com/danarkhipov/Folkbranch/pull/14) by [@andratwiro](https://github.com/andratwiro): thank you. On top of it this release tells two villages of one name apart, suggests points for places that have none, imports Gramps files with their places, and guards the archive against several easy mistakes.
