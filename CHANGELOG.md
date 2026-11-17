@@ -4,6 +4,11 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ## Unreleased
 
+## 1.7.1 - 2026-11-17
+
+### Changed
+- Printing the chart as a picture or PDF starts with names shown for the owner. Before, the box **Hide living relatives** was ticked every time, so a family with many living people came out as a page of "Living relative". Tick the box to hide them before sending the file to anyone. Editors start with the box ticked as before, and readers never receive the names.
+
 ## 1.7.0 - 2026-11-17
 
 The family on a map, year by year. It began as [pull request #14](https://github.com/danarkhipov/Folkbranch/pull/14) by [@andratwiro](https://github.com/andratwiro): thank you. On top of it this release tells two villages of one name apart, suggests points for places that have none, imports Gramps files with their places, and guards the archive against several easy mistakes.
