@@ -3,7 +3,7 @@ export type Sex = 'M' | 'F' | 'U'
 export type Certainty = 'documented' | 'family' | 'assumed'
 export type ParentKind = 'birth' | 'adopted' | 'step'
 export type UnionKind = 'marriage' | 'civil'
-import { langDef, langOf, type Lang } from './languages'
+import { collator, langDef, langOf, type Lang } from './languages'
 export type { Lang }
 
 export interface Person {
@@ -205,8 +205,23 @@ export interface Box {
   h: number
 }
 
-export const personName = (p: Pick<Person, 'givenName' | 'surname'>) =>
-  [p.givenName, p.surname].filter(Boolean).join(' ').trim()
+/** The language names are written in on this page: the archive's, which is the language of its data. A server passes the language it means. */
+const nameLang = (): Lang | undefined => (typeof document === 'undefined' ? undefined : langOf(document.documentElement.dataset.archiveLang ?? document.documentElement.lang))
+
+/**
+ * "Anna Petrova", or "Petrova Anna" in a language the registry says writes the surname first (Chinese, Japanese, Korean, Hungarian,
+ * Vietnamese). Without a language it reads the page's archive language, and a server without one writes the given name first.
+ */
+export const personName = (p: Pick<Person, 'givenName' | 'surname'>, lang: Lang | undefined = nameLang()) =>
+  (lang && langDef(lang).nameOrder === 'surname-first' ? [p.surname, p.givenName] : [p.givenName, p.surname]).filter(Boolean).join(' ').trim()
+
+/** The full name as the language's culture writes it: "Иван Петрович Иванов" where the registry says people carry a patronymic, and the order above. */
+export const fullName = (p: Pick<Person, 'givenName' | 'surname'> & { patronymic?: string }, lang: Lang | undefined = nameLang()) =>
+  (lang && langDef(lang).nameOrder === 'surname-first' ? [p.surname, p.givenName] : [p.givenName, lang && langDef(lang).patronymic ? p.patronymic : '', p.surname]).filter(Boolean).join(' ').trim()
+
+/** Orders two people by the name the language writes first, in the language's own alphabet ("ä" in German, "ñ" in Spanish, "ё" in Russian). */
+export const compareNames = (a: Pick<Person, 'givenName' | 'surname'>, b: Pick<Person, 'givenName' | 'surname'>, lang: Lang | undefined = nameLang()) =>
+  collator(lang ?? 'en').compare(personName(a, lang), personName(b, lang))
 
 let serverOpenEnd: (() => string) | null = null
 /** The server says how a living person's open range ends in the archive's language; a browser reads the language of its page. */

@@ -1,5 +1,5 @@
 'use client'
-import { setPageLang } from '@/lib/languages'
+import { setPageLang, collator } from '@/lib/languages'
 import { UndoKeys } from './undo-keys'
 import type { SignInMethods } from '@/lib/sign-in-methods'
 import dynamic from 'next/dynamic'
@@ -320,8 +320,8 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
   const allGroups = useMemo(() => {
     const counts = new Map<string, number>()
     for (const p of graph?.persons ?? []) for (const tag of shownTags(p.tags)) counts.set(tag, (counts.get(tag) ?? 0) + 1)
-    return [...counts].sort((a, b) => a[0].localeCompare(b[0]))
-  }, [graph])
+    return [...counts].sort((a, b) => collator(lang).compare(a[0], b[0]))
+  }, [graph, lang])
   const groupIds = useMemo(() => {
     const on = groups.filter((g) => allGroups.some(([name]) => name === g))
     return on.length ? new Set((graph?.persons ?? []).filter((p) => p.tags.some((tag) => on.includes(tag))).map((p) => p.id)) : null

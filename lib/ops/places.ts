@@ -1,5 +1,7 @@
 // Places and repositories: what the words on the cards mean. Not personal, so anyone who reads the archive reads them,
 // and only editors change them. Every change goes to the history and can be undone.
+import { archiveLang } from './app-config'
+import { collator } from '../languages'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDb, schema } from '../db'
@@ -48,7 +50,7 @@ export const repositoryInput = z.object({
 export const toPlace = (r: typeof schema.places.$inferSelect): Place => ({ id: r.id, name: r.name, kind: r.kind, parentId: r.parentId, otherNames: JSON.parse(r.otherNames), lat: r.lat, lon: r.lon, note: r.note })
 
 export function listPlaces(actor: Actor): Place[] {
-  const all = getDb().select().from(schema.places).all().map(toPlace).sort((a, b) => a.name.localeCompare(b.name))
+  const all = getDb().select().from(schema.places).all().map(toPlace).sort((a, b) => collator(archiveLang()).compare(a.name, b.name))
   if (!seesOnlyPublic(actor)) return all
   // A place can be all that is left of a hidden relative, such as the town a living cousin was born in:
   // a reader or a link sees only the places of people shown to them, and what those places were part of.
@@ -241,7 +243,7 @@ export function deletePlace(actor: Actor, id: string) {
 
 export function listRepositories(actor: Actor): Repository[] {
   void actor
-  return getDb().select().from(schema.repositories).all().map(({ updatedAt: _, ...r }) => r).sort((a, b) => a.name.localeCompare(b.name))
+  return getDb().select().from(schema.repositories).all().map(({ updatedAt: _, ...r }) => r).sort((a, b) => collator(archiveLang()).compare(a.name, b.name))
 }
 
 export function saveRepository(actor: Actor, id: string | null, raw: unknown) {

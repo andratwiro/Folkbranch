@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { useApp } from '@/lib/client'
 import { CARD_H, layoutFamily } from '@/lib/graph/layout'
 import { PAPERS, planOneSheet, planSheets, readability, type Paper } from '@/lib/graph/print-plan'
-import { lifeYears, personName, type Graph, type Person } from '@/lib/types'
+import { compareNames, lifeYears, personName, type Graph, type Person } from '@/lib/types'
 import type { Family } from '@/lib/kinship'
 import { peopleInScope, subgraph, type Scope } from '@/lib/graph/select'
 import { imagePixels } from '@/lib/chart-image'
@@ -28,7 +28,7 @@ export function PrintDialog({ graph: shown, whole, family, focusId, onClose }: {
   // Which part of the family: what the chart shows now, all of it, or one person's branch.
   const [part, setPart] = useState<Part>('shown')
   const [rootId, setRootId] = useState(() => focusId ?? whole.persons[0]?.id ?? '')
-  const people = useMemo(() => [...whole.persons].filter((p) => !p.hidden).sort((a, b) => personName(a).localeCompare(personName(b))), [whole])
+  const people = useMemo(() => [...whole.persons].filter((p) => !p.hidden).sort((a, b) => compareNames(a, b)), [whole])
   const graph = useMemo(() => {
     if (part === 'shown') return shown
     if (part === 'all' || !rootId) return whole

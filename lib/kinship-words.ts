@@ -3,13 +3,21 @@
 // and tests/kinship-es-ca.test.ts says what each must answer.
 import type { Sex } from './types'
 
+/** Which side of my family a blood relative comes through: my father's or my mother's. Many languages have a different word for each uncle and aunt. */
+export type Side = 'paternal' | 'maternal'
+
 export interface KinWords {
   /**
    * A blood relative `up` generations above the shared ancestor from me and `down` below it to them, of sex `s`.
    * (1,0) parent, (2,0) grandparent, (0,1) child, (1,1) sibling (`half` when only one parent is shared),
-   * (2,1) uncle or aunt, (1,2) nephew or niece, (2,2) first cousin, (3,2) a parent's first cousin, (2,3) a first cousin's child.
+   * (2,1) uncle or aunt (`side` tells a father's brother from a mother's brother; most languages ignore it), (1,2) nephew or niece, (2,2) first cousin, (3,2) a parent's first cousin, (2,3) a first cousin's child.
    */
-  blood(up: number, down: number, s: Sex, half: boolean): string
+  blood(up: number, down: number, s: Sex, half: boolean, side?: Side): string
+  /**
+   * Optional: a phrase for a relative the language has no single word for (a great-uncle's grandson), instead of the English one. It gets the
+   * same arguments as `blood`. A language's `blood` answers '' for such a relative. Without it the English phrase is used.
+   */
+  fallback?(up: number, down: number, s: Sex, side?: Side, half?: boolean): string
   /** An adopted relative: `label` is the blood term already made for sex `s`. */
   adopted(label: string, s: Sex): string
   spouse(s: Sex): string

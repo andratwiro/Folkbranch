@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { api, useApp } from '@/lib/client'
 import type { SearchMatch, SearchResult } from '@/lib/search/engine'
 import { markParts } from '@/lib/search/mark'
-import { lifeYears, personName, shownTags, type Person } from '@/lib/types'
+import { compareNames, lifeYears, personName, shownTags, type Person } from '@/lib/types'
 import { Mini } from './person-mini'
 
 export interface SearchHit { personId: string; query: string; matches: SearchMatch[]; terms: string[] }
@@ -17,7 +17,7 @@ export { Mini }
 const useVisible = (exclude: string[] = []) => {
   const { graph } = useApp()
   return useMemo(
-    () => graph.persons.filter((p) => !p.hidden && !exclude.includes(p.id)).sort((a, b) => personName(a).localeCompare(personName(b))),
+    () => graph.persons.filter((p) => !p.hidden && !exclude.includes(p.id)).sort((a, b) => compareNames(a, b)),
     [graph, exclude],
   )
 }

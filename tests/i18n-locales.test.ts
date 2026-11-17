@@ -139,3 +139,51 @@ describe('the checks', () => {
     expect(run('scripts/i18n-check.ts')).toContain('i18n:check passed.')
   })
 })
+
+describe('names and kinship per language', () => {
+  const p = (givenName: string, surname: string, patronymic = '') => ({ givenName, surname, patronymic })
+
+  it('writes the surname first where the registry says so, and the patronymic where the culture has one', async () => {
+    const { personName, fullName } = await import('../lib/types')
+    expect(personName(p('Anna', 'Petrova'), 'en')).toBe('Anna Petrova')
+    expect(fullName(p('Иван', 'Иванов', 'Петрович'), 'ru')).toBe('Иван Петрович Иванов')
+    expect(fullName(p('Anna', 'Petrova', 'Ivanovna'), 'en')).toBe('Anna Petrova')
+    // A surname-first language, added as a registry line.
+    const { LANGUAGES } = await import('../lib/languages')
+    const zh = { ...LANGUAGES.en, nameOrder: 'surname-first' as const }
+    ;(LANGUAGES as Record<string, unknown>).zzname = zh
+    expect(personName(p('Wei', 'Li'), 'zzname' as Lang)).toBe('Li Wei')
+    delete (LANGUAGES as Record<string, unknown>).zzname
+    // Without a language and without a page, the given name comes first, as before.
+    expect(personName(p('Wei', 'Li'))).toBe('Wei Li')
+  })
+
+  it("sorts in the reader's alphabet, not by code points", async () => {
+    const { compareNames } = await import('../lib/types')
+    const names = ['Яна', 'Анна', 'Ёлка', 'Елена'].map((n) => p(n, ''))
+    // By code points "Ё" comes before every other capital; in the Russian alphabet it follows "Е".
+    expect([...names].sort((a, b) => (a.givenName < b.givenName ? -1 : 1)).map((n) => n.givenName)[0]).toBe('Ёлка')
+    expect([...names].sort((a, b) => compareNames(a, b, 'ru')).map((n) => n.givenName)).toEqual(['Анна', 'Елена', 'Ёлка', 'Яна'])
+  })
+
+  it("tells a father's brother from a mother's brother where a language has different words, and names a far relative by its fallback", async () => {
+    const { Family, KINSHIP_WORDS } = await import('../lib/kinship')
+    const person = (id: string, sex: 'M' | 'F') => ({ id, sex, givenName: id, surname: '', patronymic: '', maidenName: '', otherNames: '', living: false, tags: [], claims: [], sources: [], facts: [] })
+    const graph = {
+      persons: ['me', 'dad', 'mum', 'gpa', 'gma', 'mgpa', 'uncleDad', 'uncleMum', 'g3', 'g4'].map((id) => person(id, ['dad', 'gpa', 'mgpa', 'uncleDad', 'uncleMum', 'g3', 'g4'].includes(id) ? 'M' : 'F')),
+      parentChild: [['me', 'dad'], ['me', 'mum'], ['dad', 'gpa'], ['dad', 'gma'], ['uncleDad', 'gpa'], ['uncleDad', 'gma'], ['mum', 'mgpa'], ['uncleMum', 'mgpa'], ['gpa', 'g3'], ['g3', 'g4']].map(([c, par], i) => ({ id: String(i), childId: c, parentId: par, kind: 'birth', certainty: 'documented' })),
+      unions: [],
+    }
+    const family = new Family(graph as never)
+    KINSHIP_WORDS.xx = {
+      ...KINSHIP_WORDS.en!,
+      blood: (up, down, s, half, side) => (up === 2 && down === 1 && s === 'M' ? (side === 'maternal' ? 'mother-side uncle' : 'father-side uncle') : up === 4 ? '' : KINSHIP_WORDS.en!.blood(up, down, s, half, side)),
+      fallback: (up, down) => `relative ${up}+${down}`,
+    }
+    expect(family.relation('me', 'uncleDad', 'xx' as Lang)?.label).toBe('father-side uncle')
+    expect(family.relation('me', 'uncleMum', 'xx' as Lang)?.label).toBe('mother-side uncle')
+    expect(family.relation('me', 'g4', 'xx' as Lang)?.label).toBe('relative 4+0')
+    expect(family.relation('me', 'uncleDad', 'en')?.label).toBe('uncle')
+    delete KINSHIP_WORDS.xx
+  })
+})
