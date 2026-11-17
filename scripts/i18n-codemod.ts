@@ -17,7 +17,7 @@ import { PAIR_FILES, pairsOf } from './i18n-pairs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const write = process.argv.includes('--write')
-const cyrillic = /[А-Яа-яЁё]/
+const cyrillic = /[\u0400-\u04FF]/
 
 const load = async (name: string): Promise<Record<string, string>> => (await import(path.join(root, 'scripts/legacy', `${name}.ts`))).default
 const enOld = await load('en')
@@ -28,6 +28,8 @@ delete contexts._note
 
 /** The [Russian, English] pairs that sit beside the code in these files: the English is their key (translatePair looks it up). */
 const pairList = pairsOf(root)
+// Remembered, so a second run still knows the Russian of a pair whose call has been rewritten.
+if (write) writeFileSync(path.join(root, 'scripts/legacy/pairs.json'), JSON.stringify(pairList, null, 1) + '\n')
 
 // One key per (Russian, English) meaning. Its id is the English text, plus a context when another phrase already took that English.
 type Key = { ru: string; text: string; context?: string; id: string }
@@ -83,7 +85,7 @@ const files: [string, Record<string, string>][] = [['ru', { ...ruFile, ...added.
 const SKIP = new Set(['lib/i18n.ts', 'lib/i18n-load.ts', 'lib/i18n-errors.ts'])
 // Russian here is data matched against what people typed or older archives hold, or Russian grammar handled by the plural and kinship work: left as it is.
 const DATA = new Set(['lib/ops/registry.ts', 'lib/import-formats.ts', 'lib/textformat.ts', 'lib/markdown.ts', 'lib/names.ts', 'lib/map-scrub.ts', 'lib/kinship.ts', 'lib/kinship-case.ts', 'lib/kinship-words.ts', 'lib/kinship-es.ts', 'lib/kinship-ca.ts', 'lib/demo.ts'])
-const CALLS = new Set(['t', 'translate', 'translatePair', 'tr'])
+const CALLS = new Set(['t', 'translate', 'translatePair', 'tr', 'tell', 'say'])
 const walk = (dir: string): string[] =>
   readdirSync(dir).flatMap((name) => {
     const p = path.join(dir, name)

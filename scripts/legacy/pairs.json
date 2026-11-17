@@ -1,0 +1,542 @@
+[
+ [
+  "Профессия",
+  "Occupation"
+ ],
+ [
+  "Место жительства",
+  "Residence"
+ ],
+ [
+  "Образование",
+  "Education"
+ ],
+ [
+  "Вероисповедание",
+  "Religion"
+ ],
+ [
+  "Национальность",
+  "Nationality"
+ ],
+ [
+  "Титул",
+  "Title"
+ ],
+ [
+  "Крещение",
+  "Christening"
+ ],
+ [
+  "Погребение",
+  "Burial"
+ ],
+ [
+  "Перепись",
+  "Census"
+ ],
+ [
+  "Эмиграция",
+  "Emigration"
+ ],
+ [
+  "Иммиграция",
+  "Immigration"
+ ],
+ [
+  "Подданство",
+  "Naturalization"
+ ],
+ [
+  "Крещение",
+  "Baptism"
+ ],
+ [
+  "Конфирмация",
+  "Confirmation"
+ ],
+ [
+  "Рукоположение",
+  "Ordination"
+ ],
+ [
+  "Окончание учёбы",
+  "Graduation"
+ ],
+ [
+  "Сословие",
+  "Caste"
+ ],
+ [
+  "Внешность",
+  "Physical description"
+ ],
+ [
+  "Выход на пенсию",
+  "Retirement"
+ ],
+ [
+  "Кремация",
+  "Cremation"
+ ],
+ [
+  "Завещание",
+  "Will"
+ ],
+ [
+  "Наследство",
+  "Probate"
+ ],
+ [
+  "Крёстный отец",
+  "Godfather"
+ ],
+ [
+  "Крёстный",
+  "Godparent"
+ ],
+ [
+  "Священник",
+  "Clergy"
+ ],
+ [
+  "Священник",
+  "Officiator"
+ ],
+ [
+  "Крёстная мать",
+  "Godmother"
+ ],
+ [
+  "Свидетель",
+  "Witness"
+ ],
+ [
+  "Друг",
+  "Friend"
+ ],
+ [
+  "Сосед",
+  "Neighbour"
+ ],
+ [
+  "Смотрит обзор архива",
+  "Looking at the overview"
+ ],
+ [
+  "Ищет, что не заполнено",
+  "Looking for gaps"
+ ],
+ [
+  "Разбирает таблицу",
+  "Reading the table"
+ ],
+ [
+  "Ищет людей",
+  "Searching people"
+ ],
+ [
+  "Ищет людей",
+  "Selecting people"
+ ],
+ [
+  "Ищет по всему архиву",
+  "Searching the archive"
+ ],
+ [
+  "Читает карточку",
+  "Reading a card"
+ ],
+ [
+  "Смотрит родню",
+  "Looking at relatives"
+ ],
+ [
+  "Считает родство",
+  "Working out the relation"
+ ],
+ [
+  "Смотрит список страниц",
+  "Listing pages"
+ ],
+ [
+  "Читает страницу",
+  "Reading a page"
+ ],
+ [
+  "Смотрит фото",
+  "Looking at photos"
+ ],
+ [
+  "Рассматривает фото или документ",
+  "Looking at a photo or document"
+ ],
+ [
+  "Смотрит места",
+  "Looking at places"
+ ],
+ [
+  "Читает всё дерево",
+  "Reading the whole tree"
+ ],
+ [
+  "Проверяет, что изменится",
+  "Checking what would change"
+ ],
+ [
+  "Выгружает GEDCOM",
+  "Exporting GEDCOM"
+ ],
+ [
+  "Смотрит файл GEDCOM",
+  "Looking at a GEDCOM file"
+ ],
+ [
+  "Смотрит историю",
+  "Looking at history"
+ ],
+ [
+  "Читает файл",
+  "Reading the file"
+ ],
+ [
+  "Смотрит настройки",
+  "Looking at settings"
+ ],
+ [
+  "Смотрит, у кого есть доступ",
+  "Looking at who has access"
+ ],
+ [
+  "Смотрит приглашения",
+  "Looking at invitations"
+ ],
+ [
+  "Составляет план",
+  "Making a plan"
+ ],
+ [
+  "Берёт нужные инструменты",
+  "Getting the tools it needs"
+ ],
+ [
+  "Открывает человека на схеме",
+  "Opening a person on the chart"
+ ],
+ [
+  "Показывает ветку на схеме",
+  "Showing a branch on the chart"
+ ],
+ [
+  "Показывает путь на схеме",
+  "Showing the path on the chart"
+ ],
+ [
+  "Меняет направление схемы",
+  "Changing the chart direction"
+ ],
+ [
+  "Сохранить файл в архив",
+  "Save the file to the archive"
+ ],
+ [
+  "Добавить человека",
+  "Add a person"
+ ],
+ [
+  "Изменить карточку",
+  "Change a card"
+ ],
+ [
+  "Добавить факт",
+  "Add a fact"
+ ],
+ [
+  "Добавить связь",
+  "Add a link"
+ ],
+ [
+  "Изменить связь",
+  "Change a link"
+ ],
+ [
+  "Создать страницу",
+  "Create a page"
+ ],
+ [
+  "Изменить страницу",
+  "Change a page"
+ ],
+ [
+  "Переместить страницу",
+  "Move a page"
+ ],
+ [
+  "Загрузить фото",
+  "Upload a photo"
+ ],
+ [
+  "Изменить подпись фото",
+  "Change a photo caption"
+ ],
+ [
+  "Отметить человека на фото",
+  "Tag a person in a photo"
+ ],
+ [
+  "Сменить аватарку",
+  "Change an avatar"
+ ],
+ [
+  "Добавить место",
+  "Add a place"
+ ],
+ [
+  "Изменить место",
+  "Change a place"
+ ],
+ [
+  "Добавить версию факта",
+  "Add a version of a fact"
+ ],
+ [
+  "Выбрать версию факта",
+  "Choose a version of a fact"
+ ],
+ [
+  "Вернуть версию факта",
+  "Bring back a version of a fact"
+ ],
+ [
+  "Добавить источник",
+  "Add a source"
+ ],
+ [
+  "Удалить человека",
+  "Delete a person"
+ ],
+ [
+  "Изменить сразу нескольких",
+  "Change several people"
+ ],
+ [
+  "Удалить связь",
+  "Delete a link"
+ ],
+ [
+  "Удалить связи",
+  "Delete links"
+ ],
+ [
+  "Импортировать GEDCOM",
+  "Import GEDCOM"
+ ],
+ [
+  "Добавить дело из исследования",
+  "Add a research case"
+ ],
+ [
+  "Удалить страницу",
+  "Delete a page"
+ ],
+ [
+  "Удалить фото",
+  "Delete a photo"
+ ],
+ [
+  "Снять отметку с фото",
+  "Remove a photo tag"
+ ],
+ [
+  "Отклонить версию факта",
+  "Reject a version of a fact"
+ ],
+ [
+  "Удалить источник",
+  "Remove a source"
+ ],
+ [
+  "Импортировать файл GEDCOM",
+  "Import a GEDCOM file"
+ ],
+ [
+  "Импортировать данные",
+  "Import data"
+ ],
+ [
+  "Отменить правку",
+  "Undo a change"
+ ],
+ [
+  "Изменить настройки",
+  "Change settings"
+ ],
+ [
+  "Изменить роль",
+  "Change a role"
+ ],
+ [
+  "Создать приглашение",
+  "Create an invitation"
+ ],
+ [
+  "Отменить приглашение",
+  "Cancel an invitation"
+ ],
+ [
+  "Сохраняет файл в архив",
+  "Saving the file to the archive"
+ ],
+ [
+  "Добавляет человека",
+  "Adding a person"
+ ],
+ [
+  "Меняет карточку",
+  "Changing a card"
+ ],
+ [
+  "Добавляет факт",
+  "Adding a fact"
+ ],
+ [
+  "Добавляет связь",
+  "Adding a link"
+ ],
+ [
+  "Меняет связь",
+  "Changing a link"
+ ],
+ [
+  "Создаёт страницу",
+  "Creating a page"
+ ],
+ [
+  "Меняет страницу",
+  "Changing a page"
+ ],
+ [
+  "Переносит страницу",
+  "Moving a page"
+ ],
+ [
+  "Загружает фото",
+  "Uploading a photo"
+ ],
+ [
+  "Меняет подпись фото",
+  "Changing a photo caption"
+ ],
+ [
+  "Отмечает человека на фото",
+  "Tagging a person in a photo"
+ ],
+ [
+  "Меняет аватарку",
+  "Changing an avatar"
+ ],
+ [
+  "Добавляет место",
+  "Adding a place"
+ ],
+ [
+  "Меняет место",
+  "Changing a place"
+ ],
+ [
+  "Добавляет версию факта",
+  "Adding a version of a fact"
+ ],
+ [
+  "Выбирает версию факта",
+  "Choosing a version of a fact"
+ ],
+ [
+  "Возвращает версию факта",
+  "Bringing back a version of a fact"
+ ],
+ [
+  "Добавляет источник",
+  "Adding a source"
+ ],
+ [
+  "Удаляет человека",
+  "Deleting a person"
+ ],
+ [
+  "Меняет сразу нескольких",
+  "Changing several people"
+ ],
+ [
+  "Удаляет связь",
+  "Deleting a link"
+ ],
+ [
+  "Удаляет связи",
+  "Deleting links"
+ ],
+ [
+  "Импортирует GEDCOM",
+  "Importing GEDCOM"
+ ],
+ [
+  "Добавляет дело из исследования",
+  "Adding a research case"
+ ],
+ [
+  "Удаляет страницу",
+  "Deleting a page"
+ ],
+ [
+  "Удаляет фото",
+  "Deleting a photo"
+ ],
+ [
+  "Снимает отметку с фото",
+  "Removing a photo tag"
+ ],
+ [
+  "Отклоняет версию факта",
+  "Rejecting a version of a fact"
+ ],
+ [
+  "Удаляет источник",
+  "Deleting a source"
+ ],
+ [
+  "Импортирует GEDCOM из файла",
+  "Importing GEDCOM from the file"
+ ],
+ [
+  "Вносит текст в архив",
+  "Bringing text into the archive"
+ ],
+ [
+  "Отменяет правку",
+  "Undoing an edit"
+ ],
+ [
+  "Меняет настройки",
+  "Changing settings"
+ ],
+ [
+  "Меняет права человека",
+  "Changing a person's access"
+ ],
+ [
+  "Создаёт приглашение",
+  "Creating an invitation"
+ ],
+ [
+  "Отзывает приглашение",
+  "Revoking an invitation"
+ ],
+ [
+  "Участник",
+  "Participant"
+ ],
+ [
+  "Событие",
+  "Event"
+ ]
+]

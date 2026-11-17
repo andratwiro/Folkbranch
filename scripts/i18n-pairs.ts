@@ -1,5 +1,5 @@
 // The [Russian, English] pairs that sit beside the code (GEDCOM kinds, the assistant's step names): the English is their key.
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 
 export const PAIR_FILES = ['lib/gedcom.ts', 'lib/agent/labels.ts']
@@ -14,11 +14,11 @@ const walk = (dir: string): string[] =>
 
 const Q = String.raw`(['"])((?:(?!\%N)[^\\\n])*)\%N`
 const quoted = (n: number) => Q.replaceAll('%N', String(n)).replace('(?!\\' + n + ')', `(?!\\${n})`)
-// ['Русский', 'English'] in the pair files
+// a pair array in the pair files: [russian, english]
 const ARRAY = new RegExp(String.raw`\[\s*` + quoted(1) + String.raw`,\s*` + quoted(3) + String.raw`\s*\]`, 'g')
-// translatePair(lang, 'Русский', 'English') anywhere
+// translatePair(lang, russian, english) anywhere
 const CALL = new RegExp(String.raw`translatePair\(\s*[^,()]+,\s*` + quoted(1) + String.raw`,\s*` + quoted(3) + String.raw`\s*\)`, 'g')
-const cyrillic = /[А-Яа-яЁё]/
+const cyrillic = /[\u0400-\u04FF]/
 
 /** Every distinct Russian + English pair: the arrays of PAIR_FILES, and every translatePair call that spells both out. */
 export function pairsOf(root: string): [string, string][] {
@@ -29,5 +29,8 @@ export function pairsOf(root: string): [string, string][] {
     const source = readFileSync(f, 'utf8')
     if (source.includes('translatePair(')) for (const m of source.matchAll(CALL)) take(m[2], m[4])
   }
+  // Pairs found on an earlier run: once translatePair(lang, 'ru', 'en') is rewritten to translate(lang, 'en') the call is gone, but the phrase's Russian is not.
+  const kept = path.join(root, 'scripts/legacy/pairs.json')
+  if (existsSync(kept)) for (const [ru, en] of JSON.parse(readFileSync(kept, 'utf8')) as [string, string][]) take(ru, en)
   return out
 }

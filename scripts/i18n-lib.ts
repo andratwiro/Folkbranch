@@ -97,7 +97,8 @@ export const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/
  */
 export function askedPhrases(scan: Scan): Set<string> {
   const known = new Set([...Object.keys(readTable('ru')), ...Object.keys(readTable('en'))])
-  const asked = new Set<string>(scan.calls.map((c) => c.key!))
+  // The source language is English: a Russian literal is a stored value that lib/i18n-legacy.ts maps to its English key, not a phrase.
+  const asked = new Set<string>(scan.calls.map((c) => c.key!).filter((k) => !/[\u0400-\u04FF]/.test(k)))
   for (const l of scan.literals) if (known.has(l)) asked.add(l)
   for (const m of readFileSync(path.join(root, 'lib/i18n-legacy.ts'), 'utf8').matchAll(/^ {2}"(?:[^"\\]|\\.)*": ("(?:[^"\\]|\\.)*"),$/gm)) asked.add(JSON.parse(m[1]))
   return asked
