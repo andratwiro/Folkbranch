@@ -4,6 +4,12 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ## Unreleased
 
+### Fixed
+- Settings > AI: the units on the usage cards ("this month", "tokens today") are no longer cut off by the card's edge, and the assistant's tokens for the day are said once.
+
+### Changed
+- Each answer from the assistant shows the time it came and how long it took ("14:32 · 12 s"); on a long answer, opening it shows the steps and tokens. It is kept with the conversation on this device. Older answers show nothing.
+
 ## 1.7.0 - 2026-11-17
 
 The family on a map, year by year. It began as [pull request #14](https://github.com/danarkhipov/Folkbranch/pull/14) by [@andratwiro](https://github.com/andratwiro): thank you. On top of it this release tells two villages of one name apart, suggests points for places that have none, imports Gramps files with their places, and guards the archive against several easy mistakes.

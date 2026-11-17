@@ -14,6 +14,7 @@ import { PromptInput, PromptInputBody, PromptInputButton, PromptInputFooter, Pro
 import { PanelEdge } from './panel-size'
 import { changesData, isOrdinaryEdit, stepLabel, toolLabel } from '@/lib/agent/labels'
 import { api, undoFailure, useApp } from '@/lib/client'
+import { stampDetail, stampLine, stampOf } from '@/lib/agent/stamp'
 import { forgetChat, loadChats, saveChat, type SavedChat } from '@/lib/chat-store'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { Scope } from '@/lib/graph/select'
@@ -156,6 +157,7 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
                     if (name === 'set_plan') return m.parts.findLast((x) => isToolUIPart(x) && getToolName(x) === 'set_plan') === p ? <Plan key={p.toolCallId} part={p as ToolUIPart} /> : null
                     return <ToolCall key={p.toolCallId} part={p as ToolUIPart} onAnswer={(approved) => addToolApprovalResponse({ id: p.approval!.id, approved })} onAllowEdits={isOrdinaryEdit(name) && !trusted ? allowEdits : undefined} />
                   })}
+                  {m.role === 'assistant' && finished && <Stamped meta={m.metadata} />}
                   {ids.length > 0 && finished && !pending.length && !undone.includes(m.id) && (
                     <button className="bar-btn self-start border border-border !h-7" onClick={() => takeBack(m)}><Undo2 size={13} /> {t('Отменить правки из этого ответа')}</button>
                   )}
@@ -340,6 +342,22 @@ function groupSteps(parts: UIMessage['parts']) {
   }
   return out
 }
+/** When the answer came and how long it took; on a long one the steps and tokens open under it. Nothing for an old message. */
+function Stamped({ meta }: { meta: unknown }) {
+  const { t, lang } = useApp()
+  const s = stampOf(meta)
+  if (!s) return null
+  const detail = stampDetail(s, lang, t)
+  const line = stampLine(s, lang, t)
+  if (!detail) return <p className="answer-stamp text-[11.5px] text-ink-faint">{line}</p>
+  return (
+    <details className="answer-stamp text-[11.5px] text-ink-faint">
+      <summary className="flex cursor-pointer list-none items-center gap-1">{line}<ChevronDown size={12} className="chev shrink-0" /></summary>
+      <p className="mt-0.5">{detail}</p>
+    </details>
+  )
+}
+
 /** Whether the screen already shows the assistant at work: text arriving or a step running. Otherwise it is thinking. */
 function visiblyWorking(m: UIMessage | undefined, status: string) {
   if (status === 'submitted' || !m || m.role !== 'assistant') return false

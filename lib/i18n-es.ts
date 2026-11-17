@@ -2218,6 +2218,6 @@ const es: Record<string, string> = {
   'Места без точки в архиве получат их; уже поставленные точки не меняются.': 'Los lugares sin punto en el archivo los recibirán; los puntos ya puestos no cambian.',
   'точка из GeoNames': 'punto de GeoNames',
   'Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.': 'Sugerencias a partir de una lista de ciudades y pueblos guardada en la propia aplicación: los nombres de lugares no se envían a ninguna parte. El punto solo se pone cuando lo confirmas.',
-
+  'шагов': 'pasos',
 }
 export default es

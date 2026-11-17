@@ -2219,5 +2219,6 @@ const ca: Record<string, string> = {
   'Места без точки в архиве получат их; уже поставленные точки не меняются.': 'Els llocs sense punt a l\'arxiu els rebran; els punts ja posats no canvien.',
   'точка из GeoNames': 'punt de GeoNames',
   'Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.': 'Suggeriments a partir d\'una llista de ciutats i pobles desada a la mateixa aplicació: els noms de llocs no s\'envien enlloc. El punt només es posa quan el confirmes.',
+  'шагов': 'passos',
 }
 export default ca
