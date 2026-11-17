@@ -242,6 +242,6 @@ describe('when and how long', () => {
     expect(s.tokens).toBe(4)
     // What the browser keeps in a saved conversation is JSON of the message: the stamp comes back from it.
     expect(stampOf(JSON.parse(JSON.stringify(r.message)).metadata)).toEqual(JSON.parse(JSON.stringify(s)))
-    expect((r.message.metadata as any).usage).toBeDefined()
+    expect((r.message.metadata as { usage?: unknown }).usage).toBeDefined()
   })
 })

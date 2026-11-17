@@ -47,7 +47,12 @@ export const OUTPUTS: Record<string, z.ZodType> = {
     unions: z.array(relative.extend({ linkId: id, personId: id, kind: text, startDate: text, endDate: text, place: text })),
     pages: z.array(pageMeta),
   }),
-  get_relatives: z.array(brief.extend({ relation: text, blood: z.boolean() })),
+  get_relatives: z.array(brief.extend({ relation: text, blood: z.boolean(), kind: text })),
+  count_relatives: z.union([z.object({ ambiguous: z.array(brief), note: text }), z.object({
+    person: z.object({ id, name: text }), total: z.number(), byKind: z.record(z.string(), z.number()), bloodByDegree: z.record(z.string(), z.number()), hiddenFromYou: z.number(), definition: text,
+    immediateFamily: z.array(brief.extend({ relation: text, kind: text, degree: z.number().optional() })).optional(),
+    matching: z.number().optional(), more: z.number().optional(), list: z.array(brief.extend({ relation: text, kind: text, degree: z.number().optional() })).optional(),
+  })]),
   how_related: z.object({ relation: text.nullable(), blood: z.boolean().optional(), path: z.array(z.object({ id, name: text })).optional() }),
   list_pages: z.array(pageMeta),
   get_page: pageMeta.extend({ markdown: text, content: z.array(z.unknown()).optional() }),

@@ -217,7 +217,7 @@ describe('a reader and living relatives', () => {
   // controlled refusal is the answer. A tool that always throws fails the first group.
   const asks = (): [string, Record<string, unknown>, 'ok' | 'refused'][] => [
     ['get_overview', {}, 'ok'], ['find_gaps', { limit: 200 }, 'ok'], ['search_people', { query: '', limit: 500 }, 'ok'], ['search_people', { query: 'Живинская' }, 'ok'], ['get_person', { id: f.living.id }, 'refused'], ['get_person', { id: f.pyotr.id }, 'ok'],
-    ['get_relatives', { id: f.pyotr.id }, 'ok'], ['how_related', { from: f.pyotr.id, to: f.living.id }, 'refused'], ['list_photos', {}, 'ok'],
+    ['get_relatives', { id: f.pyotr.id }, 'ok'], ['count_relatives', { id: f.pyotr.id }, 'ok'], ['count_relatives', { id: f.pyotr.id, kind: 'blood' }, 'ok'], ['how_related', { from: f.pyotr.id, to: f.living.id }, 'refused'], ['list_photos', {}, 'ok'],
     ['export_text', {}, 'ok'], ['get_history', { limit: 200 }, 'ok'], ['query_people', { limit: 500 }, 'ok'], ['query_people', { name: 'Живинская' }, 'ok'], ['query_people', { living: true }, 'ok'], ['query_people', { groupBy: 'surname', limit: 0 }, 'ok'], ['query_people', { groupBy: 'birthPlace', limit: 0 }, 'ok'],
     ['search_archive', { query: 'Живинская' }, 'ok'], ['search_archive', { query: 'Тайнопись' }, 'ok'], ['search_archive', { query: 'Тайноград' }, 'ok'], ['search_archive', { query: 'родилась поздно' }, 'ok'], ['focus_person', { id: f.living.id }, 'refused'], ['show_branch', { id: f.living.id, scope: 'near' }, 'refused'], ['show_path', { from: f.pyotr.id, to: f.living.id }, 'refused'], ['list_places', {}, 'ok'], ['view_photo', { id: f.photo.id }, 'ok'],
   ]

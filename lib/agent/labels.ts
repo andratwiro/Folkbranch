@@ -12,6 +12,7 @@ const READ: Record<string, [string, string]> = {
   search_archive: ['Ищет по всему архиву', 'Searching the archive'],
   get_person: ['Читает карточку', 'Reading a card'],
   get_relatives: ['Смотрит родню', 'Looking at relatives'],
+  count_relatives: ['Считает родню', 'Counting relatives'],
   how_related: ['Считает родство', 'Working out the relation'],
   list_pages: ['Смотрит список страниц', 'Listing pages'],
   get_page: ['Читает страницу', 'Reading a page'],

@@ -1741,6 +1741,7 @@ const ca: Record<string, string> = {
   'Ищет по всему архиву': "Cercant a tot l'arxiu",
   'Читает карточку': 'Llegint una fitxa',
   'Смотрит родню': 'Consultant els familiars',
+  'Считает родню': 'Comptant els familiars',
   'Считает родство': 'Calculant el parentiu',
   'Смотрит список страниц': 'Consultant la llista de pàgines',
   'Читает страницу': 'Llegint una pàgina',

@@ -254,7 +254,7 @@ describe('every read tool, as a reader', () => {
     const client = new Client({ name: 'test', version: '1' })
     await client.connect(b)
     const calls: [string, Record<string, unknown>][] = [
-      ['get_overview', {}], ['find_gaps', { limit: 200 }], ['search_people', { query: secret }], ['search_people', { query: '', limit: 500 }], ['get_person', { id: alive.id }], ['get_relatives', { id: alive.id }], ['get_relatives', { id: dead.id }],
+      ['get_overview', {}], ['find_gaps', { limit: 200 }], ['search_people', { query: secret }], ['search_people', { query: '', limit: 500 }], ['get_person', { id: alive.id }], ['get_relatives', { id: alive.id }], ['get_relatives', { id: dead.id }], ['count_relatives', { id: alive.id }], ['count_relatives', { id: dead.id, kind: 'blood' }],
       ['how_related', { from: dead.id, to: alive.id }], ['list_pages', { personId: alive.id }], ['get_page', { id: page.id }], ['list_photos', {}], ['list_photos', { personId: alive.id }], ['export_text', {}], ['export_gedcom', { hideLiving: false }], ['get_history', { limit: 200 }],
     ]
     for (const [name, args] of calls) {

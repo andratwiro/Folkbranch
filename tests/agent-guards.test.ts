@@ -453,7 +453,7 @@ describe('tokens', () => {
   })
   it('the rules tell the model when to ask, and it gets them before anything else', () => {
     const rules = JSON.stringify((buildAgent(editor, { model: model(reply('')) }) as any).settings.instructions[0].content)
-    expect(rules.length).toBeLessThan(2600)
+    expect(rules.length).toBeLessThan(2900)
     expect(rules).toContain('compare what the tool answered')
     expect(rules).toContain('If a name fits more than one person, do not choose')
     expect(rules).toContain('more than 3 people')
@@ -462,7 +462,8 @@ describe('tokens', () => {
 })
 
 // Facts carry their people and extra fields: an agent that rewrites the list must see them, or it would drop them.
-const BUDGET_OWNER = 11_500
+// Raised by about 600 for count_relatives: one core tool replaces a round trip to load another group and a whole list of relatives.
+const BUDGET_OWNER = 12_200
 
 describe('reasoning sent back', () => {
   const turn = (i: number) => [{ role: 'user', content: 'q' + i }, { role: 'assistant', content: [{ type: 'reasoning', text: 'think' + i }, { type: 'tool-call', toolCallId: 'c' + i, toolName: 'search', input: {} }] }, { role: 'tool', content: [{ type: 'tool-result', toolCallId: 'c' + i, toolName: 'search', output: { type: 'text', value: 'ok' } }] }] as never[]

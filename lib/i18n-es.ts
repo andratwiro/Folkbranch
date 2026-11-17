@@ -1741,6 +1741,7 @@ const es: Record<string, string> = {
   'Ищет по всему архиву': 'Buscando en todo el archivo',
   'Читает карточку': 'Leyendo una ficha',
   'Смотрит родню': 'Mirando los familiares',
+  'Считает родню': 'Contando los familiares',
   'Считает родство': 'Calculando el parentesco',
   'Смотрит список страниц': 'Mirando la lista de páginas',
   'Читает страницу': 'Leyendo una página',
