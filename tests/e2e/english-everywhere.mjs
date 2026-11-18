@@ -89,7 +89,10 @@ const session = async (name, { width = 1440, height = 900 } = {}) => {
     const type = r.headers()['content-type'] ?? ''
     if (!type.includes('json') && !type.startsWith('text/')) return
     const body = await r.text().catch(() => '')
-    const hit = body.match(/[^"\n]{0,50}[А-Яа-яЁё][^"\n]{0,50}/)
+    // The archive stores a kind of place as one of these words (lib/places.ts PLACE_KINDS) and every screen translates it, so the
+    // word itself is a key in an answer, not a missed translation.
+    const kinds = /Деревня|Село|Посёлок|Город|Приход|Волость|Уезд|Губерния|Район|Область|Страна/g
+    const hit = body.replace(kinds, '').match(/[^"\n]{0,50}[А-Яа-яЁё][^"\n]{0,50}/)
     if (hit) note(`answer ${r.url().replace(B, '').split('?')[0]}: ${hit[0]}`, name)
   })
   return page
@@ -335,6 +338,6 @@ ok('nothing sideways on a phone', await phone.evaluate(() => document.documentEl
 
 console.log(`pressed ${presses} things in ${Math.round((Date.now() - started) / 1000)} s`)
 ok('no page errors', errors.length === 0, [...new Set(errors)].slice(0, 5).join(' | '))
-ok('no Russian anywhere', found.size === 0, `${found.size} found`)
+ok('no Russian anywhere', found.size === 0, `${found.size} found: ${[...found].slice(0, 5).join(' | ').slice(0, 400)}`)
 await br.close()
 if (!process.env.FB_BASE) sh('docker rm -fv fb-all')

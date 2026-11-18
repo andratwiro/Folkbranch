@@ -125,6 +125,8 @@ await pc.getByRole('button', { name: 'Выйти с этого устройст�
 const warned = await pc.getByText(/ещё не дошёл до сервера/).count()
 ok('signing out with unsent text asks first', warned > 0)
 if (warned) await pc.getByRole('alertdialog').or(pc.getByRole('dialog')).getByRole('button', { name: 'Выйти' }).click()
+// Someone who came in by an invitation and linked no other way is asked once more before the way back is closed.
+await pc.getByRole('alertdialog').or(pc.getByRole('dialog')).getByRole('button', { name: 'Всё равно выйти' }).click({ timeout: 3000 }).catch(() => {})
 await pc.waitForURL(/login/, { timeout: 8000 }).catch(() => {})
 await pc.waitForTimeout(800)
 const after = await pc.evaluate(async (u) => {
