@@ -1,6 +1,9 @@
 {
   "nodes": 2000,
-  "firstLoadKB": 330,
+  "firstLoadKB": 380,
+  "notes": {
+    "firstLoadKB": "Raised from 330 to 380. The first-load JS grew about 20 KB from the deliberate move to i18next, with language tables loaded on demand. 330 was already not met by v1.7.0 when measured with this same tool (353 KB)."
+  },
   "idleKB": 230,
   "hoverMs": 100,
   "mapReload": {

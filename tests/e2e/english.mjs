@@ -207,18 +207,23 @@ await language('ru', 'Настройки')
 if (SHOTS) await page.screenshot({ path: `${SHOTS}/switched-ru.png` })
 await language('en', 'Settings')
 
-// A signed-out person sees the archive's language too.
-const out = await br.newContext({ locale: 'ru-RU' })
-const guest = await out.newPage()
-await guest.goto(`${B}/login`)
-await guest.waitForLoadState('networkidle')
-ok('the sign-in page follows the archive, not the browser', await guest.evaluate(() => document.documentElement.lang) === 'en')
-await check(guest, 'login')
-await guest.goto(`${B}/share/nope`)
-await check(guest, 'share-bad-link')
-await guest.goto(`${B}/invite/nope`)
-await check(guest, 'invite-bad-link')
-await out.close()
+// A signed-out guest gets the browser's language (cookie, then browser, then archive), so a ru-RU guest reads Russian
+// and an en-US guest reads English. The sweep for stray Russian runs in the en-US context.
+for (const [locale, lang] of [['ru-RU', 'ru'], ['en-US', 'en']]) {
+  const g = await br.newContext({ locale })
+  const p = await g.newPage()
+  await p.goto(`${B}/login`)
+  await p.waitForLoadState('networkidle')
+  ok(`the sign-in page follows the browser language (${locale})`, await p.evaluate(() => document.documentElement.lang) === lang)
+  if (locale === 'en-US') {
+    await check(p, 'login')
+    await p.goto(`${B}/share/nope`)
+    await check(p, 'share-bad-link')
+    await p.goto(`${B}/invite/nope`)
+    await check(p, 'invite-bad-link')
+  }
+  await g.close()
+}
 
 ok('no page errors', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '))
 // The languages' own names on the first screen (Ukrainian is a draft, so its picker label carries "beta").

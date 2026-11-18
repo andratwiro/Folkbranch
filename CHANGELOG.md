@@ -45,6 +45,11 @@ Chart editing and assistant work: links can be moved and marked as in a genogram
 - Printing the chart as a picture or PDF starts with names shown for the owner. Before, the box **Hide living relatives** was ticked every time, so a family with many living people came out as a page of "Living relative". Tick the box to hide them before sending the file to anyone. Editors start with the box ticked as before, and readers never receive the names.
 - A phrase a language has not translated yet shows in English everywhere, never in Russian.
 - `pnpm i18n:check` (also in CI) replaces the old Spanish and Catalan table tests: it fails on a missing, unused or mismatched translation.
+- A traveller on the map has one line: while a journey is under way the earlier one leaves the faint trail, and it returns when the clock turns back. Rewinding the time brings back and removes lines the same way as playing it forward, and a person's lines vanish with their death year and return with it.
+- Settings > AI follows the same type sizes and control heights as the other pages: each row's name and hint are separate, hints wrap instead of being cut off, icon buttons have names, and the Russian wording says "services", "address" and "access key" instead of "providers", "URL" and "token".
+- A spouse can be given how the union ended (divorced, separated, widowed) when created through an agent or the assistant; an impossible union date is refused, and adding a couple who are already married says so.
+- The setup screen lists English first again.
+- The first screen loads about 20 KB more script than 1.7.0 (373 KB, measured with the same tool as 353 KB for 1.7.0), because translations now load on demand through i18next.
 
 ## 1.7.0 - 2026-11-17
 

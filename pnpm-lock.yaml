@@ -134,9 +134,6 @@ importers:
       react-easy-crop:
         specifier: ^6.2.4
         version: 6.2.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      react-i18next:
-        specifier: ^18.0.2
-        version: 18.0.2(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(i18next@27.1.5(@typescript/typescript6@6.0.2))(react@19.3.1)
       read-excel-file:
         specifier: ^9.3.14
         version: 9.3.14
@@ -3769,9 +3766,6 @@ packages:
     resolution: {integrity: sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==}
     engines: {node: '>=16.9.0'}
 
-  html-parse-stringify@4.0.1:
-    resolution: {integrity: sha512-0zHsZJrK7S3K2aucXWL6ycoYJ/iNtIcFHC/nYQgFklPtrv5LpJctIiSCroWZWeuoXvuyFdzp6KzjJQ+OT5MfFw==}
-
   html-url-attributes@3.0.1:
     resolution: {integrity: sha512-ol6UPyBWqsrO6EJySPz2O7ZSr856WDrEzM5zMqp+FJJLGMW35cLYmmZnl0vztAZxRUoNZJFTCohfjuIJ8I4QBQ==}
 
@@ -4791,20 +4785,6 @@ packages:
     peerDependencies:
       react: '>=16.4.0'
       react-dom: '>=16.4.0'
-
-  react-i18next@18.0.2:
-    resolution: {integrity: sha512-g7YfBxTDC9dYdEsb3F7o0pRr6jg14f08U5G6N3DTUqSgGt/nq7AYf279ESRjE3Dy+Q/YG7OGVd7vtiylxTfV4w==}
-    engines: {node: '>=22'}
-    peerDependencies:
-      '@types/react': '*'
-      i18next: '>= 27.0.1'
-      react: '>= 18.0.0'
-      typescript: ^5 || ^6 || ^7
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-      typescript:
-        optional: true
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -9132,8 +9112,6 @@ snapshots:
 
   hono@4.13.16: {}
 
-  html-parse-stringify@4.0.1: {}
-
   html-url-attributes@3.0.1: {}
 
   html-void-elements@3.0.0: {}
@@ -10398,15 +10376,6 @@ snapshots:
       normalize-wheel: 1.0.1
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
-
-  react-i18next@18.0.2(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(i18next@27.1.5(@typescript/typescript6@6.0.2))(react@19.3.1):
-    dependencies:
-      html-parse-stringify: 4.0.1
-      i18next: 27.1.5(@typescript/typescript6@6.0.2)
-      react: 19.3.1
-    optionalDependencies:
-      '@types/react': 19.3.0
-      typescript: '@typescript/typescript6@6.0.2'
 
   react-is@16.13.1: {}
 

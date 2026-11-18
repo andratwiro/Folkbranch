@@ -100,7 +100,7 @@ Backups, updates and servers: the [self-hosting guide](docs/SELF_HOSTING.md). It
 
 **The tree**
 - All generations on one screen, with each relative labelled from the person you open.
-- Add a relative from any side of a card, or drag a line between two people. Drag either end of a line to move it.
+- Add a relative from any side of a card, or drag a line between two people. Drag either end of a line to move it, or drag a child's handle onto a parent, or onto the dot between two parents, to change whose child they are.
 - Unions and children drawn as in a genogram: unmarried partners dashed, a divorce two slashes, a separation one, and adopted, foster and step children each in their own style, with a legend on the chart.
 - See how two people are related, and the path between them.
 - An ancestor fan for anyone: the whole line in one picture.
