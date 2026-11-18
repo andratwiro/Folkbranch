@@ -13,7 +13,7 @@ export const certainty = z.enum(['documented', 'family', 'assumed'])
 
 export const personInput = z.object({
   givenName: z.string().max(120), surname: z.string().max(120), maidenName: z.string().max(120), patronymic: z.string().max(120), otherNames: z.string().max(300).describe('Nicknames and other spellings'), sex: z.enum(['M', 'F', 'U']),
-  birthDate: z.string().max(120).describe('Free text: "1890", "~1876", "12.03.1890", "1883 or 1886"'), birthPlace: z.string().max(200),
+  birthDate: z.string().max(120).describe('Free text: "1890", "~1876", "12.03.1890"'), birthPlace: z.string().max(200),
   deathDate: z.string().max(120), deathPlace: z.string().max(200),
   birthPlaceId: z.string().max(40).nullable(), deathPlaceId: z.string().max(40).nullable(), living: z.boolean(), keepPrivate: z.boolean(), noChildren: z.boolean(), neverMarried: z.boolean(), certainty,
   tags: z.array(z.string().min(1).max(40)).max(30).describe('Groups or labels, e.g. "The Walkers", "Front line"'),
@@ -54,7 +54,7 @@ export const relationType = z.enum(['father', 'mother', 'son', 'daughter', 'spou
 // Links to place records are not offered either: a model names the right one by writing what it belongs to
 // ("Ivanovka, Tver Governorate"), the server links it, and the tools stay small.
 const notForAgents = { claims: true, sources: true, keepPrivate: true, noChildren: true, neverMarried: true, birthPlaceId: true, deathPlaceId: true } as const
-const agentFacts = personInput.shape.facts.unwrap().element.omit({ placeId: true }).array().max(100).optional()
+const agentFacts = personInput.shape.facts.unwrap().element.omit({ placeId: true, fields: true, people: true }).array().max(100).optional()
 export const agentCreate = personInput.omit(notForAgents).extend({ facts: agentFacts }).strict()
 
 export const agentPatch = personInput.omit(notForAgents).extend({ facts: agentFacts.describe('Replaces the whole list: include the facts to keep. To add one fact, use add_fact.') }).strict()

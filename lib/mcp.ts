@@ -35,11 +35,25 @@ function fail(e: unknown) {
 
 const brief_ = (text: string) => ({ messages: [{ role: 'user' as const, content: { type: 'text' as const, text } }] })
 
+/** Only what differs from the protocol's defaults (a tool is destructive and reaches the outside unless it says not): every request carries these. */
+const hints = (t: { name: string; risk: string }) => (t.risk === 'read' ? { readOnlyHint: true, openWorldHint: false } : { destructiveHint: t.risk === 'danger', openWorldHint: t.name === 'upload_photo' })
+
+/**
+ * What the list of tools sends, without what a model gains nothing from: the schema's own URL, the SDK's task flag, and
+ * length limits (the server still checks them, and says so in words when one is broken). Every request carries this list.
+ */
+export function compactTool<T extends { inputSchema?: unknown; execution?: unknown }>(tool: T): T {
+  const drop = new Set(['$schema', 'maxLength', 'maxItems', 'additionalProperties'])
+  const walk = (v: unknown): unknown => Array.isArray(v) ? v.map(walk) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).filter(([k]) => !drop.has(k)).map(([k, w]) => [k, walk(w)])) : v
+  const { execution: _e, ...rest } = tool
+  return { ...rest, inputSchema: walk(tool.inputSchema) } as T
+}
+
 export function buildMcpServer(actor: Actor) {
   const server = new McpServer({ name: 'folkbranch', version: pkg.version }, { instructions: INSTRUCTIONS })
   // A read-only token is not even shown the writing tools.
   for (const t of toolsFor(actor, 'mcp')) {
-    server.registerTool(t.name, { description: t.description, inputSchema: t.input, annotations: { readOnlyHint: t.risk === 'read', ...(t.risk === 'read' ? {} : { destructiveHint: t.risk === 'danger', openWorldHint: t.name === 'upload_photo' }) } }, async (args: unknown) => {
+    server.registerTool(t.name, { description: t.description, inputSchema: t.input, annotations: hints(t) }, async (args: unknown) => {
       try {
         const out = await t.run(actor, args)
         // A photo goes back as the picture itself, small enough to send; a PDF as an embedded file, capped.
@@ -57,6 +71,8 @@ export function buildMcpServer(actor: Actor) {
   }
   // A tool this token is not shown is answered in words, not as a protocol error about a tool that "was not found".
   const handlers = (server.server as unknown as { _requestHandlers: Map<string, (request: { params: { name: string; arguments?: unknown } }, extra: unknown) => unknown> })._requestHandlers
+  const listTools = handlers.get('tools/list')
+  if (listTools) handlers.set('tools/list', async (request, extra) => { const r = (await listTools(request, extra)) as { tools: Parameters<typeof compactTool>[0][] }; return { ...r, tools: r.tools.map(compactTool) } })
   const callTool = handlers.get('tools/call')
   const mine = new Set(toolsFor(actor, 'mcp').map((t) => t.name))
   if (callTool) handlers.set('tools/call', (request, extra) => {

@@ -348,7 +348,7 @@ export const OPS: Record<string, Def> = {
   }),
   create_place: def({
     risk: 'write',
-    description: 'Add a place: a village, town, parish or region, with what it was part of, its other and old names, and its point on a map. Look in list_places first. A place with no point stays off the map: give lat and lon only for a place you are sure of, and say in the note where they come from.',
+    description: 'Add a place (village, town, parish, region) with its parent, other names and map point. Check list_places first. Give lat and lon only if sure, and say in the note where they come from; without a point it stays off the map.',
     input: places.placeInput,
     creates: true,
     prepare: (_a, x) => { if (x.parentId && !isTemp(x.parentId)) places.getPlace(x.parentId); return { ...x, kind: placeKind(x.kind) } },
@@ -372,7 +372,7 @@ export const OPS: Record<string, Def> = {
   }),
   add_version: def({
     risk: 'write',
-    description: 'Record a value found for a person: birth or death date or place, or a name. Keeps what was there; the first value of an empty field becomes the main one, otherwise a person chooses. Prefer this to update_person for anything found in a source. Give `source` to say where it comes from: reuse a source by `sourceId` from get_person.',
+    description: 'Record a value found in a source for a person (a birth or death date or place, a name). Keeps what was there: the first value of an empty field becomes the main one, otherwise a person chooses. Prefer it to update_person. Give `source`, or reuse one with `sourceId` from get_person. Returns claimId.',
     input: z.object({
       personId: z.string(),
       field: claimField,
@@ -461,11 +461,9 @@ export const OPS: Record<string, Def> = {
   }),
   import_text: def({
     risk: 'danger',
-    description: `The way to add several people at once: one confirmation, one undo. Only adds and changes, never deletes. Always goes to review for tokens. One person per line: Name Surname b: 1880, bp: Tula, d: 1950, dp: Oryol, sex: m, maiden: Ivanova. "A + B m: 1905" is a couple, indented lines under it are their children, and a single person's indented lines are theirs. An indented line is always a child: a spouse is never indented, write A + B. A person named again later is the same person. Point at someone already in the archive with id: their id. Example:
-Иван Соколов id: abc + Анна Соколова id: def
-  Глеб Соколов b: 1950, d: 1995, sex: m
-Глеб Соколов + Зоя Тарасова b: 1952, d: 2015, sex: f, m: 1974
-  Инна Соколова b: 1975, d: 2020, sex: f
+    description: `Add several people at once: one confirmation, one undo; only adds and changes. Always reviewed for tokens. One person per line: Name Surname b: 1880, bp: Tula, d: 1950, dp: Oryol, sex: m, maiden: Ivanova. "A + B m: 1905" is a couple; indented lines under it are their children (never a spouse). A name repeated is the same person; id: X points at someone already in the archive. Example:
+Иван Соколов id: abc + Анна Соколова
+  Глеб Соколов b: 1950, sex: m
 The answer lists each new person's id.`,
     input: z.object({ text: z.string().min(1), resolutions: z.record(z.string(), z.string()).optional().describe('For ambiguous names reported in an error: reference → person id, or "new"') }),
     bulk: true,
@@ -499,7 +497,7 @@ The answer lists each new person's id.`,
   }),
   import_kinship_case: def({
     risk: 'danger',
-    description: 'Bring in a research case made by the ex-USSR kinship skill: pass the case_id from its case-intake.yaml and the text of its person-register.csv, relationship-register.csv, claims-register.csv and artifact-register.csv. Candidates stay separate cards, hypotheses stay notes and never become lines on the chart, and everyone not known to be dead counts as living. Importing the same case again adds only what is new, and never replaces what a person wrote. Always goes to review for tokens.',
+    description: 'Bring in a research case from the ex-USSR kinship skill: its case_id and the text of its four CSV registers. Candidates stay separate cards, hypotheses stay notes, never chart lines; everyone not known dead counts as living. Importing again adds only what is new. Always reviewed for tokens.',
     input: caseFiles,
     bulk: true,
     apply: (a, x) => importCase(a, x),
