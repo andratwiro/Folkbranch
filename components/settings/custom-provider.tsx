@@ -61,7 +61,7 @@ export function CustomProviderForm({ initial, onSaved, onCancel }: { initial: Ow
         </label>
         <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('API key')}
           <Input name="provider-key" type="password" autoComplete="new-password" spellCheck={false} value={key} onChange={(e) => setKey(e.target.value)}
-            placeholder={initial?.hasKey ? t('Saved. Leave empty to keep it') : t('Paste the key, or leave empty for a server on your own network')} />
+            placeholder={initial?.hasKey ? t('Saved. Leave empty to keep it') : t('Paste the key')} />
         </label>
         <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Model')}
           <div className="flex items-center gap-2">

@@ -9,12 +9,19 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const chunk = (delta, finish = null) => `data: ${JSON.stringify({ id: 'stub', object: 'chat.completion.chunk', created: 0, model: 'stub', choices: [{ index: 0, delta, finish_reason: finish }] })}\n\n`
 const text = (m) => (typeof m?.content === 'string' ? m.content : (m?.content ?? []).map((p) => p.text ?? '').join(''))
 
+/** The Authorization header of every request the stub has answered, so a check can see which key reached it. */
+export const seenKeys = []
+
 export function startModelStub(port, { pause = 700, piece = 450 } = {}) {
   const server = createServer(async (req, res) => {
+    // The list of models, as an OpenAI-protocol server gives it: what a provider added by address offers to pick from.
+    if (req.method === 'GET' && req.url === '/__keys') { res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(seenKeys)); return }
+    if (req.method === 'GET' && req.url?.endsWith('/models')) { seenKeys.push(req.headers.authorization ?? ''); res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ data: [{ id: 'stub-small' }, { id: 'stub-large' }] })); return }
     if (req.method !== 'POST' || !req.url?.endsWith('/chat/completions')) { res.writeHead(404).end(); return }
     let raw = ''
     for await (const c of req) raw += c
     const body = JSON.parse(raw)
+    seenKeys.push(req.headers.authorization ?? '')
     if (process.env.STUB_LOG) console.log('stub asked:', body.messages.map((m) => m.role).join(','), text(body.messages.at(-1)).slice(0, 60))
     const last = body.messages.at(-1)
     const ask = text([...body.messages].reverse().find((m) => m.role === 'user'))

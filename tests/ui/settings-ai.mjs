@@ -1,7 +1,7 @@
 // Settings > AI, the Usage cards: no text is cut off by a card's edge at any width, with short and with very long
 // figures, and the assistant's daily tokens are not told twice. The server answers for the assistant are replaced
 // here, because the demo family has no model connected.
-import { browser, finish, ok, open, O, shot, sleep, SIZES } from './lib.mjs'
+import { browser, COOKIE, finish, ok, open, O, shot, sleep, SIZES } from './lib.mjs'
 
 const provider = (month, tokensToday) => ({ connected: true, provider: 'openrouter', label: 'OpenRouter', model: 'a/very-long-model-name', auto: false, source: 'app', keyEnding: 'abcd', tokensToday, dailyLimit: 5_000_000, month: { dollars: month, unpriced: 0, input: 0, cached: 0, output: 0 } })
 const CASES = { priced: provider(1234567.89, 47194), unpriced: provider(0, 4_719_400_000) }
@@ -47,6 +47,83 @@ for (const [name, size] of Object.entries(SIZES)) {
     ok(`no script error: ${at}`, errors.length === 0, errors.join(' | '))
     await ctx.close()
   }
+}
+
+// A provider of your own, added from the screen with the free model stub's address (FG_STUB, no key of the real kind):
+// the form, Load models, Test, Save, switching to it, and an answer through it. The key must not come back anywhere.
+const STUB = process.env.FG_STUB
+const KEY = 'stub-key-0f3a9c71'
+const api = (path, init = {}) => fetch(`${O}/api/v1/${path}`, { ...init, headers: { origin: O, cookie: COOKIE, 'content-type': 'application/json', ...(init.headers ?? {}) } }).then((r) => r.text())
+await api('settings', { method: 'PATCH', body: JSON.stringify({ assistantEnabled: '1' }) })
+const goAi = async (page, labels) => {
+  await page.goto(O + '/')
+  await page.locator('.pcard').first().waitFor({ timeout: 60000 })
+  await page.getByRole('button', { name: labels.settings }).first().click()
+  await page.getByRole('button', { name: labels.ai }).first().click()
+  await page.getByRole('button', { name: labels.add }).waitFor({ timeout: 20000 })
+}
+for (const [name, size, lang, labels] of [
+  ['desktop-1440', SIZES['desktop-1440'], 'en', { settings: /^Settings/, ai: /^AI$/, add: /^Add your own provider/ }],
+  ['phone-375', SIZES['phone-375'], 'en', { settings: /^Settings/, ai: /^AI$/, add: /^Add your own provider/ }],
+  ['desktop-1440', SIZES['desktop-1440'], 'ru', { settings: /^Настройки/, ai: /^ИИ$/, add: /^Добавить своего провайдера/ }],
+  ['phone-375', SIZES['phone-375'], 'ru', { settings: /^Настройки/, ai: /^ИИ$/, add: /^Добавить своего провайдера/ }],
+]) {
+  const { page, ctx, errors } = await open(br, size, { lang })
+  const at = `${lang} @ ${name}`
+  await goAi(page, labels)
+  await page.getByRole('button', { name: labels.add }).click()
+  const form = page.locator('form[aria-label]').filter({ has: page.locator('input[name="provider-url"]') })
+  await form.waitFor({ timeout: 10000 })
+  await shot(page, `own-provider-form-${lang}-${name}`)
+  // Nothing in the form is cut off at this width.
+  ok(`the form fits the screen: ${at}`, await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1))
+  // Only the English run goes through the whole flow: it is the same code in every language.
+  if (lang === 'en' && name === 'desktop-1440') {
+    await form.locator('input[name="provider-name"]').fill('Stub model')
+    await form.locator('input[name="provider-url"]').fill(`${STUB}/v1`)
+    await form.locator('input[name="provider-key"]').fill(KEY)
+    ok('the key field is hidden', await form.locator('input[name="provider-key"]').getAttribute('type') === 'password')
+    await form.getByRole('button', { name: 'Load models' }).click()
+    await page.locator('#provider-models option').first().waitFor({ state: 'attached', timeout: 10000 })
+    ok('Load models offers the provider’s list', (await page.locator('#provider-models option').count()) === 2)
+    await form.locator('input[name="provider-model"]').fill('stub-small')
+    await form.getByRole('button', { name: 'Test', exact: true }).click()
+    await page.locator('[data-test="provider-said"]').waitFor({ timeout: 20000 })
+    ok('Test says in words that it is ready', /ready to use/.test(await page.locator('[data-test="provider-said"]').innerText()), await page.locator('[data-test="provider-said"]').innerText())
+    await shot(page, 'own-provider-tested-en')
+    await form.getByRole('button', { name: 'Save', exact: true }).click()
+    const row = page.locator('div.px-4').filter({ hasText: 'Stub model' }).first()
+    await row.waitFor({ timeout: 10000 })
+    ok('the saved provider is in the list, marked as your own', /your provider/.test(await row.innerText()))
+    ok('its key is not shown anywhere on the page', !(await page.content()).includes(KEY) && !(await page.locator('input[name="provider-key"]').count()))
+    await row.getByRole('button', { name: 'Use', exact: true }).click()
+    for (let i = 0; i < 40 && !JSON.parse(await api('ai/custom'))[0]?.active; i++) await sleep(250)
+    ok('Use makes it the assistant’s provider', JSON.parse(await api('ai/custom'))[0]?.active === true)
+    await sleep(500)
+    await shot(page, 'own-provider-in-use-en')
+    // What the server tells about it: no key, not even its end.
+    const told = (await api('ai/custom')) + (await api('assistant/provider')) + (await api('assistant/choices')) + (await api('ai-settings'))
+    ok('no answer of the server holds the key or its end', !told.includes(KEY) && !told.includes(KEY.slice(-4)), told.slice(0, 200))
+    // An answer through it: the stub speaks, and the key reached it, and only it.
+    await page.goto(O + '/')
+    await page.locator('.pcard').first().waitFor({ timeout: 60000 })
+    await page.getByRole('button', { name: /^AI/ }).first().click()
+    const box = page.getByRole('textbox').last()
+    await box.waitFor({ timeout: 20000 })
+    await box.fill('Hello')
+    await box.press('Enter')
+    await page.getByText('Hello.', { exact: true }).first().waitFor({ timeout: 30000 })
+    ok('the assistant answers through the provider added by hand', true)
+    const keys = JSON.parse(await (await fetch(`${STUB}/__keys`)).text())
+    ok('the stub received the key, as a Bearer token, on every request', keys.length > 0 && keys.every((k) => k === `Bearer ${KEY}`), JSON.stringify(keys))
+    // Another model of the same provider is not a different key: removing the provider removes it.
+    await api('ai/custom/' + JSON.parse(await api('ai/custom'))[0].id, { method: 'DELETE' })
+    ok('removing the provider leaves none, and switches the assistant off', JSON.parse(await api('ai/custom')).length === 0 && JSON.parse(await api('assistant/provider')).connected === false)
+  } else {
+    await form.locator('input[name="provider-url"]').fill('http://example.com/v1')
+  }
+  ok(`no script error: ${at}`, errors.length === 0, errors.join(' | '))
+  await ctx.close()
 }
 await br.close()
 finish()
