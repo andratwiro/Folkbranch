@@ -13,7 +13,8 @@ import { applyUpdate, installKind, updateHow, updateRunning } from '@/lib/self-u
 import * as tokens from '@/lib/ops/tokens'
 import { get, human, role, type Route } from '../router'
 import { backupNow, backupStatus } from '@/lib/ops/auto-backup'
-import { addKey, listServices, removeKey } from '@/lib/ai/services'
+import { addKey, listServices, removeKey, removeOwnProvider } from '@/lib/ai/services'
+import { customModels, listCustom, saveCustom, testCustom } from '@/lib/ai/custom-providers'
 import { usageReport } from '@/lib/ai/usage'
 import { METHODS, methodsStatus, removeMethod, saveMethod } from '@/lib/sign-in-methods'
 
@@ -43,7 +44,8 @@ export const accessRoutes: Route[] = [
   human('POST', 'update', 'Update now, where the install can do it by itself: a checked copy of the database first', ({ actor }) => applyUpdate(actor)),
 
   human('GET', 'tokens', 'API tokens', ({ actor }) => tokens.listTokens(actor)),
-  human('POST', 'tokens', 'Issue an API token', async ({ actor, body }) => tokens.createToken(actor, z.object({ expiresInDays: z.number().int().min(1).max(3650).nullish(), name: z.string().min(1), role: z.enum(['reader', 'editor']), review: z.boolean().default(true) }).parse(await body()))),
+  human('POST', 'tokens', 'Issue an API token', async ({ actor, body }) => tokens.createToken(actor, z.object({ expiresInDays: z.number().int().min(1).max(3650).nullish(), name: z.string().min(1), role: z.enum(['reader', 'editor']), review: z.boolean().default(true), trustBulk: z.boolean().default(false) }).parse(await body()))),
+  human('PATCH', 'tokens/:id', 'Let a token apply bulk edits at once, or not', async ({ actor, params, body }) => tokens.setTokenTrustBulk(actor, params.id, z.object({ trustBulk: z.boolean() }).parse(await body()).trustBulk)),
   human('DELETE', 'tokens/:id', 'Revoke an API token', ({ actor, params }) => tokens.revokeToken(actor, params.id)),
 
   human('GET', 'settings', 'Archive settings', () => ({ familyName: settings.getSetting('familyName') ?? '', language: settings.getSetting('language') ?? 'ru', assistantEnabled: settings.getSetting('assistantEnabled') === '1', assistantForReaders: settings.getSetting('assistantForReaders') === '1', assistantProvider: currentProvider()?.label ?? null, assistantModel: currentProvider()?.model ?? null })),
@@ -67,6 +69,11 @@ export const accessRoutes: Route[] = [
   human('GET', 'ai/keys', 'Keys to AI services, and which functions use each', ({ actor }) => listServices(actor)),
   human('PUT', 'ai/keys', 'Add a key to an AI service, checked with it first', async ({ actor, body }) => addKey(actor, await body())),
   human('DELETE', 'ai/keys/:service', 'Remove a key, and switch off what used it', ({ actor, params }) => removeKey(actor, params.service)),
+  human('GET', 'ai/custom', 'AI providers the owner added by hand, without their keys', ({ actor }) => listCustom(actor)),
+  human('PUT', 'ai/custom', 'Add an AI provider by its address, or change one; a changed address needs its key again', async ({ actor, body }) => saveCustom(actor, await body())),
+  human('DELETE', 'ai/custom/:id', 'Remove such a provider and its key', ({ actor, params }) => { removeOwnProvider(actor, params.id); return listCustom(actor) }),
+  human('POST', 'ai/custom/models', 'The models a provider lists, for the form', async ({ actor, body }) => customModels(actor, await body())),
+  human('POST', 'ai/custom/test', 'One small request to a provider, and what it says in words', async ({ actor, body }) => testCustom(actor, await body())),
   human('GET', 'assistant/provider/balance', 'What is left on the key, where the provider says it', ({ actor }) => keyBalance(actor)),
   human('PUT', 'assistant/provider', 'Connect an AI provider with a key', async ({ actor, body }) => connectProvider(actor, await body())),
   human('GET', 'assistant/provider/models', 'Models the connected key can use, newest first, with what each can do', ({ actor }) => modelChoices(actor)),

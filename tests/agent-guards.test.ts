@@ -126,7 +126,8 @@ describe('changing a person', () => {
   })
   it('a model cannot rewrite versions or sources wholesale', async () => {
     const before = getPersonRow(f.nikolai.id)
-    await run('update_person', { id: f.nikolai.id, patch: { deathPlace: 'Тула', sources: [], claims: [{ id: 'x' }] } })
+    // A key the tool does not have is refused by name, not dropped: a typo must not look like success.
+    await expect(run('update_person', { id: f.nikolai.id, patch: { deathPlace: 'Тула', sources: [], claims: [{ id: 'x' }] } })).rejects.toThrow(/sources|claims/)
     const after = getPersonRow(f.nikolai.id)
     expect(after.sources).toBe(before.sources)
     expect(after.claims).toBe(before.claims)
@@ -149,7 +150,7 @@ describe('changing a person', () => {
 describe('the shape of the family stays sound', () => {
   it('no cycles, no self links', async () => {
     await expect(run('add_relation', { type: 'son', to: f.pyotr.id, other: f.nikolai.id })).rejects.toThrow()
-    await expect(run('add_relation', { type: 'father', to: f.nikolai.id, other: f.nikolai.id })).rejects.toThrow(/same person/)
+    await expect(run('add_relation', { type: 'father', to: f.nikolai.id, other: f.nikolai.id })).rejects.toThrow(/cannot be their own parent/)
   })
   it('no third birth parent, and no second father', async () => {
     const extra = await run('create_person', { person: { givenName: 'Третий', surname: 'Родитель', sex: 'M', birthDate: '1860', deathDate: '1930' } })
@@ -463,7 +464,7 @@ describe('tokens', () => {
 
 // Facts carry their people and extra fields: an agent that rewrites the list must see them, or it would drop them.
 // Raised by about 1,100 for count_relatives and get_people: one core tool replace a round trip to load another group, a whole list of relatives and many get_person calls.
-const BUDGET_OWNER = 12_700
+const BUDGET_OWNER = 13_500
 
 describe('reasoning sent back', () => {
   const turn = (i: number) => [{ role: 'user', content: 'q' + i }, { role: 'assistant', content: [{ type: 'reasoning', text: 'think' + i }, { type: 'tool-call', toolCallId: 'c' + i, toolName: 'search', input: {} }] }, { role: 'tool', content: [{ type: 'tool-result', toolCallId: 'c' + i, toolName: 'search', output: { type: 'text', value: 'ok' } }] }] as never[]

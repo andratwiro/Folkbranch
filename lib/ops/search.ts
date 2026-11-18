@@ -60,6 +60,20 @@ function snippet(text: string, terms: string[]) {
   return `${start ? '…' : ''}${text.slice(start, at + 140).trim()}${at + 140 < text.length ? '…' : ''}`
 }
 
+/** Whether two words differ by at most one letter (two for a long word): a typo, not another name. */
+function within(a: string, b: string) {
+  if (a === b) return true
+  const max = Math.max(a.length, b.length) >= 7 ? 2 : 1
+  if (b.length < 4 || Math.abs(a.length - b.length) > max) return false
+  const row = Array.from({ length: b.length + 1 }, (_, j) => j)
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0]
+    row[0] = i
+    for (let j = 1; j <= b.length; j++) { const keep = row[j]; row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = keep }
+  }
+  return row[b.length] <= max
+}
+
 const allWords = (value: string, query: string) => normal(query).split(/\s+/).filter(Boolean).every((w) => normal(value).includes(w))
 
 /** People by words in any order; if none has them all, whoever comes closest, so a typo still finds them. */
@@ -67,12 +81,18 @@ export function findPeople(actor: Actor, query: string, limit: number) {
   const people = getGraph(actor).persons.filter((p) => !p.hidden)
   const exact = people.filter((p) => allWords(`${fullName(p)} ${p.maidenName} ${p.otherNames} ${p.birthPlace} ${p.deathPlace} ${p.tags.join(' ')} ${p.facts.map((f) => `${f.kind} ${f.place} ${f.note}`).join(' ')}`, query))
   if (exact.length || !query.trim()) return exact.slice(0, limit)
+  // A name with a letter wrong, missing or added: every word of the query is close to a word of the name.
+  const close = people.filter((p) => { const names = `${fullName(p)} ${p.maidenName} ${p.otherNames}`.split(/\s+/).filter(Boolean); return normal(query).split(/\s+/).filter(Boolean).every((w) => names.some((n) => within(normal(n), w))) })
+  if (close.length) return close.slice(0, limit)
   return searchPeople(actor, query, limit).flatMap((r) => people.find((p) => p.id === r.personId) ?? [])
 }
 
-export const queryInput = z.object({
+export const queryInput = z.strictObject({
   name: z.string().optional().describe('Part of a given name, patronymic, surname, maiden or other name'),
+  surname: z.string().optional().describe('Part of the surname or the maiden name'),
   place: z.string().optional().describe('Part of a birth or death place'),
+  birthPlace: z.string().optional().describe('Part of the birth place only'),
+  deathPlace: z.string().optional().describe('Part of the death place only'),
   sex: z.enum(['M', 'F', 'U']).optional(),
   tag: z.string().optional(),
   bornFrom: z.number().int().optional().describe('Birth year, inclusive'),
@@ -82,6 +102,7 @@ export const queryInput = z.object({
   living: z.boolean().optional(),
   hasSources: z.boolean().optional(),
   hasParents: z.boolean().optional(),
+  missing: z.array(z.enum(['birthDate', 'birthPlace', 'deathDate', 'deathPlace', 'parents', 'sources'])).optional().describe('Only people who lack all of these (a living person is not asked for a death)'),
   sort: z.enum(['birth', 'death', 'name']).default('birth'),
   groupBy: z.enum(['birthPlace', 'surname', 'decade', 'sex']).optional().describe('Also count the matches by this'),
   limit: z.number().int().min(0).max(500).default(50).describe('How many to list. 0 when only the counts matter'),
@@ -96,17 +117,25 @@ export function queryPeople(actor: Actor, x: z.infer<typeof queryInput>) {
   const found = g.persons.filter((p) => !p.hidden
     && (!x.name || allWords(`${fullName(p)} ${p.maidenName} ${p.otherNames}`, x.name))
     && has(`${p.birthPlace} ${p.deathPlace}`, x.place)
+    && has(p.birthPlace, x.birthPlace) && has(p.deathPlace, x.deathPlace)
+    && (!x.surname || has(`${p.surname} ${p.maidenName}`, x.surname))
     && (!x.sex || p.sex === x.sex)
     && (!x.tag || p.tags.some((t) => has(t, x.tag)))
     && between(p.birthYear, x.bornFrom, x.bornTo)
     && between(p.deathYear, x.diedFrom, x.diedTo)
     && (x.living === undefined || p.living === x.living)
     && (x.hasSources === undefined || (p.sources.length > 0) === x.hasSources)
-    && (x.hasParents === undefined || withParents.has(p.id) === x.hasParents))
+    && (x.hasParents === undefined || withParents.has(p.id) === x.hasParents)
+    && (x.missing ?? []).every((m) => (m === 'parents' ? !withParents.has(p.id) : m === 'sources' ? p.sources.length === 0 : m.startsWith('death') && p.living ? false : !p[m])))
   const year = (v: number | null) => v ?? Infinity
   found.sort(x.sort === 'name' ? (a, b) => collator(archiveLang()).compare(fullName(a), fullName(b)) : x.sort === 'death' ? (a, b) => year(a.deathYear) - year(b.deathYear) : (a, b) => year(a.birthYear) - year(b.birthYear))
   const groupKey = (p: Person) => (x.groupBy === 'decade' ? (p.birthYear ? `${Math.floor(p.birthYear / 10) * 10}s` : '') : x.groupBy ? String(p[x.groupBy as 'birthPlace' | 'surname' | 'sex'] ?? '') : '') || 'unknown'
+  const notes = [
+    x.bornFrom !== undefined && x.bornTo !== undefined && x.bornFrom > x.bornTo ? 'bornFrom is after bornTo: no one can match' : '',
+    x.diedFrom !== undefined && x.diedTo !== undefined && x.diedFrom > x.diedTo ? 'diedFrom is after diedTo: no one can match' : '',
+  ].filter(Boolean)
   return {
+    ...(notes.length ? { notes } : {}),
     total: found.length,
     people: found.slice(0, x.limit).map((p) => ({ id: p.id, name: fullName(p), years: lifeYears(p), sex: p.sex, living: p.living, birthPlace: p.birthPlace, deathPlace: p.deathPlace })),
     ...(x.groupBy ? { groups: [...Map.groupBy(found, groupKey)].map(([key, list]) => ({ key, count: list.length })).sort((a, b) => b.count - a.count) } : {}),

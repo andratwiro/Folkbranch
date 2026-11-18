@@ -6,8 +6,9 @@ import { getSetting, setSetting } from '../ops/settings'
 
 export const SERVICES = ['openrouter', 'anthropic', 'openai', 'google', 'yandex', 'cloudru', 'deepseek', 'moonshot', 'groq', 'mistral', 'siliconflow'] as const
 export type Service = (typeof SERVICES)[number]
-export interface KeyEntry { key: string; folder?: string; addedAt: number }
-type Vault = Partial<Record<Service, KeyEntry>>
+/** `baseUrl` is only for a provider the owner added: the key is bound to the address it was saved with, and is read for no other. */
+export interface KeyEntry { key: string; folder?: string; baseUrl?: string; addedAt: number }
+type Vault = Record<string, KeyEntry>
 
 const SETTING = 'aiKeys'
 const purpose = 'ai-keys'
@@ -51,14 +52,14 @@ export function readKeys(): Vault {
   }
 }
 
-export const vaultKey = (s: string): KeyEntry | null => readKeys()[s as Service] ?? null
+export const vaultKey = (s: string): KeyEntry | null => readKeys()[s] ?? null
 
 /** The previous version's copy of the assistant's key, once it no longer matches what the list holds. */
 export function dropOldCopy() {
   for (const k of ['agentKey', 'agentFolder']) setSetting(k, '')
 }
 
-export function writeKey(s: Service, entry: Omit<KeyEntry, 'addedAt'> | null) {
+export function writeKey(s: string, entry: Omit<KeyEntry, 'addedAt'> | null) {
   const v = readKeys()
   if (getSetting('agentProvider') === s && getSetting('agentKey')) dropOldCopy()
   if (entry) v[s] = { ...entry, addedAt: v[s]?.addedAt ?? Date.now() }

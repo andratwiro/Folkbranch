@@ -11513,5 +11513,100 @@
   "Или попросить рассказать по ссылке",
   "Or ask someone to tell it by a link",
   "Or ask someone to tell it by a link"
+ ],
+ [
+  "Смотрит ссылки для рассказов",
+  "Looking at story links",
+  "Looking at story links"
+ ],
+ [
+  "Ищет двойников среди карточек",
+  "Looking for duplicate cards",
+  "Looking for duplicate cards"
+ ],
+ [
+  "Сравнивает две карточки",
+  "Comparing two cards",
+  "Comparing two cards"
+ ],
+ [
+  "Ищет похожие места",
+  "Looking for similar places",
+  "Looking for similar places"
+ ],
+ [
+  "Подбирает точки на карте",
+  "Looking for map points",
+  "Looking for map points"
+ ],
+ [
+  "Закрыть ссылку для рассказа",
+  "Close a story link",
+  "Close a story link"
+ ],
+ [
+  "Закрывает ссылку для рассказа",
+  "Closing a story link",
+  "Closing a story link"
+ ],
+ [
+  "Отменить правку у одного человека",
+  "Undo a change for one person",
+  "Undo a change for one person"
+ ],
+ [
+  "Откатить архив до правки",
+  "Roll the archive back to a change",
+  "Roll the archive back to a change"
+ ],
+ [
+  "Отменяет правку у одного человека",
+  "Undoing a change for one person",
+  "Undoing a change for one person"
+ ],
+ [
+  "Откатывает архив",
+  "Rolling the archive back",
+  "Rolling the archive back"
+ ],
+ [
+  "Объединяет места",
+  "Merging places",
+  "Merging places"
+ ],
+ [
+  "Создаёт ссылку для рассказа",
+  "Creating a story link",
+  "Creating a story link"
+ ],
+ [
+  "Удалить сразу нескольких",
+  "Delete several people",
+  "Delete several people"
+ ],
+ [
+  "Связать детей с родителями",
+  "Link children to parents",
+  "Link children to parents"
+ ],
+ [
+  "Удаляет сразу нескольких",
+  "Deleting several people",
+  "Deleting several people"
+ ],
+ [
+  "Связывает детей с родителями",
+  "Linking children to parents",
+  "Linking children to parents"
+ ],
+ [
+  "Считает по всему архиву",
+  "Counting across the archive",
+  "Counting across the archive"
+ ],
+ [
+  "Ищет, кто жил рядом",
+  "Looking for who lived together",
+  "Looking for who lived together"
  ]
 ]

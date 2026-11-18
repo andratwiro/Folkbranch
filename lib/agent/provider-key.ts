@@ -12,13 +12,23 @@ import { lineOf, LINES, newestOfLine } from './lines'
 import { PRESETS, type PresetId } from './presets'
 import { activeProvider, keyEnvOf } from './provider'
 import { dropOldCopy, vaultKey, writeKey } from '../ai/keys'
+import { customActive } from './provider'
+import { customById, customKey, customUsable, isCustomId, readCustom } from '../ai/custom-providers'
 
 
 /** The service the assistant uses, with its key from the owner's list of keys. */
 function saved() {
   const id = getSetting('agentProvider') as PresetId | null
+  // An owner's own provider is read by savedCustom, with its address checked against the key's.
+  if (isCustomId(id)) return null
   const entry = id ? vaultKey(id) : null
   return id && entry ? { id, key: entry.key, model: getSetting('agentModel') ?? undefined, folder: entry.folder } : null
+}
+
+/** The provider the owner added, when it is the one chosen and can be called: its key is the one saved for its address. */
+function savedCustom(id: string | null = getSetting('agentProvider'), model?: string) {
+  const p = isCustomId(id) ? customById(id as string) : null
+  return p && customUsable(p) ? customActive({ ...p, model: model ?? p.model }, customKey(p) ?? '') : null
 }
 
 /** What a person may pick in the assistant for one answer: each service with a key, and its tested models. */
@@ -31,13 +41,14 @@ export function answerChoices() {
     const live = listed.get(`${p.id}:${entry.key.slice(-6)}:${entry.folder ?? ''}`)?.models
     const models = p.models.filter((m) => !live?.length || live.some((x) => x.id === m.id)).map((m) => ({ id: m.id, label: m.label }))
     if (current?.id === p.id && current.model && !models.some((m) => m.id === current.model)) models.unshift({ id: current.model, label: current.model })
-    return models.map((m) => ({ provider: p.id, label: p.label, model: m.id, modelLabel: m.label, current: current?.id === p.id && current.model === m.id, autoPossible: !!LINES[p.id]?.length }))
-  })
+    return models.map((m) => ({ provider: p.id, label: p.label, model: m.id, modelLabel: m.label, current: current?.id === p.id && current.model === m.id, autoPossible: !!LINES[p.id]?.length, custom: false }))
+  }).concat(readCustom().filter(customUsable).map((p) => ({ provider: p.id as PresetId, label: p.name, model: p.model, modelLabel: p.model, current: getSetting('agentProvider') === p.id, autoPossible: false, custom: true })))
 }
 
 /** A service from the list of keys as the assistant would use it, for one answer someone picked. */
 export function providerFor(id: string, model: string) {
   if (!answerChoices().some((c) => c.provider === id && c.model === model)) return null
+  if (isCustomId(id)) return savedCustom(id, model)
   const entry = vaultKey(id)
   return entry ? activeProvider({ AGENT_PROVIDER: id, [keyEnvOf(id as PresetId)]: entry.key, AGENT_MODEL: model, AGENT_FOLDER: entry.folder }) : null
 }
@@ -46,6 +57,8 @@ export function providerFor(id: string, model: string) {
 export function currentProvider() {
   const fromEnv = activeProvider(process.env)
   if (fromEnv) return fromEnv
+  const own = savedCustom()
+  if (own) return own
   const s = saved()
   if (s && getSetting('agentAuto') === '1') void refreshAutoModel()
   return s ? activeProvider({ AGENT_PROVIDER: s.id, [keyEnvOf(s.id)]: s.key, AGENT_MODEL: s.model, AGENT_FOLDER: s.folder }) : null
@@ -65,7 +78,7 @@ export function providerStatus(actor: Actor) {
   requireRole(actor, 'owner')
   const p = currentProvider()
   const fromEnv = !!activeProvider(process.env)
-  return { connected: !!p, autoPossible: !!(p && LINES[p.id as PresetId]?.length), auto: !fromEnv && getSetting('agentAuto') === '1', provider: p?.id ?? null, label: p?.label ?? null, model: p?.model ?? null, source: !p ? null : fromEnv ? 'server' as const : 'app' as const, keyEnding: p && !fromEnv ? p.key.slice(-4) : null, tokensToday: tokensToday(), dailyLimit: dailyLimit(), month: monthTotal('assistant') }
+  return { connected: !!p, custom: !!p?.custom, autoPossible: !!(p && LINES[p.id as PresetId]?.length), auto: !fromEnv && getSetting('agentAuto') === '1', provider: p?.id ?? null, label: p?.label ?? null, model: p?.model ?? null, source: !p ? null : fromEnv ? 'server' as const : 'app' as const, keyEnding: p && !fromEnv && !p.custom ? p.key.slice(-4) : null, tokensToday: tokensToday(), dailyLimit: dailyLimit(), month: monthTotal('assistant') }
 }
 
 // How often the newest model of the line is looked for: a release is picked up within hours, and the provider is not asked on every message.
@@ -182,15 +195,15 @@ async function liveModels(p: { id: PresetId; key: string; folder: string }, time
 export async function modelChoices(actor: Actor) {
   requireRole(actor, 'owner')
   const p = currentProvider()
-  if (!p || p.id === 'local') return { current: p?.model ?? null, models: [] as LiveModel[] }
+  if (!p || p.id === 'local' || p.custom) return { current: p?.model ?? null, models: [] as LiveModel[] }
   const all = await liveModels({ id: p.id as PresetId, key: p.key, folder: p.folder })
   return { current: p.model, models: newestFirst(all.filter((m) => m.usable || m.id === p.model)).slice(0, 500) }
 }
 
 /** Whether the model answering now takes pictures: null when the provider does not say or cannot be reached. */
-export async function modelSees(provider?: { id: string; key: string; folder: string; model: string }): Promise<boolean | null> {
+export async function modelSees(provider?: { id: string; key: string; folder: string; model: string; custom?: boolean }): Promise<boolean | null> {
   const p = provider ?? currentProvider()
-  if (!p || p.id === 'local') return null
+  if (!p || p.id === 'local' || p.custom) return null
   try {
     return (await liveModels({ id: p.id as PresetId, key: p.key, folder: p.folder }, 4_000)).find((m) => m.id === p.model)?.vision ?? null
   } catch {
@@ -201,18 +214,32 @@ export async function modelSees(provider?: { id: string; key: string; folder: st
 /** Another model for the key already saved. */
 export async function chooseModel(actor: Actor, raw: unknown) {
   requireRole(actor, 'owner')
-  const { model, auto, provider } = z.object({ model: z.string().trim().min(1).max(120).optional(), auto: z.boolean().optional(), provider: z.enum(PRESETS.map((p) => p.id) as [PresetId, ...PresetId[]]).optional() }).parse(raw)
+  const { model, auto, provider } = z.object({ model: z.string().trim().min(1).max(200).optional(), auto: z.boolean().optional(), provider: z.union([z.enum(PRESETS.map((p) => p.id) as [PresetId, ...PresetId[]]), z.string().regex(/^custom-[a-z0-9]{10}$/)]).optional() }).parse(raw)
   if (activeProvider(process.env)) throw new OpError(409, tell('The model is set on the server'))
+  // One the owner added: its model is the one saved with it, and only it is chosen here.
+  const own = provider ?? getSetting('agentProvider')
+  if (isCustomId(own)) {
+    const p = customById(own as string)
+    if (!p || !customUsable(p)) throw new OpError(400, tell('Add this service\'s key first'))
+    if (provider && provider !== getSetting('agentProvider')) dropOldCopy()
+    setSetting('agentProvider', p.id)
+    setSetting('agentModel', model ?? p.model)
+    setSetting('agentAuto', '0')
+    setSetting('assistantEnabled', '1')
+    return providerStatus(actor)
+  }
+  if (provider && !PRESETS.some((x) => x.id === provider)) throw new OpError(400, tell('Choose a service from the list'))
+  const preset = provider as PresetId | undefined
   // Another service from the list of keys: its tested model, unless one is named.
   if (provider && provider !== getSetting('agentProvider')) {
-    const entry = vaultKey(provider)
+    const entry = vaultKey(preset!)
     if (!entry) throw new OpError(400, tell('Add this service\'s key first'))
-    if (model) await check(provider, entry.key, model, entry.folder)
+    if (model) await check(preset!, entry.key, model, entry.folder)
     // The previous version's key was for the old service: kept, it would be read as this one's.
     dropOldCopy()
-    setSetting('agentProvider', provider)
-    setSetting('agentModel', model ?? PRESETS.find((p) => p.id === provider)!.models[0].id)
-    setSetting('agentAuto', !model && LINES[provider]?.length ? '1' : '0')
+    setSetting('agentProvider', preset!)
+    setSetting('agentModel', model ?? PRESETS.find((p) => p.id === preset)!.models[0].id)
+    setSetting('agentAuto', !model && LINES[preset!]?.length ? '1' : '0')
     // Picking a service for the assistant is asking for it to answer.
     setSetting('assistantEnabled', '1')
     if (getSetting('agentAuto') === '1') await refreshAutoModel(true)
@@ -269,13 +296,19 @@ export function disconnectProvider(actor: Actor) {
   return providerStatus(actor)
 }
 
+/** A key a server echoes back in an error must not reach the log. */
+function redact(text: string) {
+  const key = currentProvider()?.key
+  return key && key.length >= 8 ? text.split(key).join('…') : text
+}
+
 /** What went wrong with a request to the model, in words that say what to do. */
 export function providerFailure(e: unknown): string | null {
   const failure = (e as { lastError?: unknown })?.lastError ?? e
   const status = (failure as { statusCode?: number })?.statusCode
   // The cause stays in the server log, without the conversation: a provider that changed its API shows up here.
   const f = failure as { url?: string; responseBody?: string; message?: string }
-  console.error(`assistant: provider answered ${status ?? 'with an error'} ${f.url ?? ''} ${(f.responseBody ?? f.message ?? '').slice(0, 300)}`)
+  console.error(`assistant: provider answered ${status ?? 'with an error'} ${f.url ?? ''} ${redact((f.responseBody ?? f.message ?? '').slice(0, 300))}`)
   if (status === 404) void replaceMissingModel(true)
   if (status === 401 || status === 403) return tell('The provider did not accept the key. Replace it in Settings → Assistant')
   if (status === 402) return tell('The provider account is out of money. Add some and the assistant will work again')

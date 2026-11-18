@@ -35,7 +35,9 @@ describe('get_people', () => {
   })
   it('gives a reader nothing of a living person, not even a name', async () => {
     const r = await run(reader, 'get_people', { ids: [f.living.id, f.ivan.id] })
-    expect(r[0]).toEqual({ id: f.living.id, hidden: true })
+    // Exactly the answer for an id that is not there: nothing tells a reader that someone is hidden.
+    expect(r[0]).toEqual({ id: f.living.id, missing: true })
+    expect((await run(reader, 'get_people', { ids: ['no-such-id'] }))[0]).toEqual({ id: 'no-such-id', missing: true })
     expect(JSON.stringify(r)).not.toContain('Живинская')
   })
   it('reports how far a long read has got before its answer, ten cards at a time', async () => {

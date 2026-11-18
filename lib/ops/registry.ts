@@ -14,6 +14,7 @@ import * as pages from './pages'
 import * as places from './places'
 import * as stories from './stories'
 import * as people from './people'
+import { PLACE_KINDS } from '../places'
 import { say, tell } from './settings'
 import { certainty, personInput, claimField, sourceInput, relationType, agentCreate, agentPatch, relationInput, box, blocks, markdown, type Def, def, personFor, isAgent, isTemp, assertLink, assertPlanSound, assertSpouses, checkNewPerson, checkPatch, withVersions, assertVersion, pageContent, FIELD, REL, nameOfReal, pageName } from './op-defs'
 
@@ -24,6 +25,10 @@ const placeDetails = (p: { kind?: string; otherNames?: { name: string; years?: s
   p.lat != null && p.lon != null ? `${p.lat}, ${p.lon}` : '',
   p.note,
 ].filter((x): x is string => !!x)
+
+/** The archive's own words for a kind of place ("Город", "Деревня"), whichever language the model wrote it in: "town" must not become a second kind next to "Город". */
+const KIND_WORDS: Record<string, string> = { village: 'Деревня', hamlet: 'Деревня', farm: 'Деревня', 'large village': 'Село', settlement: 'Посёлок', 'urban-type settlement': 'Посёлок', town: 'Город', city: 'Город', parish: 'Приход', volost: 'Волость', county: 'Уезд', uyezd: 'Уезд', governorate: 'Губерния', province: 'Губерния', gubernia: 'Губерния', district: 'Район', region: 'Область', oblast: 'Область', state: 'Область', country: 'Страна', nation: 'Страна' }
+const placeKind = (raw: string) => { const k = raw.trim().toLowerCase().replace(/ё/g, 'е'); return PLACE_KINDS.find((w) => w.toLowerCase().replace(/ё/g, 'е') === k) ?? KIND_WORDS[k] ?? raw }
 
 export const OPS: Record<string, Def> = {
   create_person: def({
@@ -78,13 +83,21 @@ export const OPS: Record<string, Def> = {
     input: z.object({ changes: z.array(z.object({ id: z.string(), patch: personInput })).min(1).max(200) }),
     agentInput: z.object({ changes: z.array(z.object({ id: z.string(), patch: z.record(z.string(), z.unknown()).describe('Fields as in update_person') })).min(1).max(200) }),
     bulk: true,
+    trustable: true,
     expand: (a, x) => {
       if (new Set(x.changes.map((c: { id: string }) => c.id)).size !== x.changes.length) throw new OpError(400, 'the same person is listed twice')
+      // Every bad entry is reported at once, so a list is fixed in one go rather than one error at a time.
+      const bad: string[] = []
       for (const c of x.changes) {
-        agentPatch.parse(c.patch)
-        if (!isTemp(c.id)) personFor(a, c.id)
-        checkPatch(a, c.id, c.patch)
+        try {
+          agentPatch.parse(c.patch)
+          if (!isTemp(c.id)) personFor(a, c.id)
+          checkPatch(a, c.id, c.patch)
+        } catch (e) {
+          bad.push(`${c.id}: ${e instanceof z.ZodError ? e.issues.map((i) => `${i.path.join('.')} ${i.message}`).join('; ') : (e as Error).message}`)
+        }
       }
+      if (bad.length) throw new OpError(400, `nothing was changed; ${bad.length} of ${x.changes.length} entries are wrong: ${bad.join(' | ')}`)
       return x.changes.map((c: { id: string; patch: unknown }) => ({ op: 'update_person', args: c }) as PlannedOp)
     },
     summary: (x) => `${say('Bulk change')}: ${x.changes.length}`,
@@ -102,6 +115,7 @@ export const OPS: Record<string, Def> = {
       }),
     }),
     bulk: true,
+    trustable: true,
     expand: (a, x) => {
       if (new Set(x.personIds).size !== x.personIds.length) throw new OpError(400, 'the same person is listed twice')
       for (const id of x.personIds) if (!isTemp(id)) personFor(a, id)
@@ -109,6 +123,44 @@ export const OPS: Record<string, Def> = {
     },
     summary: (x) => `${say('Add a fact')}: ${x.fact.kind} × ${x.personIds.length}`,
     apply: () => { throw new OpError(500, 'add_fact_to_people is expanded before applying') },
+    describe: () => ({ text: '' }),
+  }),
+  delete_people: def({
+    risk: 'danger',
+    description: 'Delete several people (up to 200) as one change: one confirmation, one history entry, one undo. Each goes with their links, pages and photo tags, as delete_person does.',
+    input: z.object({ ids: z.array(z.string()).min(1).max(200) }),
+    bulk: true,
+    trustable: true,
+    expand: (a, x) => {
+      if (new Set(x.ids).size !== x.ids.length) throw new OpError(400, 'the same person is listed twice')
+      const bad = x.ids.filter((id: string) => { try { if (!isTemp(id)) personFor(a, id); return false } catch { return true } })
+      if (bad.length) throw new OpError(404, `nothing was deleted; not found: ${bad.join(', ')}`)
+      return x.ids.map((id: string) => ({ op: 'delete_person', args: { id } }) as PlannedOp)
+    },
+    summary: (x) => `${say('Delete person')} × ${x.ids.length}`,
+    apply: () => { throw new OpError(500, 'delete_people is expanded before applying') },
+    describe: () => ({ text: '' }),
+  }),
+  link_people: def({
+    risk: 'danger',
+    description: 'Make existing people children of one parent, or of a couple, in one change and one undo: son or daughter is chosen by each child\'s sex (a child whose sex is unknown is named in the error, nothing is linked). Use it instead of many add_relation calls.',
+    input: z.object({ parentId: z.string(), otherParentId: z.string().nullish(), childIds: z.array(z.string()).min(1).max(100), kind: z.enum(['birth', 'adopted', 'foster', 'step']).optional() }),
+    bulk: true,
+    trustable: true,
+    expand: (a, x) => {
+      const ops: PlannedOp[] = []
+      const bad: string[] = []
+      for (const id of x.childIds as string[]) {
+        const child = isTemp(id) ? null : personFor(a, id)
+        const type = child?.sex === 'M' ? 'son' : child?.sex === 'F' ? 'daughter' : null
+        if (!type) { bad.push(`${id}${child ? ` (${personName(child as never)})` : ''}: sex unknown`); continue }
+        ops.push({ op: 'add_relation', args: { type, to: x.parentId, other: id, otherParentId: x.otherParentId ?? null, ...(x.kind ? { kind: x.kind } : {}) } } as PlannedOp)
+      }
+      if (bad.length) throw new OpError(400, `nothing was linked; set the sex first of: ${bad.join('; ')}`)
+      return ops
+    },
+    summary: (x) => `${say('Add a link')} × ${x.childIds.length}`,
+    apply: () => { throw new OpError(500, 'link_people is expanded before applying') },
     describe: () => ({ text: '' }),
   }),
   delete_person: def({
@@ -130,10 +182,13 @@ export const OPS: Record<string, Def> = {
     refs: { to: 'persons', other: 'persons' },
     prepare: (a, x) => {
       if (!isAgent(a) || isTemp(x.to) || isTemp(x.other)) return x
-      if (x.to === x.other) throw new OpError(400, 'same person')
+      if (x.to === x.other) throw new OpError(400, x.type === 'spouse' ? 'a person cannot be their own spouse' : x.type === 'father' || x.type === 'mother' ? 'a person cannot be their own parent' : 'a person cannot be their own child')
       const other = personFor(a, x.other)
       personFor(a, x.to)
-      if (x.type === 'spouse') assertSpouses(a, x.to, x.other)
+      if (x.type === 'spouse') {
+        if (people.getGraph(a).unions.some((u) => (u.aId === x.to && u.bId === x.other) || (u.aId === x.other && u.bId === x.to))) throw new OpError(409, 'they are already spouses: nothing was changed. Use update_relation to change the dates or the state')
+        assertSpouses(a, x.to, x.other)
+      }
       else assertLink(a, x.type, x.to, { id: x.other, sex: other.sex, birthDate: other.birthDate, name: personName(other) }, x.kind)
       if (x.otherParentId && !isTemp(x.otherParentId)) personFor(a, x.otherParentId)
       return x
@@ -301,10 +356,10 @@ export const OPS: Record<string, Def> = {
   }),
   create_place: def({
     risk: 'write',
-    description: 'Add a place: a village, town, parish or region, with what it was part of, its other and old names, and its point on a map. Look in list_places first. A place with no point stays off the map: give lat and lon only for a place you are sure of, and say in the note where they come from.',
+    description: 'Add a place (village, town, parish, region) with its parent, other names and map point. Check list_places first. Give lat and lon only if sure, and say in the note where they come from; without a point it stays off the map.',
     input: places.placeInput,
     creates: true,
-    prepare: (_a, x) => { if (x.parentId && !isTemp(x.parentId)) places.getPlace(x.parentId); return x },
+    prepare: (_a, x) => { if (x.parentId && !isTemp(x.parentId)) places.getPlace(x.parentId); return { ...x, kind: placeKind(x.kind) } },
     apply: (a, x) => places.savePlace(a, null, x),
     describe: (x) => ({ text: `${tell('Place')}: ${x.name}`, details: placeDetails(x) }),
   }),
@@ -312,13 +367,20 @@ export const OPS: Record<string, Def> = {
     risk: 'write',
     description: 'Change a place. Only the given fields change; otherNames replaces the whole list.',
     input: z.object({ id: z.string(), patch: places.placePatch }),
-    prepare: (_a, x) => { if (!isTemp(x.id)) places.getPlace(x.id); return x },
+    prepare: (_a, x) => { if (!isTemp(x.id)) places.getPlace(x.id); return x.patch.kind === undefined ? x : { ...x, patch: { ...x.patch, kind: placeKind(x.patch.kind) } } },
     apply: (a, x) => places.savePlace(a, x.id, { ...places.getPlace(x.id), ...x.patch }),
     describe: (x) => ({ text: `${tell('Place')}: ${isTemp(x.id) ? x.patch.name ?? x.id : places.getPlace(x.id).name}`, details: placeDetails(x.patch) }),
   }),
+  merge_places: def({
+    risk: 'danger',
+    description: 'Merge two records of one place into one: the first keeps its name, takes the other\'s names, point and note, and every card that meant the other now means it. One undo takes it back. Find candidates with list_similar_places.',
+    input: z.object({ keepId: z.string(), dropId: z.string() }),
+    apply: (a, x) => places.mergePlaces(a, x.keepId, x.dropId),
+    describe: (x) => ({ text: `${tell('Merge places')}: ${places.getPlace(x.dropId).name} → ${places.getPlace(x.keepId).name}` }),
+  }),
   add_version: def({
     risk: 'write',
-    description: 'Record a value found for a person: birth or death date or place, or a name. Keeps what was there; the first value of an empty field becomes the main one, otherwise a person chooses. Prefer this to update_person for anything found in a source. Give `source` to say where it comes from: reuse a source by `sourceId` from get_person.',
+    description: 'Record a value found in a source for a person (a birth or death date or place, a name). Keeps what was there: the first value of an empty field becomes the main one, otherwise a person chooses. Prefer it to update_person. Give `source`, or reuse one with `sourceId` from get_person. Returns claimId.',
     input: z.object({
       personId: z.string(),
       field: claimField,
@@ -332,7 +394,11 @@ export const OPS: Record<string, Def> = {
       const source = x.source ? { ...x.source, id: newId(), ref: x.source.ref ?? '', page: x.source.page ?? '', url: x.source.url ?? '' } : null
       const sources = source ? [...p.sources, source] : p.sources
       if (x.sourceId && !sources.some((s) => s.id === x.sourceId)) throw new OpError(404, `source ${x.sourceId} not found on this person`)
-      return people.updatePerson(a, x.personId, { sources, ...claims.addVersion({ ...p, sources }, x.field, x.value, source?.id ?? x.sourceId ?? null) })
+      const patch = claims.addVersion({ ...p, sources }, x.field, x.value, source?.id ?? x.sourceId ?? null)
+      // The version just recorded is the newest one with this field and value (the card's own current value may also appear as a version).
+      const claimId = (patch.claims as { id: string; field: string; value: string }[] | undefined)?.findLast((c) => c.field === x.field && c.value === x.value)?.id
+      // The id of the version just recorded, to choose or reject it later.
+      return { ...people.updatePerson(a, x.personId, { sources, ...patch }), ...(claimId ? { claimId } : {}) }
     },
     describe: (x, c) => ({ text: `${c.name(x.personId)}: ${x.field} = ${x.value}`, details: [x.source?.title].filter(Boolean) }),
   }),
@@ -403,11 +469,9 @@ export const OPS: Record<string, Def> = {
   }),
   import_text: def({
     risk: 'danger',
-    description: `The way to add several people at once: one confirmation, one undo. Only adds and changes, never deletes. Always goes to review for tokens. One person per line: Name Surname b: 1880, bp: Tula, d: 1950, dp: Oryol, sex: m, maiden: Ivanova. "A + B m: 1905" is a couple, indented lines under it are their children, and a single person's indented lines are theirs. An indented line is always a child: a spouse is never indented, write A + B. A person named again later is the same person. Point at someone already in the archive with id: their id. Example:
-Иван Соколов id: abc + Анна Соколова id: def
-  Глеб Соколов b: 1950, d: 1995, sex: m
-Глеб Соколов + Зоя Тарасова b: 1952, d: 2015, sex: f, m: 1974
-  Инна Соколова b: 1975, d: 2020, sex: f
+    description: `Add several people at once: one confirmation, one undo; only adds and changes. Always reviewed for tokens. One person per line: Name Surname b: 1880, bp: Tula, d: 1950, dp: Oryol, sex: m, maiden: Ivanova. "A + B m: 1905" is a couple; indented lines under it are their children (never a spouse). A name repeated is the same person; id: X points at someone already in the archive. Example:
+Иван Соколов id: abc + Анна Соколова
+  Глеб Соколов b: 1950, sex: m
 The answer lists each new person's id.`,
     input: z.object({ text: z.string().min(1), resolutions: z.record(z.string(), z.string()).optional().describe('For ambiguous names reported in an error: reference → person id, or "new"') }),
     bulk: true,
@@ -434,12 +498,14 @@ The answer lists each new person's id.`,
         return { text: `${tell('Replace the tree with a file')}: ${n} ${tell('people_count')} · ${tell('Deleted')}: ${removed}` }
       }
       const verb = x.mode === 'merge' ? 'Объединить с файлом' : 'Импорт GEDCOM'
-      return { text: `${tell(verb)}: ${n} ${tell('people_count')}` }
+      // Whoever accepts the draft reads who is in it, not only how many.
+      const names = [...x.text.matchAll(/^1 NAME (.*)$/gm)].slice(0, 30).map((m) => m[1].replace(/\//g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean)
+      return { text: `${tell(verb)}: ${n} ${tell('people_count')}`, details: names.length < n ? [...names, '…'] : names }
     },
   }),
   import_kinship_case: def({
     risk: 'danger',
-    description: 'Bring in a research case made by the ex-USSR kinship skill: pass the case_id from its case-intake.yaml and the text of its person-register.csv, relationship-register.csv, claims-register.csv and artifact-register.csv. Candidates stay separate cards, hypotheses stay notes and never become lines on the chart, and everyone not known to be dead counts as living. Importing the same case again adds only what is new, and never replaces what a person wrote. Always goes to review for tokens.',
+    description: 'Bring in a research case from the ex-USSR kinship skill: its case_id and the text of its four CSV registers. Candidates stay separate cards, hypotheses stay notes, never chart lines; everyone not known dead counts as living. Importing again adds only what is new. Always reviewed for tokens.',
     input: caseFiles,
     bulk: true,
     apply: (a, x) => importCase(a, x),
@@ -450,7 +516,12 @@ The answer lists each new person's id.`,
     description: 'Roll back a change from the history. A token can undo only its own changes.',
     input: z.object({ historyId: z.string() }),
     direct: true,
-    apply: (a, x) => undo(a, x.historyId, say('Undone')),
+    apply: (a, x) => {
+      const was = getDb().select({ summary: schema.history.summary }).from(schema.history).where(eq(schema.history.id, x.historyId)).get()?.summary
+      undo(a, x.historyId, say('Undone'))
+      // Said back, so a model (or a person) knows what is gone.
+      return { ok: true, ...(was ? { undone: was } : {}) }
+    },
     describe: () => ({ text: tell('Undone') }),
   }),
   rollback_to: def({
@@ -458,7 +529,7 @@ The answer lists each new person's id.`,
     description: 'Roll back the chosen change and every change after it, newest first.',
     input: z.object({ historyId: z.string() }),
     direct: true,
-    internal: true,
+    ownerOnly: true,
     apply: (a, x) => rollbackTo(a, x.historyId, say('Undone')),
     describe: () => ({ text: tell('Undone') }),
   }),
@@ -467,7 +538,6 @@ The answer lists each new person's id.`,
     description: 'Roll back one person\'s part of a change, such as one card of an import.',
     input: z.object({ historyId: z.string(), personId: z.string() }),
     direct: true,
-    internal: true,
     apply: (a, x) => undoPart(a, x.historyId, x.personId, say('Undone')),
     describe: () => ({ text: tell('Undone') }),
   }),

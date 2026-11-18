@@ -9,6 +9,7 @@ import { activeProvider } from '../agent/provider'
 import { STT_PRESETS } from '../transcribe/presets'
 import { checkKey, removeTranscription, speechSetup } from '../transcribe/service'
 import { readKeys, SERVICES, writeKey, type Service } from './keys'
+import { removeCustom } from './custom-providers'
 
 const agentPreset = (s: string) => PRESETS.find((p) => p.id === s)
 const speechPreset = (s: string) => STT_PRESETS.find((p) => p.id === s)
@@ -69,4 +70,15 @@ export function removeKey(actor: Actor, service: string) {
   if (used?.speech) removeTranscription(actor)
   writeKey(s, null)
   return listServices(actor)
+}
+
+/** A provider the owner added, removed with its key; the assistant is switched off if it was the one answering. */
+export function removeOwnProvider(actor: Actor, id: string) {
+  requireRole(actor, 'owner')
+  const answering = getSetting('agentProvider') === id
+  removeCustom(actor, id)
+  if (answering) {
+    disconnectProvider(actor)
+    setSetting('assistantEnabled', '0')
+  }
 }

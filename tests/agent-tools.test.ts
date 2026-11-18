@@ -235,7 +235,9 @@ describe('a reader and living relatives', () => {
 
   it('every read tool is in that list, so a new one cannot slip past', () => {
     const covered = new Set(asks().map(([n]) => n))
-    const uncheckedOnPurpose = ['use_tools', 'set_plan', 'read_attachment', 'parse_table', 'list_pages', 'preview_text', 'preview_gedcom', 'export_gedcom', 'get_settings', 'list_users', 'list_invites', 'get_page', 'set_chart_direction']
+    // The last five are for editors only: a reader is refused them, which the next test shows.
+    // get_statistics and find_overlaps are checked for a reader in agent-eval-c.test.ts.
+    const uncheckedOnPurpose = ['get_statistics', 'find_overlaps', 'list_story_requests', 'find_duplicates', 'preview_merge', 'list_similar_places', 'get_place_suggestions', 'use_tools', 'set_plan', 'read_attachment', 'parse_table', 'list_pages', 'preview_text', 'preview_gedcom', 'export_gedcom', 'get_settings', 'list_users', 'list_invites', 'get_page', 'set_chart_direction']
     for (const t of toolsFor(owner, 'assistant').filter((x) => x.risk === 'read' || x.risk === 'ui')) expect(covered.has(t.name) || uncheckedOnPurpose.includes(t.name), t.name).toBe(true)
   })
 

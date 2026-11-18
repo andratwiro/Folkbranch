@@ -12,7 +12,7 @@ type NameOf = (id: string) => string
 const DONE: [string, string][] = [['Add', 'Person added'], ['Delete person', 'Person deleted'], ['Remove relation', 'Relation removed'], ['Delete', 'Deleted'], ['Bulk change', 'Changed at once']]
 const KIND: Record<string, string> = { birth: 'birth_masculine', adopted: 'adopted_masculine', foster: 'foster', step: 'step', marriage: 'marriage', civil: 'civil union' }
 const CERTAIN: Record<string, string> = { documented: 'documented', family: 'family account', assumed: 'assumption' }
-const PLAIN = ['givenName', 'surname', 'maidenName', 'patronymic', 'birthDate', 'birthPlace', 'deathDate', 'deathPlace']
+const PLAIN = ['givenName', 'surname', 'maidenName', 'patronymic', 'birthDate', 'birthPlace', 'deathDate', 'deathPlace', 'sex', 'otherNames', 'certainty']
 const LONGEST = 60
 
 const words = (key: string) => [...new Set(LANGS.map((l) => translate(l, key)))]
@@ -71,8 +71,10 @@ export function changeDetails(changes: Change[], nameOf: NameOf = () => '', rela
       const was = relationWords(c.before), now = relationWords(c.after)
       const who = [...ends(c.after), ...ends(c.before)].filter((id, i, all) => id !== 'undefined' && all.indexOf(id) === i)
       const names = (who.length ? who : relationEnds?.(c.id) ?? []).map(nameOf).filter(Boolean)
-      if (!c.before) out.push({ label: tell('Relation added'), before: null, after: short(names.join(' — ')) })
-      else if (!c.after) out.push({ label: tell('Relation removed'), before: short(names.join(' — ')), after: null })
+      // Both ends, and which is which: a line between two names says nothing about who is the parent.
+      const sides = (c.table === 'parentChild' && names.length === 2 ? `${names[0]} (${tell('Parent')}) → ${names[1]} (${tell('Child')})` : c.table === 'unions' && names.length === 2 ? `${names[0]} + ${names[1]}` : names.join(' — '))
+      if (!c.before) out.push({ label: tell('Relation added'), before: null, after: short(sides) })
+      else if (!c.after) out.push({ label: tell('Relation removed'), before: short(sides), after: null })
       else if (was !== now) out.push({ label: names.length ? `${tell('Relationship')} (${names.join(' — ')})` : tell('Relationship'), before: was || null, after: now || null })
       continue
     }

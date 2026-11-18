@@ -26,6 +26,18 @@ Writing (not listed for a read-only token): `create_person`, `update_person`, `d
 
 Agents read and write pages in Markdown: a mention is `[@Name](person:ID)`, a photo is `![caption](/api/v1/media/ID/file?size=medium)`. Blocks Markdown cannot express, such as tables, are visible only with `raw: true`, and new text replaces the whole page.
 
+### What an agent can do, and what stays on the screen
+
+The assistant and MCP are built from one list of tools (`lib/ops/tools.ts`), so a feature added to the app reaches both. A test (`tests/parity.test.ts`) fails when an operation or an API route has no tool and no reason on its short list. Besides the tools above:
+
+- **Story links:** `list_story_requests` (who each waits for, expiry, recordings waiting; never the link), `create_story_request` (asked every time; a token whose edits go to review cannot make one) and `revoke_story_request`. In the chat the person sees the link and the model does not; a token that applies its edits at once gets the link in the answer, and it is not written to the history.
+- **Looking at duplicates and places:** `find_duplicates` and `preview_merge` (what a merge would do, or why it is refused) and `list_similar_places`, `merge_places` (one history entry, one undo) and `get_place_suggestions` (up to three GeoNames candidates; the point is set with `update_place`).
+- **Taking changes back:** `undo` and `undo_person` (editor; a token only its own changes) and `rollback_to` (the owner, in the chat only: it takes back other people's later changes).
+- **Photos:** `view_photo` also over MCP: the picture comes back as image content, at most 1568 px a side and 4 MB (a PDF as an embedded file), with the same rules for hidden people as the page.
+
+Left to the screen on purpose: **merging two cards** (`mergePeople` refuses a token and the assistant, so a model cannot merge people; it can compare and say which pair), **map layers and the time slider, the print and export dialog, the chart's layout and saved views**, the **custom AI provider and every key** (a key must not pass through a model), sign-in methods, access tokens, sharing links, backups and updates, contact details of living relatives, and **adding a story** (it needs an audio recording a tool call cannot carry: a story arrives through a story link or the app and waits for review). `read_attachment` is for the assistant only: attachments exist only inside a chat; a token reads its own uploads with `view_photo`. Not yet a tool: stories as text, a card's own history, the list of archives, deleting a place (listed in the test as gaps).
+
+
 ## REST API
 
 `/api/v1/…`, described at `/api/v1/openapi.json`. Send `Authorization: Bearer fb_...`. An edit sent for review returns 202 and `status: pending_review`. The app itself uses this same API.
@@ -78,6 +90,15 @@ Identical names inside one file count as one person, and the window warns about 
 ## How an agent should work
 
 Start with `get_overview`, then `find_gaps`: that is the work queue. Record findings with `add_version` along with a source and its reliability: the old value stays, and a person sees the disagreement. `choose_version` and `reject_version` pick and reject versions. An agent converts a table with `parse_table`, checks it with `preview_text` and sends it with `import_text`. Ready MCP prompts: `research_person`, `fill_gaps`, `import_notes`. After making a token under **Settings → Agents and MCP**, you can copy the command for Claude Code, the config for other clients, or a task for the agent.
+
+## A provider of your own
+
+Settings > AI > **Add your own provider** adds any service that speaks the OpenAI protocol (an OpenCode or LiteLLM address, a gateway at work, Ollama or LM Studio on your own network): a name, the address of the API (usually ending in `/v1`), a key, a model and an optional note. **Load models** reads `GET {address}/models`; if that fails the model name is simply typed. **Test** sends one small request and says in words whether the key, the address or the model is wrong, whether nothing answers, or whether the server does not accept tools (the assistant needs them). Several can be saved; each is listed beside the built-in ones as "your provider", can be switched to, edited and removed (removing deletes its key). Only the owner sees or changes them.
+
+- **Address:** `https://`, or `http://` only for this computer or a home network (`localhost`, `127.x`, `10.x`, `172.16–31.x`, `192.168.x`, `*.local`). No name or password in the address, no query. Refused: link-local and cloud-metadata addresses (`169.254.x.x`, `metadata.google.internal`, `fe80::`), and this app's own port. The name is looked up and checked again at the moment of connecting, and no redirect is followed, so the key can only reach the address it was saved with.
+- **Key:** kept encrypted in the same list as the other AI keys, **bound to the address it was saved with**. If the address in the settings is not that one (an edited list, a restored copy) the key is not read; changing the address asks for the key again. The key is never returned by the API, written to the log or put in the AI settings file, which carries only a provider's id and model, never an address.
+- **Uses:** the assistant only. Tokens are counted; the price is "price unknown", never zero, and nothing is assumed to cost money. Speech and face recognition do not use it: that would need a provider of the same kind added to their lists (each has its own request format and key rules).
+- **Tools:** the assistant sends tool definitions on every request. A server that refuses them cannot run it (Test says so); there is no plain-answer mode.
 
 ## Cloud transcription
 

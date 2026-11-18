@@ -36,7 +36,9 @@ function splitAttrs(s: string) {
     const start = m.index + m[0].length
     attrs[m[1]] = s.slice(start, hits[i + 1]?.index ?? s.length).trim().replace(/,$/, '').trim()
   })
-  return { head: (hits[0] ? s.slice(0, hits[0].index) : s).trim(), attrs }
+  // A word and a colon that is none of the keys: said, not swallowed into the value before it.
+  const unknown = [...new Set([...s.matchAll(/(?:^|[\s,])([A-Za-zА-Яа-я_][\wА-Яа-я]{0,14}):\s/g)].map((m) => m[1]).filter((k) => !new RegExp(`^(?:${KEYS.join('|')})$`).test(k)))]
+  return { head: (hits[0] ? s.slice(0, hits[0].index) : s).trim(), attrs, unknown }
 }
 
 const SEX: Record<string, Sex> = { m: 'M', f: 'F', u: 'U', м: 'M', ж: 'F' }
@@ -136,6 +138,7 @@ export function parseFamilyText(text: string): ParsedText {
     const couple = sides.length === 2
     const head = couple ? sides.map((p) => p.head).join(' + ') : splitAttrs(s).head
     const attrs = couple ? { ...sides[0].attrs, ...sides[1].attrs } : splitAttrs(s).attrs
+    for (const k of new Set(couple ? sides.flatMap((p) => p.unknown) : splitAttrs(s).unknown)) out.errors.push({ line, message: `unknown key "${k}:" (the keys are ${KEYS.map((x) => x.replace('\\d*', '')).join(', ')})` })
     for (const a of couple ? sides.map((p) => p.attrs) : [attrs]) if (a.sex && !SEX[a.sex.toLowerCase()]) out.errors.push({ line, message: `unknown sex: ${a.sex}` })
     const terms = head.split(/\s\+\s/).map((t) => t.trim())
     if (terms.length > 2) out.errors.push({ line, message: 'a couple line has exactly two people' })

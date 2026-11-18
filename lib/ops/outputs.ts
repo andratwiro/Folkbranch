@@ -22,7 +22,7 @@ const written = z.object({ id, givenName: text, surname: text, birthDate: text, 
 const relative = z.object({ name: text.optional() })
 const pageMeta = z.object({ id, personId: id, parentPageId: id.nullable(), title: text, icon: text, updatedAt: z.number() })
 const photo = z.object({ id, kind: text, originalName: text, caption: text, date: text, place: text, tags: z.array(z.object({ id, personId: id.nullable(), label: text.nullable() })).optional() })
-const proposal = z.object({ id, status: text, error: text.nullable(), ops: z.array(z.object({ op: text, text })) })
+const proposal = z.object({ id, status: text, error: text.nullable(), ops: z.array(z.object({ op: text, text, details: z.array(text).optional() })) })
 const applied = z.object({ applied: z.number(), ids: z.record(z.string(), z.string()), people: z.array(z.object({ name: text, id, parents: z.array(text).optional(), spouses: z.array(text).optional() })).optional(), check: z.object({ unlinked: z.array(text) }).optional(), places: z.array(placeNote).optional() })
 const importCount = z.object({ persons: z.number(), ids: z.record(z.string(), z.string()).optional() })
 
@@ -33,7 +33,7 @@ const write = (shape: z.ZodType) => z.union([pending, shape])
 export const OUTPUTS: Record<string, z.ZodType> = {
   get_overview: z.object({
     family: text, you: z.object({ role: text, writes: text }),
-    people: z.object({ total: z.number(), hiddenFromYou: z.number(), links: z.number(), unions: z.number() }),
+    people: z.object({ total: z.number(), links: z.number(), unions: z.number() }),
     values: z.object({ documented: z.number(), told: z.number(), unsourced: z.number(), conflicts: z.number() }),
     yourDrafts: z.number(), next: text,
   }),
@@ -48,16 +48,18 @@ export const OUTPUTS: Record<string, z.ZodType> = {
     pages: z.array(pageMeta),
   }),
   get_people: z.array(z.object({
-    id, missing: z.literal(true).optional(), hidden: z.literal(true).optional(), name: text.optional(), maidenName: text.optional(), sex: text.optional(), years: text.optional(), living: z.boolean().optional(),
+    id, missing: z.literal(true).optional(), name: text.optional(), maidenName: text.optional(), sex: text.optional(), years: text.optional(), living: z.boolean().optional(),
     birthDate: text.optional(), birthPlace: text.optional(), deathDate: text.optional(), deathPlace: text.optional(), certainty: text.optional(), tags: z.array(text).optional(),
     facts: z.array(z.object({ kind: text, date: text, place: text })).optional(), parentIds: z.array(id).optional(), childIds: z.array(id).optional(), spouseIds: z.array(id).optional(),
   })),
   get_relatives: z.array(brief.extend({ relation: text, blood: z.boolean(), kind: text })),
   count_relatives: z.union([z.object({ ambiguous: z.array(brief), note: text }), z.object({
-    person: z.object({ id, name: text }), total: z.number(), byKind: z.record(z.string(), z.number()), bloodByDegree: z.record(z.string(), z.number()), hiddenFromYou: z.number(), definition: text,
+    person: z.object({ id, name: text }), total: z.number(), byKind: z.record(z.string(), z.number()), bloodByDegree: z.record(z.string(), z.number()), definition: text,
     immediateFamily: z.array(brief.extend({ relation: text, kind: text, degree: z.number().optional() })).optional(),
     matching: z.number().optional(), more: z.number().optional(), list: z.array(brief.extend({ relation: text, kind: text, degree: z.number().optional() })).optional(),
   })]),
+  get_statistics: z.object({ by: text, people: z.number(), groups: z.array(z.object({ group: text, people: z.number(), died: z.number(), averageAgeAtDeath: z.number().nullable(), ageKnownFor: z.number(), marriages: z.number(), divorced: z.number() })) }),
+  find_overlaps: z.array(z.object({ place: text, people: z.array(z.object({ id, name: text, years: text })), overlapping: z.number(), pairs: z.array(z.object({ a: id, b: id, from: z.number(), to: z.number() })) })),
   how_related: z.object({ relation: text.nullable(), blood: z.boolean().optional(), path: z.array(z.object({ id, name: text })).optional() }),
   list_pages: z.array(pageMeta),
   get_page: pageMeta.extend({ markdown: text, content: z.array(z.unknown()).optional() }),
@@ -67,9 +69,9 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   preview_text: z.object({ creates: z.array(text), updates: z.array(z.unknown()), relations: z.number(), ambiguous: z.array(z.unknown()), errors: z.array(z.unknown()), operations: z.number() }),
   export_gedcom: text,
   preview_gedcom: z.object({ version: text, persons: z.number(), families: z.number(), sample: z.array(text), existing: z.number() }),
-  get_history: z.array(z.object({ id, at: z.number(), actorName: text, userId: text, byAgent: z.boolean(), summary: text, details: z.array(z.object({ label: text, before: text.nullable(), after: text.nullable() })).optional(), people: z.array(z.object({ id, name: text, change: z.enum(['added', 'updated', 'removed']) })).optional(), personIds: z.array(id), undoOf: id.nullable(), undoneAt: z.number().nullable() })),
+  get_history: z.array(z.object({ id, at: z.number(), actorName: text, byAgent: z.boolean(), summary: text, details: z.array(z.object({ label: text, before: text.nullable(), after: text.nullable() })).optional(), people: z.array(z.object({ id, name: text, change: z.enum(['added', 'updated', 'removed']) })).optional(), personIds: z.array(id), undoOf: id.nullable(), undoneAt: z.number().nullable() })),
   my_proposals: z.array(proposal),
-  query_people: z.object({ total: z.number(), people: z.array(brief.extend({ birthPlace: text.optional(), deathPlace: text.optional() })), groups: z.array(z.object({ key: text, count: z.number() })).optional() }),
+  query_people: z.object({ notes: z.array(text).optional(), total: z.number(), people: z.array(brief.extend({ birthPlace: text.optional(), deathPlace: text.optional() })), groups: z.array(z.object({ key: text, count: z.number() })).optional() }),
   search_archive: z.object({ total: z.number(), results: z.array(z.object({ kind: text, id, personId: id.nullish(), title: text, snippet: text })) }),
 
   create_person: write(written),
@@ -77,6 +79,8 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   add_fact: write(written),
   update_people: write(applied),
   add_fact_to_people: write(applied),
+  delete_people: write(applied),
+  link_people: write(applied),
   delete_person: write(ok),
   add_relation: write(ok),
   update_relation: write(ok),
@@ -96,7 +100,7 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   set_avatar: write(ok),
   create_place: write(z.object({ id })),
   update_place: write(z.object({ id })),
-  add_version: write(written),
+  add_version: write(written.extend({ claimId: id.optional() })),
   add_source: write(z.object({ sourceId: id })),
   remove_source: write(ok),
   restore_version: write(written),
@@ -105,7 +109,20 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   import_text: write(applied),
   import_gedcom: write(importCount),
   import_kinship_case: write(z.object({ persons: z.number(), updated: z.number(), parents: z.number(), unions: z.number() })),
-  undo: write(ok),
+  undo: write(ok.extend({ undone: text.optional() })),
+  rollback_to: write(z.object({ count: z.number() })),
+  undo_person: write(z.object({ undone: z.boolean(), left: z.number() })),
+  merge_places: write(z.object({ id })),
+  list_story_requests: z.array(z.object({ id, personId: id, about: text, tellerName: text, question: text, received: z.number(), expiresAt: z.number().nullable(), createdAt: z.number(), waiting: z.number(), state: text })),
+  create_story_request: z.object({ created: z.literal(true), link: text, url: text }),
+  revoke_story_request: ok,
+  find_duplicates: z.array(z.object({ a: z.object({ id, name: text }), b: z.object({ id, name: text }), score: z.number(), why: z.array(text) })),
+  preview_merge: (() => {
+    const side = z.object({ id, name: text, updatedAt: z.number(), parents: z.number(), children: z.number(), unions: z.number(), pages: z.number(), photos: z.number(), stories: z.number(), contacts: z.number() })
+    return z.object({ blocked: text.nullable(), warnings: z.array(text), fields: z.array(z.object({ field: text, keep: text, drop: text })), keep: side, drop: side })
+  })(),
+  list_similar_places: z.array(z.object({ a: z.object({ id, name: text, kind: text, parentId: id.nullable() }), b: z.object({ id, name: text, kind: text, parentId: id.nullable() }) })),
+  get_place_suggestions: z.object({ snapshot: text.nullable(), candidates: z.array(z.object({ geonameId: z.number(), name: text, country: text, region: text, lat: z.number(), lon: z.number(), matched: text, why: z.array(text) })), note: text.optional() }),
 
   get_settings: z.object({ familyName: text, language: text }),
   update_settings: ok,

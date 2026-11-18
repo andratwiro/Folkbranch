@@ -290,7 +290,7 @@ describe('agents over MCP', () => {
     expect(names).not.toContain('add_version')
     const o = await call('get_overview')
     expect(o.you.writes).toBe('not allowed')
-    expect(o.people.hiddenFromYou).toBeGreaterThan(0)
+    expect(o.people).not.toHaveProperty('hiddenFromYou')
     expect(JSON.stringify(await call('find_gaps', { limit: 200 }))).not.toContain('Скрытов')
   })
 

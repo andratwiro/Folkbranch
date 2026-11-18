@@ -13,8 +13,19 @@ export { hiddenFor }
 
 const label = (p: { givenName: string; surname: string } | undefined) => (p && personName(p)) || say('Untitled')
 
+/** A day that is not on the calendar: 31 February, month 13. Written as 1900-02-31 or 31.02.1900; other forms are left alone. */
+export function impossibleDate(date?: string | null): string | null {
+  const s = (date ?? '').trim()
+  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s) ?? /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s)
+  if (!m) return null
+  const [year, month, day] = s.includes('-') ? [+m[1], +m[2], +m[3]] : [+m[3], +m[2], +m[1]]
+  const days = [31, year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  return month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1] ? null : `${s} is not a day on the calendar`
+}
+
 /** A chart that shows a death before a birth lies, whichever way the card was saved. */
 export function assertDates(birth?: string | null, death?: string | null) {
+  for (const d of [birth, death]) { const bad = impossibleDate(d); if (bad) throw new OpError(400, bad) }
   const b = yearOf(birth ?? ''), d = yearOf(death ?? '')
   if (b && d && d < b) throw new OpError(400, `death year ${d} is before birth year ${b}`)
 }
@@ -182,7 +193,7 @@ export function insertPerson(c: Changes, input: PersonInput) {
 export function createPerson(
   actor: Actor,
   input: PersonInput,
-  relation?: { type: QuickRelation; to: string; otherParentId?: string | null },
+  relation?: { type: QuickRelation; to: string; otherParentId?: string | null } & LinkOptions,
 ) {
   requireRole(actor, 'editor')
   const name = [input.givenName, input.surname].filter(Boolean).join(' ')
@@ -197,7 +208,7 @@ export function createPerson(
     const id = insertPerson(c, { ...input, sex: input.sex ?? sex })
     // A reader's history leaves out entries naming nobody, so the new person must be named here.
     personIds.push(id)
-    if (relation) link(c, relation.type, relation.to, id, relation.otherParentId)
+    if (relation) link(c, relation.type, relation.to, id, relation.otherParentId, { kind: relation.kind, certainty: relation.certainty, unionKind: relation.unionKind, startDate: relation.startDate, endDate: relation.endDate })
     return getPersonRow(id)
   })
 }

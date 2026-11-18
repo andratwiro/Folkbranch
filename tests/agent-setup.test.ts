@@ -65,7 +65,7 @@ describe('connecting', () => {
   it('a good key is stored encrypted, turns the assistant on, and is used', async () => {
     stub(() => answer(200, { data: {} }))
     const status = await connectProvider(owner, { provider: 'openrouter', key: `  ${KEY}\n` })
-    expect(status).toEqual({ connected: true, autoPossible: true, auto: true, provider: 'openrouter', label: 'OpenRouter', model: 'openai/gpt-6-luna', source: 'app', keyEnding: '1234', tokensToday: 0, dailyLimit: 5_000_000, month: { requests: 0, tokens: 0, seconds: 0, dollars: 0, unpriced: 0 } })
+    expect(status).toEqual({ connected: true, custom: false, autoPossible: true, auto: true, provider: 'openrouter', label: 'OpenRouter', model: 'openai/gpt-6-luna', source: 'app', keyEnding: '1234', tokensToday: 0, dailyLimit: 5_000_000, month: { requests: 0, tokens: 0, seconds: 0, dollars: 0, unpriced: 0 } })
     expect(JSON.stringify(getDb().select().from(schema.settings).all())).not.toContain(KEY)
     expect(getSetting('assistantEnabled')).toBe('1')
     expect(currentProvider()).toMatchObject({ id: 'openrouter', key: KEY })
