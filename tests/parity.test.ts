@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tool answers are read as the JSON they are */
 // What a person does on the screen, an outside agent over MCP and the built-in assistant can do too, unless it is
 // listed here with the reason it must not. A new route or operation with no tool and no reason fails the last test.
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'

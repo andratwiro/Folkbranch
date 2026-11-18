@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tool answers are read as the JSON they are */
 // Errors an agent or a person watching it can read: what a read-only token is told, what a wrong input says in words,
 // and what undoing twice says.
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'

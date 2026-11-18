@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tool answers are read as the JSON they are */
 // Privacy and safety found by agents driving the app over MCP: a hidden person answers like a missing one, hidden
 // counts and placeholder records are gone for readers, text cannot hide direction marks, history names the token, and
 // a typo in a filter is an error rather than the whole archive.

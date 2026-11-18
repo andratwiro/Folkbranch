@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tool answers are read as the JSON they are */
 // Data entry, as agents found it: impossible dates, keys the text format does not know, a version's id, and no-ops that
 // say they changed nothing.
 import { beforeAll, describe, expect, it } from 'vitest'

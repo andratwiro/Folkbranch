@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tool answers are read as the JSON they are */
 // Bulk work found wanting by agents: honest words about review, a token the owner may trust with bulk edits, a draft
 // whose people can be read, batch delete and batch link as one change with one undo, and filters that need no client scan.
 import { beforeAll, describe, expect, it } from 'vitest'

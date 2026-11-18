@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- tool answers are read as the JSON they are */
 // Search and answer quality found by agents: a typo still finds a name, one definition of a relative across the three
 // tools that say who is one, a text export that leaves the living out like the GEDCOM one, readable history, and the
 // questions that were left to the client to compute.
