@@ -7,19 +7,49 @@
 
 # Folkbranch: free, self-hosted family tree software
 
-**Your family tree, old photos and relatives' voice stories, kept together on your own computer or server.**
+**Build your family tree, keep old photos together and save relatives' voice stories, in a private archive your family controls.**
 
-Folkbranch is free, open-source genealogy software you run yourself. It keeps a private family archive in one place: the tree, scanned photos, documents and the stories relatives tell by voice. Relatives join by link, with no account and nothing to install. It imports GEDCOM 5.5.1 and 7.0 and exports GEDCOM, so a tree from Ancestry, MyHeritage, Gramps or webtrees comes with you, and your AI (Claude, Codex, Cursor) can install it and work in the archive over MCP, with every edit waiting for your approval.
+Invite relatives by link. They look at the tree on a phone and send a story with one button, with nothing to install. Folkbranch is free, open source and runs on your own computer or server.
+
+<div align="center">
+
+[Website](https://folkbranch.com) · [Get started](#install) · [Watch the walkthrough](docs/images/demo.gif) · [Releases](https://github.com/danarkhipov/folkbranch/releases/latest) · [Русский](README.ru.md)
+
+</div>
+
+![The Folkbranch family tree: relatives labelled from one person, with a biography and an old photo open beside it](docs/images/hero-en.png)
 
 [![CI](https://github.com/danarkhipov/folkbranch/actions/workflows/ci.yml/badge.svg)](https://github.com/danarkhipov/folkbranch/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/danarkhipov/folkbranch)](https://github.com/danarkhipov/folkbranch/releases) [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
-**Website: [folkbranch.com](https://folkbranch.com)** · [Install](#install) · [Features](#features) · [Compare](#how-it-compares) · [What it does not do](#what-it-does-not-do) · [AI agents](#ai-agents) · [FAQ](#faq) · [На русском](README.ru.md)
+| Build the family tree | Collect the stories | Keep your history |
+|:--|:--|:--|
+| Generations, relationships, portraits and the places where relatives lived, on one screen or on a map year by year. | Send a relative a link with your questions. They tap Record, you review the story before it joins the archive. | Biographies, scanned documents, sources and photos in one SQLite file and a folder you own, with every change undoable. |
+
+**Jump to:** [Install](#install) · [Features](#features) · [Compare](#how-it-compares) · [What it does not do](#what-it-does-not-do) · [AI agents](#ai-agents) · [FAQ](#faq)
 
 ## Install
 
-One person in the family keeps the archive and installs it. Relatives never install anything. Pick one way:
+One person in the family keeps the archive and installs it. Relatives only open a link in a browser. Pick one way; if you are not sure, take the first, since it also loads an invented demo family you can look at.
 
-### 1. Ask your AI to install it (Claude Code, Codex, Cursor)
+### 1. One command on a Mac or Linux computer
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh
+```
+
+No Docker and no Node needed: it brings its own. It prints a link; open it, name your family, and load the invented demo family if you want to look around first.
+
+Want to read the script first? [`install.sh`](install.sh) is short, and the [releases](https://github.com/danarkhipov/folkbranch/releases/latest) hold the archives and their checksums.
+
+### 2. One command on a Linux server, so relatives can reach it
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sudo sh -s -- --server
+```
+
+HTTPS sets itself up and the app starts with the server. Add `--domain family.example.com` for your own domain. Tested on Ubuntu, Debian, AlmaLinux, Rocky, Fedora and Amazon Linux, through a reboot, with 512 MB of memory.
+
+### 3. Or ask your AI to install it (Claude Code, Codex, Cursor)
 
 Paste this line into your agent:
 
@@ -36,22 +66,6 @@ In **Claude Code** you can also add the plugin, then ask *"Install Folkbranch"*:
 /plugin install folkbranch@folkbranch
 ```
 
-### 2. One command on a Mac or Linux computer
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh
-```
-
-No Docker and no Node needed: it brings its own. It prints a link; open it, name your family, and load the invented demo family if you want to look around first.
-
-### 3. One command on a Linux server
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sudo sh -s -- --server
-```
-
-HTTPS sets itself up and the app starts with the server. Add `--domain family.example.com` for your own domain. Tested on Ubuntu, Debian, AlmaLinux, Rocky, Fedora and Amazon Linux, through a reboot, with 512 MB of memory.
-
 <details>
 <summary>Other ways: npx, Docker, Windows, Railway and other hosts</summary>
 
@@ -66,6 +80,14 @@ Backups, updates and servers: the [self-hosting guide](docs/SELF_HOSTING.md). It
 
 ![Opening a relative's page, adding a son on the chart, and seeing the change in history](docs/images/demo.gif)
 
+## A look inside
+
+| The family on a map | A relative on a phone, asked for a story |
+|:--|:--|
+| ![The family on a map at one moment: people placed where they lived, with a timeline below](docs/images/map-en.png) | <img src="docs/images/story-phone-en.png" alt="A phone showing a link a relative opened: one question, a big Start recording button" width="260"> |
+| Press Play and people move between the places of their lives. Everyone in these pictures is invented. | No account and no app: one question, one button, and the story waits for your review. |
+
+
 ## Why families pick it
 
 - **Relatives join with a link.** No password to remember. They see the chart labelled from where they stand: "your grandfather", "your aunt". After that they sign in with Yandex ID, VK ID, Telegram, Google or a code by mail, whichever you switch on.
@@ -78,7 +100,8 @@ Backups, updates and servers: the [self-hosting guide](docs/SELF_HOSTING.md). It
 
 **The tree**
 - All generations on one screen, with each relative labelled from the person you open.
-- Add a relative from any side of a card, or drag a line between two people.
+- Add a relative from any side of a card, or drag a line between two people. Drag either end of a line to move it.
+- Unions and children drawn as in a genogram: unmarried partners dashed, a divorce two slashes, a separation one, and adopted, foster and step children each in their own style, with a legend on the chart.
 - See how two people are related, and the path between them.
 - An ancestor fan for anyone: the whole line in one picture.
 - Places with what they were part of, their old names and a point on a map, so a search for "Tsaritsyn" finds people from Volgograd.
@@ -98,12 +121,12 @@ Backups, updates and servers: the [self-hosting guide](docs/SELF_HOSTING.md). It
 - Find and merge duplicate cards, with undo.
 
 **For the whole family**
-- Ask for a story with up to five questions. The relative picks one, answers, and goes on to the next.
+- Ask for a story with up to five questions, from the card of the person it is about. The relative picks one, answers, and goes on to the next, and the recording waits on the card for you to accept.
 - Owner, editor and reader roles. Readers suggest corrections for you to accept.
 - Sign in with Yandex ID, VK ID, Telegram, Google or a code by mail, each switched on in the settings with its steps on the screen. See [ways to sign in](docs/SIGN_IN.md).
 - Keep a person who died, or a single story, from readers. Addresses and phones of the living are for editors only.
 - A view-only link, with an optional password and an expiry date.
-- Works in a browser on a phone or a computer, in English, Russian, Spanish or Catalan (Spanish and Catalan show English where a word is not translated yet). A short guide shows a new person what the app can do on the first visit.
+- Works in a browser on a phone or a computer, in English, Russian, Spanish and Catalan, and in Portuguese (Brazil), French, German, Italian, Ukrainian and Polish as machine translations marked beta until a native reader has checked them. A short guide shows a new person what the app can do on the first visit.
 
 **Your data stays yours**
 - One SQLite file and a folder of photos on your server. No telemetry, and closed to search engines. The one call the server makes by itself asks GitHub whether a newer release exists, at most twice a day and with nothing about your archive; `FOLKBRANCH_UPDATE_CHECK=off` stops it.
@@ -117,7 +140,7 @@ Backups, updates and servers: the [self-hosting guide](docs/SELF_HOSTING.md). It
 - Or the owner connects a speech service once (OpenRouter, Groq, OpenAI, Mistral or a server of their own) and pays for it, so every editor can dictate. The recording is forwarded and kept nowhere.
 - Nothing downloads until you press the button. Photos stay on the device, and so does the voice unless the owner connects a speech service.
 
-![The family chart with a person's biography open](docs/images/chart.png)
+![The whole family chart on one screen, each relative labelled from the person you opened](docs/images/chart-en.png)
 
 ## How it compares
 
@@ -179,7 +202,7 @@ On purpose, because it needs what a family server does not have:
 Not yet, and maybe later:
 
 - No reports beyond the chart and a person's page in PDF. A family book is on the [roadmap](docs/ROADMAP.md).
-- One tree per install, in four languages.
+- One tree per install. The interface is in English, Russian, Spanish and Catalan, and in six more languages as beta machine translations.
 - No sync with desktop programs, and no plugins.
 
 ## AI agents

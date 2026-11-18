@@ -44,7 +44,7 @@ export const OUTPUTS: Record<string, z.ZodType> = {
     person: fullPerson,
     parents: z.array(relative.extend({ linkId: id, personId: id, kind: text, certainty: text })),
     children: z.array(relative.extend({ linkId: id, personId: id, kind: text, certainty: text })),
-    unions: z.array(relative.extend({ linkId: id, personId: id, kind: text, startDate: text, endDate: text, place: text })),
+    unions: z.array(relative.extend({ linkId: id, personId: id, kind: text, startDate: text, endDate: text, /** How it stands: '' together, 'separated', 'divorced' or 'widowed'. */ endKind: text, place: text })),
     pages: z.array(pageMeta),
   }),
   get_people: z.array(z.object({

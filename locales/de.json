@@ -597,7 +597,6 @@
   "Fit more people on screen.": "Mehr Personen auf dem Bildschirm zeigen.",
   "Flip the chart": "Stammbaum drehen",
   "Folder ID": "Ordner-ID",
-  "Follow": "Folgen",
   "Following": "Folgt",
   "For example, Aunt Helen": "Zum Beispiel Tante Helene",
   "For example, Claude on my laptop": "Zum Beispiel Claude auf meinem Laptop",
@@ -2107,5 +2106,12 @@
   "{count} people_one": "{count} Person",
   "{count} people_other": "{count} Personen",
   "{count} years_one": "{count} Jahr",
-  "{count} years_other": "{count} Jahre"
+  "{count} years_other": "{count} Jahre",
+  "People who have died": "Verstorbene Personen",
+  "On: a person stays on the map, faded, where they were last placed, with all their moves.": "Ein: Die Person bleibt auf der Karte, verblasst, an ihrer letzten Position, mit allen ihren Bewegungen.",
+  "Off: a person leaves the map, and their lines with them, when their life ends.": "Aus: Die Person verschwindet mit ihren Linien von der Karte, wenn ihr Leben endet.",
+  "Follow {name}": "{name} folgen",
+  "Follow the family": "Der Familie folgen",
+  "The camera goes back to this person and stays with them": "Die Kamera kehrt zu dieser Person zurück und bleibt bei ihr",
+  "The camera goes where people are moving; pick someone on the map to follow only them": "Die Kamera folgt den Bewegungen; wählen Sie auf der Karte eine Person aus, um nur ihr zu folgen"
 }

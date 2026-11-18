@@ -7,7 +7,7 @@
 // short ring marks an event as it happens.
 import type { Thread, ThreadSeg } from '@/lib/map-line'
 import { along, easeInOut, mercator, type World } from '@/lib/map-motion'
-import { trackLegs, type Leg, type Position, type Track } from '@/lib/map-timeline'
+import { lifeSpan, trackLegs, type Leg, type Position, type Track } from '@/lib/map-timeline'
 import type { View } from './map-canvas'
 
 /** How many years a trail stays in full ink behind its traveller. */
@@ -46,7 +46,7 @@ export interface Pulse { at: World; t0: number }
 const headOf = (pos: Position): World => mercator(pos.leg ? along(pos.leg.path, pos.progress) : [pos.lat, pos.lon])
 /** A line of descent followed: its thread, everyone in it, and a key that changes with it (for the ghost cache). */
 export interface LineDraw { thread: Thread; ids: Set<string>; key: string }
-export interface TrailState { tracks: Track[]; year: number; positions: Map<string, Position | null>; pulses: Pulse[]; ink: string; accent?: string; focus: Track | null; line?: LineDraw | null; /** The person under the pointer: their whole route is drawn dark. */ hover?: Track | null; /** Every finished journey, or each person's last one (the default). */ routes?: 'recent' | 'all'; /** The routes layer: off leaves only the person followed, the one pointed at and a line. */ trails?: boolean }
+export interface TrailState { departed?: boolean; tracks: Track[]; year: number; positions: Map<string, Position | null>; pulses: Pulse[]; ink: string; accent?: string; focus: Track | null; line?: LineDraw | null; /** The person under the pointer: their whole route is drawn dark. */ hover?: Track | null; /** Every finished journey, or each person's last one (the default). */ routes?: 'recent' | 'all'; /** The routes layer: off leaves only the person followed, the one pointed at and a line. */ trails?: boolean }
 
 /** The thread: ahead of the clock a faint outline, behind it full ink; an assumed link is dashed in both. */
 const THREAD_AHEAD = 0.2, THREAD_INK = 0.9, THREAD_PX = 2.4, LINK_PX = 1.6, DASH = [5, 5]
@@ -168,12 +168,16 @@ export function drawGhost(v: View, st: TrailState) {
   let drew = false, count = 0
   for (const tr of st.tracks) {
     if (apart(tr.personId)) continue
+    // A person whose life has ended leaves with their lines, so no line runs on to nobody: unless the dead are kept, and
+    // then every move they made stays.
+    const gone = year >= lifeSpan(tr)[1] + 1
+    if (gone && !st.departed) continue
     // Each person's last finished journey, for a generation: where they came from most recently. Or, chosen, every
     // journey so far, the family's routes building up as the years play.
     let last: Leg | null = null
     const done: Leg[] = []
     for (const leg of trackLegs(tr)) { if (leg.arrive > year) break; last = leg; done.push(leg) }
-    for (const leg of st.routes === 'all' ? done : last && year - last.arrive <= GHOST_YEARS ? [last] : []) {
+    for (const leg of st.routes === 'all' || gone ? done : last && year - last.arrive <= GHOST_YEARS ? [last] : []) {
       const box = legBox(leg)
       if (!leg.path.wraps && (!onCanvas(box, v) || legTooFar(box, v))) continue
       const { world } = leg.path
@@ -221,6 +225,8 @@ export function drawTrails(v: View, st: TrailState) {
     const legs = trackLegs(tr)
     if (!legs.length || legs[0].leave >= year || year - legs[legs.length - 1].arrive > RECENT_YEARS) continue
     if (apart(tr.personId)) continue
+    // Nobody is left to draw live ink behind.
+    if (year >= lifeSpan(tr)[1] + 1) continue
     const pos = st.positions.get(tr.personId)
     // Journeys under way: their ghost so far, live.
     ctx.globalAlpha = GHOST * quiet
@@ -394,5 +400,5 @@ export function ghostKey(st: TrailState) {
   const apart = (id: string) => id === focusId || !!line?.ids.has(id)
   const who = `${focusId}|${line?.key}`
   // A journey enters the ghost when it ends and leaves it a generation later: either way the canvas changes.
-  return `${st.routes ?? 'recent'}|${st.trails === false ? 'off' : 'on'}|${finishedBy(st.tracks, who, apart, st.year)}-${finishedBy(st.tracks, who, apart, st.year - GHOST_YEARS - 1e-9)}|${focusId}|${line?.key}|${st.ink}`
+  return `${st.routes ?? 'recent'}|${st.departed ? 'dead' : ''}|${st.trails === false ? 'off' : 'on'}|${finishedBy(st.tracks, who, apart, st.year)}-${finishedBy(st.tracks, who, apart, st.year - GHOST_YEARS - 1e-9)}|${focusId}|${line?.key}|${st.ink}`
 }

@@ -597,7 +597,6 @@
   "Fit more people on screen.": "Показати більше людей на екрані.",
   "Flip the chart": "Перевернути схему",
   "Folder ID": "ID папки",
-  "Follow": "Стежити",
   "Following": "Стежимо",
   "For example, Aunt Helen": "Наприклад, тітка Оля",
   "For example, Claude on my laptop": "Наприклад, Claude на ноутбуці",
@@ -2117,5 +2116,12 @@
   "{count} years_one": "{count} рік",
   "{count} years_few": "{count} роки",
   "{count} years_many": "{count} років",
-  "{count} years_other": "{count} року"
+  "{count} years_other": "{count} року",
+  "People who have died": "Померлі люди",
+  "On: a person stays on the map, faded, where they were last placed, with all their moves.": "Увімкнено: людина залишається на мапі, пригаслою, на останньому відомому місці, з усіма своїми переміщеннями.",
+  "Off: a person leaves the map, and their lines with them, when their life ends.": "Вимкнено: людина зникає з мапи разом зі своїми лініями, коли завершується її життя.",
+  "Follow {name}": "Слідкувати за {name}",
+  "Follow the family": "Слідкувати за родиною",
+  "The camera goes back to this person and stays with them": "Камера повертається до цієї людини і залишається з нею",
+  "The camera goes where people are moving; pick someone on the map to follow only them": "Камера рухається за переміщеннями людей; оберіть на мапі одну людину, щоб слідувати лише за нею"
 }

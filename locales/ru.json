@@ -2117,5 +2117,12 @@
   "{count} years_one": "{count} год",
   "{count} years_few": "{count} года",
   "{count} years_many": "{count} лет",
-  "{count} years_other": "{count} года"
+  "{count} years_other": "{count} года",
+  "People who have died": "Ушедшие из жизни",
+  "On: a person stays on the map, faded, where they were last placed, with all their moves.": "Включено: человек остаётся на карте приглушённым там, где его место известно последним, со всеми его переездами.",
+  "Off: a person leaves the map, and their lines with them, when their life ends.": "Выключено: когда жизнь человека кончается, он уходит с карты, и его линии вместе с ним.",
+  "Follow {name}": "Следить за {name}",
+  "Follow the family": "Следить за семьёй",
+  "The camera goes back to this person and stays with them": "Камера возвращается к этому человеку и остаётся с ним",
+  "The camera goes where people are moving; pick someone on the map to follow only them": "Камера идёт туда, где люди переезжают; выберите человека на карте, чтобы следить только за ним"
 }

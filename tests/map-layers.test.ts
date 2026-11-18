@@ -24,6 +24,9 @@ describe('what is saved of the layers', () => {
     expect(isChanged(DEFAULT_LAYERS)).toBe(false)
     expect(isChanged({ ...DEFAULT_LAYERS, hidden: ['death'] })).toBe(true)
     expect(isChanged({ ...DEFAULT_LAYERS, routes: 'all' })).toBe(true)
+    expect(isChanged({ ...DEFAULT_LAYERS, departed: true })).toBe(true)
+    expect(parseLayers('{"departed":true}').departed).toBe(true)
+    expect(parseLayers('{"departed":"yes"}').departed).toBe(false)
   })
 })
 

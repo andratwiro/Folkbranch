@@ -13,12 +13,14 @@ export interface Layers {
   trails: boolean
   /** Each person's last move, or every move so far. */
   routes: 'recent' | 'all'
+  /** People whose life has ended: kept on the map, faded, where they were last placed, with all their moves. */
+  departed: boolean
   /** Kinds of event left out: no place of that kind is used, for the mark or for where a person stands. */
   hidden: EventKind[]
 }
 
 export const KINDS: EventKind[] = ['birth', 'union', 'move', 'work', 'death', 'other']
-export const DEFAULT_LAYERS: Layers = { people: true, events: true, trails: true, routes: 'recent', hidden: [] }
+export const DEFAULT_LAYERS: Layers = { people: true, events: true, trails: true, routes: 'recent', departed: false, hidden: [] }
 const KEY = 'folkbranch.map.layers'
 const listeners = new Set<() => void>()
 
@@ -30,7 +32,7 @@ export function parseLayers(raw: string | null): Layers {
   const hidden = Array.isArray(j.hidden) ? KINDS.filter((k) => (j.hidden as unknown[]).includes(k)) : []
   const l: Layers = {
     people: flag(j.people, true), events: flag(j.events, true), trails: flag(j.trails, true),
-    routes: j.routes === 'all' ? 'all' : 'recent',
+    routes: j.routes === 'all' ? 'all' : 'recent', departed: flag(j.departed, false),
     // At least one kind stays: a map of nothing is not a choice anyone means.
     hidden: hidden.length >= KINDS.length ? [] : hidden,
   }

@@ -33,7 +33,7 @@ interface Face {
   /** Whose route a hover shows: in a folded stack, the person named on top, whichever face is under the pointer. */
   hoverAs?: string
   marker: Leaflet.Marker; el: HTMLElement; name: HTMLElement; strong: HTMLElement; where: HTMLElement
-  shown: boolean; moving: boolean; yields: boolean; focused: boolean; kin: boolean; hidden: boolean; unsure: boolean
+  shown: boolean; moving: boolean; yields: boolean; focused: boolean; kin: boolean; hidden: boolean; unsure: boolean; gone: boolean
   at: string; dx: number; dy: number; side: Side | null; text: string; w: number; z: number
 }
 interface MarkEl { marker: Leaflet.Marker; el: HTMLElement; cap: HTMLElement; capW: number; fade: number; slot: string; mine: boolean }
@@ -213,7 +213,7 @@ export class PeopleLayer {
       if (d) { e.preventDefault(); e.stopPropagation(); this.roam(id, d); return }
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); this.activate(id) }
     })
-    f = { marker, el, name: label, strong, where, shown: false, moving: false, yields: false, focused: false, kin: false, hidden: false, unsure: false, at: '', dx: NaN, dy: NaN, side: null, text: name, w: textWidth(name, this.font) + 8, z: 0 }
+    f = { marker, el, name: label, strong, where, shown: false, moving: false, yields: false, focused: false, kin: false, hidden: false, unsure: false, gone: false, at: '', dx: NaN, dy: NaN, side: null, text: name, w: textWidth(name, this.font) + 8, z: 0 }
     this.faces.set(id, f)
     return f
   }
@@ -241,7 +241,7 @@ export class PeopleLayer {
     else delete f.name.dataset.side
   }
   /** A class on a face, changed only when it is another: a play lays the same faces out again and again. */
-  private setFlag(f: Face, key: 'moving' | 'focused' | 'kin' | 'hidden' | 'unsure', on: boolean) {
+  private setFlag(f: Face, key: 'moving' | 'focused' | 'kin' | 'hidden' | 'unsure' | 'gone', on: boolean) {
     if (f[key] === on) return
     f[key] = on
     f.el.classList.toggle(key === 'hidden' ? 'hidden-face' : key, on)
@@ -350,6 +350,7 @@ export class PeopleLayer {
       if (!face.moving) this.yieldTo(face, false)
       const t = this.opts.t
       this.setFlag(face, 'unsure', pos.after !== undefined)
+      this.setFlag(face, 'gone', !!pos.gone)
       const at = pos.moving ? `${clipPlace(pos.at.place)} → ${clipPlace(pos.moving.place)} (${pos.moving.date})` : `${clipPlace(pos.at.place)} · ${pos.at.what}, ${pos.at.date}${pos.after !== undefined ? ` · ${t('whereabouts after that unknown')}` : ''}`
       if (face.at !== at) { face.at = at; face.where.textContent = at }
       this.setFlag(face, 'focused', tr.personId === this.focusId)

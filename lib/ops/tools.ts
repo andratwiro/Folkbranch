@@ -7,7 +7,7 @@ import { Family, RELATIVE_KINDS, type KinKind } from '../kinship'
 import { parseFamilyText, planFamilyText, serializeFamilyText } from '../textformat'
 import { summary } from '../claims'
 import { guessMapping, parseCsv, rowsToText, type Mapping } from '../import-formats'
-import { lifeYears, personName, type Lang, type Person, type Role } from '../types'
+import { lifeYears, personName, unionEnd, type Lang, type Person, type Role } from '../types'
 import { Actor, can, OpError } from './core'
 import { attachmentBytes, findAttachment, readAttachmentText } from '../agent/attachments'
 import { exportGedcom, importGedcom, previewGedcom } from './gedcom'
@@ -114,7 +114,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
         person: p,
         parents: g.parentChild.filter((l) => l.childId === x.id).map((l) => ({ ...l, linkId: l.id, ...named(l.parentId) })),
         children: g.parentChild.filter((l) => l.parentId === x.id).map((l) => ({ ...l, linkId: l.id, ...named(l.childId) })),
-        unions: g.unions.filter((u) => u.aId === x.id || u.bId === x.id).map((u) => ({ ...u, linkId: u.id, ...named(u.aId === x.id ? u.bId : u.aId) })),
+        unions: g.unions.filter((u) => u.aId === x.id || u.bId === x.id).map((u) => ({ ...u, endKind: unionEnd(u), linkId: u.id, ...named(u.aId === x.id ? u.bId : u.aId) })),
         pages: listPages(a, x.id),
       }
     },

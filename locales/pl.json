@@ -597,7 +597,6 @@
   "Fit more people on screen.": "Zmieść więcej osób na ekranie.",
   "Flip the chart": "Odwróć drzewo",
   "Folder ID": "ID folderu",
-  "Follow": "Obserwuj",
   "Following": "Obserwowane",
   "For example, Aunt Helen": "Na przykład ciocia Helena",
   "For example, Claude on my laptop": "Na przykład Claude na moim laptopie",
@@ -2117,5 +2116,12 @@
   "{count} years_one": "{count} rok",
   "{count} years_few": "{count} lata",
   "{count} years_many": "{count} lat",
-  "{count} years_other": "{count} roku"
+  "{count} years_other": "{count} roku",
+  "People who have died": "Zmarli",
+  "On: a person stays on the map, faded, where they were last placed, with all their moves.": "Włączone: osoba pozostaje na mapie, wyblakła, w ostatnim zapisanym miejscu, ze wszystkimi jej przemieszczeniami.",
+  "Off: a person leaves the map, and their lines with them, when their life ends.": "Wyłączone: osoba znika z mapy wraz ze swoimi liniami, gdy kończy się jej życie.",
+  "Follow {name}": "Śledź {name}",
+  "Follow the family": "Śledź rodzinę",
+  "The camera goes back to this person and stays with them": "Kamera wraca do tej osoby i pozostaje przy niej",
+  "The camera goes where people are moving; pick someone on the map to follow only them": "Kamera podąża za przemieszczeniami osób; wybierz kogoś na mapie, aby śledzić tylko tę osobę"
 }
