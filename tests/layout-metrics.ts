@@ -111,6 +111,9 @@ export function lineMetrics(g: Graph, opts: Parameters<typeof layoutFamily>[1] =
     rowPitchMax: Math.round(Math.max(...pitches, 0)),
     heightPx: q.height,
     widthPx: q.width,
+    // How much the whole chart must shrink to fit a 375 px phone, and how many cards the fullest row holds.
+    fitAtPhone: round(Math.min(1, 375 / Math.max(1, q.width)), 3),
+    widestRow: Math.max(...Map.groupBy([...l.cards.values()], (c) => c.y).values().map((r) => r.length)),
     pitchPx: PITCH,
     layoutMs: Math.round(ms),
   }

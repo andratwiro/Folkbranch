@@ -178,7 +178,9 @@ describe('how tidy the lines are', () => {
   it('draws no corner squeezed by a line that almost runs straight', () => {
     // The demo family had a child 13 px off the stem of its single parent: two clamped corners and a wobble.
     expect(lineMetrics(demoGraph())).toMatchObject({ clampedCorners: 0, jogs: 0 })
-    expect(lineMetrics(randomFamily(4, 150)).clampedCorners).toBeLessThanOrEqual(3)
+    expect(lineMetrics(randomFamily(4, 150)).clampedCorners).toBeLessThanOrEqual(1)
+    // A block with no free room beside it pushes its neighbours the few pixels that bring its line straight.
+    expect(lineMetrics(randomFamily(6, 600)).clampedCorners).toBeLessThanOrEqual(2)
   })
 
   it('keeps lines short on a family with remarriages and cousins', () => {
