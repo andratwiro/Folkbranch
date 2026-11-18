@@ -168,11 +168,18 @@ export function orderRows(rows: OrderNode[][], edges: OrderEdge[], pull = 0) {
       }
       return c
     }
-    const before = inside()
-    if (!before) return
+    // With equal crossings the partner with more lines goes nearer the side they run to: how far the lines of this unit reach, in slots.
+    const reach = () => {
+      let r = 0
+      for (const e of near(entering.get(n))) r += Math.abs(bottom(e) - top(e))
+      for (const e of near(leaving.get(n))) r += Math.abs(top(e) - bottom(e))
+      return r
+    }
+    const before = inside(), reachBefore = reach()
     n.slots = n.slots.toReversed()
     number(row)
-    if (inside() >= before) {
+    const after = inside()
+    if (after > before || (after === before && reach() >= reachBefore - 0.5)) {
       n.slots = n.slots.toReversed()
       number(row)
     }
