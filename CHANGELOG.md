@@ -2,6 +2,8 @@
 
 All notable changes are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org). Each version is a Git tag, and ready images are at `ghcr.io/danarkhipov/folkbranch`.
 
+## Unreleased
+
 ## 1.7.1 - 2026-11-18
 
 Chart editing and assistant work: links can be moved and marked as in a genogram, tidier chart lines, a faster and more visible assistant, and a link to ask a relative for a story.
