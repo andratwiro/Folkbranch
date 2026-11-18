@@ -113,7 +113,7 @@ export const GraphCanvas = forwardRef<CanvasHandle, { pathIds: string[] | null; 
         const rank = app.rootsBelow ? tops.length - 1 - nearest : nearest
         setMenu({ x: Math.min(e.clientX, window.innerWidth - 250), y: Math.min(e.clientY, window.innerHeight - (id ? 320 : 260)), id, at: id ? undefined : { x: point.x, rank } })
       }} onClick={(e) => { if (e.target === canvas.current || e.target === world.current) { app.focus(null); setSel(null) } }}>
-        <div ref={world} className={cn('world', active && 'focused')}>
+        <div ref={world} className={cn('world', active && 'focused', draft && 'linking')}>
           <svg className="links" width="1" height="1">
             <Lines families={shown.families} unions={shown.unions} active={active} hotPairs={hotPairs} lightMode={lightMode} selIds={selIds} hoverIds={hoverIds} wave={wave} />
             <HitTails edges={shown.edges} acts={acts} />
@@ -148,7 +148,7 @@ export const GraphCanvas = forwardRef<CanvasHandle, { pathIds: string[] | null; 
           {/* Above the cards, or a card's box would take the click meant for a line passing through it. */}
           <svg className="hits" width="1" height="1">
             <HitAreas layout={layout} edges={shown.edges} unions={shown.unions} groupHeads={shown.groupHeads} acts={acts} />
-            <FamilyDots unions={shown.unions} active={active} canEdit={app.canEdit} acts={acts} />
+            <FamilyDots unions={shown.unions} active={active} canEdit={app.canEdit} acts={acts} drop={draft?.targetUnion ?? null} />
             {sel && handlesFor(selEdges, selUnion).map((h) => (
               <circle key={h.key} cx={h.x} cy={h.y} r={7} className="link-handle link-start" data-link-handle={h.key} onPointerDown={(e) => startEndMove(e, h)}><title>{h.title}</title></circle>
             ))}

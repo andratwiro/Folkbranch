@@ -143,10 +143,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, [contentedita
 .dot { fill: var(--ink); stroke: var(--paper); stroke-width: 2; transition: opacity .15s, r .12s; }
 .dot.open { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
 .dot-hit { fill: transparent; }
+/* While a link is being drawn, a couple's dot takes a drop from a wider reach, so a finger can land on it. */
+.linking .dot-hit { r: 26px; }
+@media (pointer: coarse) { .dot-hit { r: 22px; } }
 .dot-group.can-add { pointer-events: all; cursor: pointer; }
 .dot-plus { stroke: #fffdf8; stroke-width: 1.5; stroke-linecap: round; opacity: 0; pointer-events: none; }
 .dot-group.can-add:hover .dot { r: 9; fill: var(--accent); stroke: var(--paper); }
 .dot-group.can-add:hover .dot-plus { opacity: 1; }
+.dot-group.drop-target .dot { r: 10; fill: var(--accent); stroke: var(--paper); stroke-width: 3; }
 .focused .line, .focused .union, .focused .dot { opacity: .45; }
 .focused .hot { opacity: 1; stroke: var(--ink); }
 .focused .dot.hot { fill: var(--accent); stroke: var(--paper); }
