@@ -70,9 +70,12 @@ export function findPeople(actor: Actor, query: string, limit: number) {
   return searchPeople(actor, query, limit).flatMap((r) => people.find((p) => p.id === r.personId) ?? [])
 }
 
-export const queryInput = z.object({
+export const queryInput = z.strictObject({
   name: z.string().optional().describe('Part of a given name, patronymic, surname, maiden or other name'),
+  surname: z.string().optional().describe('Part of the surname or the maiden name'),
   place: z.string().optional().describe('Part of a birth or death place'),
+  birthPlace: z.string().optional().describe('Part of the birth place only'),
+  deathPlace: z.string().optional().describe('Part of the death place only'),
   sex: z.enum(['M', 'F', 'U']).optional(),
   tag: z.string().optional(),
   bornFrom: z.number().int().optional().describe('Birth year, inclusive'),
@@ -96,6 +99,8 @@ export function queryPeople(actor: Actor, x: z.infer<typeof queryInput>) {
   const found = g.persons.filter((p) => !p.hidden
     && (!x.name || allWords(`${fullName(p)} ${p.maidenName} ${p.otherNames}`, x.name))
     && has(`${p.birthPlace} ${p.deathPlace}`, x.place)
+    && has(p.birthPlace, x.birthPlace) && has(p.deathPlace, x.deathPlace)
+    && (!x.surname || has(`${p.surname} ${p.maidenName}`, x.surname))
     && (!x.sex || p.sex === x.sex)
     && (!x.tag || p.tags.some((t) => has(t, x.tag)))
     && between(p.birthYear, x.bornFrom, x.bornTo)
@@ -106,7 +111,12 @@ export function queryPeople(actor: Actor, x: z.infer<typeof queryInput>) {
   const year = (v: number | null) => v ?? Infinity
   found.sort(x.sort === 'name' ? (a, b) => collator(archiveLang()).compare(fullName(a), fullName(b)) : x.sort === 'death' ? (a, b) => year(a.deathYear) - year(b.deathYear) : (a, b) => year(a.birthYear) - year(b.birthYear))
   const groupKey = (p: Person) => (x.groupBy === 'decade' ? (p.birthYear ? `${Math.floor(p.birthYear / 10) * 10}s` : '') : x.groupBy ? String(p[x.groupBy as 'birthPlace' | 'surname' | 'sex'] ?? '') : '') || 'unknown'
+  const notes = [
+    x.bornFrom !== undefined && x.bornTo !== undefined && x.bornFrom > x.bornTo ? 'bornFrom is after bornTo: no one can match' : '',
+    x.diedFrom !== undefined && x.diedTo !== undefined && x.diedFrom > x.diedTo ? 'diedFrom is after diedTo: no one can match' : '',
+  ].filter(Boolean)
   return {
+    ...(notes.length ? { notes } : {}),
     total: found.length,
     people: found.slice(0, x.limit).map((p) => ({ id: p.id, name: fullName(p), years: lifeYears(p), sex: p.sex, living: p.living, birthPlace: p.birthPlace, deathPlace: p.deathPlace })),
     ...(x.groupBy ? { groups: [...Map.groupBy(found, groupKey)].map(([key, list]) => ({ key, count: list.length })).sort((a, b) => b.count - a.count) } : {}),

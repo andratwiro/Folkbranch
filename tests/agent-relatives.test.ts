@@ -82,8 +82,9 @@ describe('counting relatives', () => {
     const seen = await call(reader, 'count_relatives', { id: father.id, kind: 'blood', maxDegree: 2 })
     expect(JSON.stringify(seen)).not.toContain('Живой')
     expect(JSON.stringify(seen)).not.toContain('Скрытов')
-    expect(seen.hiddenFromYou).toBeGreaterThanOrEqual(1)
-    expect(seen.total).toBe((await call(owner, 'count_relatives', { id: father.id })).total)
+    expect(seen).not.toHaveProperty('hiddenFromYou')
+    // The hidden son is not counted for a reader, and nothing says how many there are.
+    expect(seen.total).toBe((await call(owner, 'count_relatives', { id: father.id })).total - 1)
   })
 
   it('takes a name instead of an id, and hands a name that fits several people back instead of choosing', async () => {

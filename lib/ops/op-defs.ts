@@ -55,9 +55,9 @@ export const relationType = z.enum(['father', 'mother', 'son', 'daughter', 'spou
 // ("Ivanovka, Tver Governorate"), the server links it, and the tools stay small.
 const notForAgents = { claims: true, sources: true, keepPrivate: true, noChildren: true, neverMarried: true, birthPlaceId: true, deathPlaceId: true } as const
 const agentFacts = personInput.shape.facts.unwrap().element.omit({ placeId: true }).array().max(100).optional()
-export const agentCreate = personInput.omit(notForAgents).extend({ facts: agentFacts })
+export const agentCreate = personInput.omit(notForAgents).extend({ facts: agentFacts }).strict()
 
-export const agentPatch = personInput.omit(notForAgents).extend({ facts: agentFacts.describe('Replaces the whole list: include the facts to keep. To add one fact, use add_fact.') })
+export const agentPatch = personInput.omit(notForAgents).extend({ facts: agentFacts.describe('Replaces the whole list: include the facts to keep. To add one fact, use add_fact.') }).strict()
 
 export const relationInput = z.object({ type: relationType.describe('What the new person is to `to`'), to: z.string(), otherParentId: z.string().nullish() })
 

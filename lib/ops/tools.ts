@@ -73,12 +73,14 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
     run: (a) => {
       const g = getGraph(a)
       const visible = g.persons.filter((p) => !p.hidden)
+      const seen = new Set(visible.map((p) => p.id))
       const cards = visible.map(summary)
       const count = (key: keyof ReturnType<typeof summary>) => cards.reduce((n, c) => n + c[key], 0)
       return {
         family: getSetting('familyName') ?? '',
         you: { role: a.role, writes: a.role === 'reader' ? 'not allowed' : a.assistant ? 'call the tool: the app asks the person when needed' : a.review ? 'go to review: a person accepts the draft first' : 'apply at once, except imports, which go to review' },
-        people: { total: g.persons.length, hiddenFromYou: g.persons.length - visible.length, links: g.parentChild.length, unions: g.unions.length },
+        // What is hidden from you is not counted either: a number that drops by one would tell you someone is there.
+        people: { total: visible.length, links: g.parentChild.filter((l) => seen.has(l.parentId) && seen.has(l.childId)).length, unions: g.unions.filter((u) => seen.has(u.aId) && seen.has(u.bId)).length },
         values: { documented: count('documented'), told: count('told'), unsourced: count('unsourced'), conflicts: count('conflict') },
         yourDrafts: a.tokenId ? myProposals(a).filter((d) => d.status === 'pending').length : 0,
         next: a.role === 'reader' ? 'Read with search_people, get_person, how_related.' : 'Call find_gaps, research one person, record results with add_version.',
@@ -133,8 +135,9 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
       const byId = new Map(g.persons.map((q) => [q.id, q]))
       return x.ids.map((id: string) => {
         const q = byId.get(id)
-        if (!q) return { id, missing: true as const }
-        if (q.hidden) return { id, hidden: true as const }
+        // A person you may not see answers exactly as one that is not there.
+        if (!q || q.hidden) return { id, missing: true as const }
+
         return {
           id, name: fullName(q), maidenName: q.maidenName, sex: q.sex, years: lifeYears(q), living: q.living, birthDate: q.birthDate, birthPlace: q.birthPlace, deathDate: q.deathDate, deathPlace: q.deathPlace, certainty: q.certainty, tags: q.tags,
           facts: q.facts.map((f) => ({ kind: f.kind, date: f.date, place: f.place })),
@@ -150,7 +153,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
     run: (a, x) => {
       const { g } = visiblePerson(a, x.id)
       const byId = new Map(g.persons.map((p) => [p.id, p]))
-      return [...new Family(g).relatives(x.id, lang())].map(([id, k]) => ({ ...brief(byId.get(id)!), relation: k.label, blood: k.blood, kind: k.kind }))
+      return [...new Family(g).relatives(x.id, lang())].filter(([id]) => !byId.get(id)!.hidden).map(([id, k]) => ({ ...brief(byId.get(id)!), relation: k.label, blood: k.blood, kind: k.kind }))
     },
   },
   count_relatives: {
@@ -168,15 +171,16 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
       const { g, p } = visiblePerson(a, x.id)
       const byId = new Map(g.persons.map((q) => [q.id, q]))
       const fam = new Family(g)
-      const all = [...fam.relatives(x.id, lang())]
+      // Someone you may not see is not counted, and nothing says how many there are.
+      const all = [...fam.relatives(x.id, lang())].filter(([id]) => !byId.get(id)!.hidden)
       const entry = ([id, k]: (typeof all)[number]) => {
         const q = byId.get(id)!
-        return q.hidden ? { id, hidden: true as const } : { id, name: fullName(q), years: lifeYears(q), relation: k.label, kind: k.kind, ...(k.degree ? { degree: k.degree } : {}) }
+        return { id, name: fullName(q), years: lifeYears(q), relation: k.label, kind: k.kind, ...(k.degree ? { degree: k.degree } : {}) }
       }
       const byKind = Object.fromEntries(RELATIVE_KINDS.map((k) => [k, all.filter(([, r]) => r.kind === k).length])) as Record<KinKind, number>
       const bloodByDegree: Record<string, number> = {}
       for (const [, r] of all) if (r.kind === 'blood') bloodByDegree[r.degree!] = (bloodByDegree[r.degree!] ?? 0) + 1
-      const base = { person: { id: p.id, name: fullName(p) }, total: all.length, byKind, bloodByDegree, hiddenFromYou: all.filter(([id]) => byId.get(id)!.hidden).length, definition: 'A relative is anyone connected by a birth parent, an adoption, a step relation or a marriage, at any distance. The spouse of a blood relative counts as a relative by marriage, not as a blood relative. "Blood" excludes adopted, step, spouse and by marriage.' }
+      const base = { person: { id: p.id, name: fullName(p) }, total: all.length, byKind, bloodByDegree, definition: 'A relative is anyone connected by a birth parent, an adoption, a step relation or a marriage, at any distance. The spouse of a blood relative counts as a relative by marriage, not as a blood relative. "Blood" excludes adopted, step, spouse and by marriage.' }
       if (x.kind || x.maxDegree) {
         const picked = all.filter(([, r]) => (!x.kind || r.kind === x.kind) && (!x.maxDegree || (r.degree !== undefined && r.degree <= x.maxDegree)))
           .sort((m, n) => (m[1].degree ?? 99) - (n[1].degree ?? 99) || m[1].label.localeCompare(n[1].label))
@@ -249,7 +253,8 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
   get_history: {
     description: 'Recent changes, newest first, with ids for undo.',
     input: z.object({ limit: z.number().int().min(1).max(200).default(15) }),
-    run: (a, x) => listHistory(a, x.limit),
+    // Who made a change is a name, never an internal id.
+    run: (a, x) => listHistory(a, x.limit).map(({ userId: _u, ...entry }) => entry),
   },
   my_proposals: {
     description: "This token's recent drafts and whether a person accepted them.",

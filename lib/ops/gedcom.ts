@@ -209,8 +209,12 @@ function filePoints(c: Changes, points: Imported['places'], credit: string) {
   return out
 }
 
+const isHidden = (g: { persons: { id: string; hidden?: boolean }[] }, id: string) => !!g.persons.find((p) => p.id === id)?.hidden
+
 export function exportGedcom(actor: Actor, hideLiving: boolean) {
-  const graph = getGraph(actor)
+  const full = getGraph(actor)
+  // A reader's file has no card at all for someone they may not see, not even an unnamed one: a "Living" record with its family links would say who is there.
+  const graph = seesOnlyPublic(actor) ? { ...full, persons: full.persons.filter((p) => !p.hidden), parentChild: full.parentChild.filter((l) => !isHidden(full, l.parentId) && !isHidden(full, l.childId)), unions: full.unions.filter((u) => !isHidden(full, u.aId) && !isHidden(full, u.bId)) } : full
   // Readers never get living relatives, whatever the checkbox says.
   // Points go out with the places they belong to, as GEDCOM's MAP, so Gramps, webtrees or RootsMagic draw them too.
   return writeGedcom(graph, { hideLiving: hideLiving || seesOnlyPublic(actor), source: 'Folkbranch', pageWord: say('p.'), lang: archiveLang(), places: listPlaces(actor) })

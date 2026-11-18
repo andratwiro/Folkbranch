@@ -33,7 +33,7 @@ const write = (shape: z.ZodType) => z.union([pending, shape])
 export const OUTPUTS: Record<string, z.ZodType> = {
   get_overview: z.object({
     family: text, you: z.object({ role: text, writes: text }),
-    people: z.object({ total: z.number(), hiddenFromYou: z.number(), links: z.number(), unions: z.number() }),
+    people: z.object({ total: z.number(), links: z.number(), unions: z.number() }),
     values: z.object({ documented: z.number(), told: z.number(), unsourced: z.number(), conflicts: z.number() }),
     yourDrafts: z.number(), next: text,
   }),
@@ -48,13 +48,13 @@ export const OUTPUTS: Record<string, z.ZodType> = {
     pages: z.array(pageMeta),
   }),
   get_people: z.array(z.object({
-    id, missing: z.literal(true).optional(), hidden: z.literal(true).optional(), name: text.optional(), maidenName: text.optional(), sex: text.optional(), years: text.optional(), living: z.boolean().optional(),
+    id, missing: z.literal(true).optional(), name: text.optional(), maidenName: text.optional(), sex: text.optional(), years: text.optional(), living: z.boolean().optional(),
     birthDate: text.optional(), birthPlace: text.optional(), deathDate: text.optional(), deathPlace: text.optional(), certainty: text.optional(), tags: z.array(text).optional(),
     facts: z.array(z.object({ kind: text, date: text, place: text })).optional(), parentIds: z.array(id).optional(), childIds: z.array(id).optional(), spouseIds: z.array(id).optional(),
   })),
   get_relatives: z.array(brief.extend({ relation: text, blood: z.boolean(), kind: text })),
   count_relatives: z.union([z.object({ ambiguous: z.array(brief), note: text }), z.object({
-    person: z.object({ id, name: text }), total: z.number(), byKind: z.record(z.string(), z.number()), bloodByDegree: z.record(z.string(), z.number()), hiddenFromYou: z.number(), definition: text,
+    person: z.object({ id, name: text }), total: z.number(), byKind: z.record(z.string(), z.number()), bloodByDegree: z.record(z.string(), z.number()), definition: text,
     immediateFamily: z.array(brief.extend({ relation: text, kind: text, degree: z.number().optional() })).optional(),
     matching: z.number().optional(), more: z.number().optional(), list: z.array(brief.extend({ relation: text, kind: text, degree: z.number().optional() })).optional(),
   })]),
@@ -67,9 +67,9 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   preview_text: z.object({ creates: z.array(text), updates: z.array(z.unknown()), relations: z.number(), ambiguous: z.array(z.unknown()), errors: z.array(z.unknown()), operations: z.number() }),
   export_gedcom: text,
   preview_gedcom: z.object({ version: text, persons: z.number(), families: z.number(), sample: z.array(text), existing: z.number() }),
-  get_history: z.array(z.object({ id, at: z.number(), actorName: text, userId: text, byAgent: z.boolean(), summary: text, details: z.array(z.object({ label: text, before: text.nullable(), after: text.nullable() })).optional(), people: z.array(z.object({ id, name: text, change: z.enum(['added', 'updated', 'removed']) })).optional(), personIds: z.array(id), undoOf: id.nullable(), undoneAt: z.number().nullable() })),
+  get_history: z.array(z.object({ id, at: z.number(), actorName: text, byAgent: z.boolean(), summary: text, details: z.array(z.object({ label: text, before: text.nullable(), after: text.nullable() })).optional(), people: z.array(z.object({ id, name: text, change: z.enum(['added', 'updated', 'removed']) })).optional(), personIds: z.array(id), undoOf: id.nullable(), undoneAt: z.number().nullable() })),
   my_proposals: z.array(proposal),
-  query_people: z.object({ total: z.number(), people: z.array(brief.extend({ birthPlace: text.optional(), deathPlace: text.optional() })), groups: z.array(z.object({ key: text, count: z.number() })).optional() }),
+  query_people: z.object({ notes: z.array(text).optional(), total: z.number(), people: z.array(brief.extend({ birthPlace: text.optional(), deathPlace: text.optional() })), groups: z.array(z.object({ key: text, count: z.number() })).optional() }),
   search_archive: z.object({ total: z.number(), results: z.array(z.object({ kind: text, id, personId: id.nullish(), title: text, snippet: text })) }),
 
   create_person: write(written),

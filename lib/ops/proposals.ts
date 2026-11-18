@@ -51,12 +51,24 @@ export function describeOp(actor: Actor, name: string, raw: unknown): string {
   }
 }
 
+/**
+ * Characters that change how text is drawn or hide in it: bidirectional overrides (a name that reads backwards or shows
+ * as another), zero-width marks and control codes. A joiner stays: some scripts need it.
+ */
+const HIDDEN_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u061C\u200B\u200E\u200F\u202A-\u202E\u2060\u2066-\u2069\uFEFF]/g
+export function cleanText<T>(value: T): T {
+  if (typeof value === 'string') return value.replace(HIDDEN_CHARS, '') as T
+  if (Array.isArray(value)) return value.map(cleanText) as T
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, cleanText(v)])) as T
+  return value
+}
+
 /** The single entrance for writes. */
 export async function dispatch(actor: Actor, name: string, raw: unknown) {
   const d = OPS[name]
   if (!d) throw new OpError(404, 'unknown operation')
   requireRole(actor, 'editor')
-  const parsed = d.input.parse(raw)
+  const parsed = cleanText(d.input.parse(raw))
   const queue = !!actor.tokenId && !d.direct && (actor.review || d.bulk)
 
   if (d.expand) {

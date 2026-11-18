@@ -39,7 +39,7 @@ describe('1. the whole graph is visible when the owner allows it', () => {
     expect((await run('query_people', { limit: 500 })).people.map((p: any) => p.id).sort()).toEqual(ids)
     const text = await run('export_text', {})
     for (const p of all()) expect(text, p.givenName).toContain(p.id)
-    expect((await run('get_overview', {})).people).toMatchObject({ total: ids.length, hiddenFromYou: 0 })
+    expect((await run('get_overview', {})).people).toMatchObject({ total: ids.length })
   })
   it('every card holds every date, place, name and fact as stored', async () => {
     for (const p of all()) {
@@ -81,7 +81,9 @@ describe('2. only a reader’s role hides living relatives', () => {
   })
   it('a reader’s assistant counts them without saying who, an editor’s sees them', async () => {
     const o = await run('get_overview', {}, reader)
-    expect(o.people.hiddenFromYou).toBe(1)
+    // Not counted and not mentioned: a number that drops by one would say someone is there.
+    expect(o.people).not.toHaveProperty('hiddenFromYou')
+    expect(o.people.total).toBe((await run('get_overview', {})).people.total - 1)
     expect(JSON.stringify(o)).not.toContain('Живинская')
     expect(await run('search_people', { query: 'Живинская' }, reader)).toEqual([])
     expect((await run('search_people', { query: 'Живинская' }))[0].id).toBe(f.living.id)
