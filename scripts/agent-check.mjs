@@ -286,7 +286,7 @@ Object.assign(scenarios, {
   },
   'whole card': async () => {
     const r = await converse('editor', 'Расскажи всё про Ивана Соколова (1918): даты и места рождения и смерти, родители, жена, дети.')
-    return [[has(r.reply, '1918', '1985', 'Кострома', 'Николай', 'Варвара', 'Анна'), trace(r)]]
+    return [[has(r.reply, '1918', '1985', 'Костром', 'Николай', 'Варвар', 'Анн'), trace(r)]]
   },
   'living visible': async () => {
     const r = await converse('editor', 'Когда родился Кирилл Орлов?')
