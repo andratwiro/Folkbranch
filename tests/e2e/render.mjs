@@ -34,7 +34,7 @@ const vis = () => page.evaluate(() => { for (const c of document.querySelectorAl
 const v = await vis()
 if (v) {
   await run('hover10', async () => { for (let i = 0; i < 10; i++) { await page.mouse.move(v.x, v.y); await page.waitForTimeout(220); await page.mouse.move(5, 500); await page.waitForTimeout(90) } })
-  await run('openClose5', async () => { for (let i = 0; i < 5; i++) { await page.mouse.click(v.x, v.y); await page.waitForSelector('.panel', { timeout: 20000 }); await page.keyboard.press('Escape'); await page.waitForTimeout(100); if (await page.locator('.panel').count()) await page.mouse.click(1000, 880); await page.waitForTimeout(200) } })
+  await run('openClose5', async () => { for (let i = 0; i < 5; i++) { const at = await page.evaluate((id) => { const r = document.querySelector(`.pcard[data-person="${id}"]`).getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + 20 } }, v.id); await page.mouse.click(at.x, at.y); await page.waitForSelector('.panel', { timeout: 20000 }); await page.keyboard.press('Escape'); await page.waitForTimeout(100); if (await page.locator('.panel').count()) await page.mouse.click(1000, 880); await page.waitForTimeout(200) } })
   // Someone else's edit arriving over the live channel.
   const cookie = raw
   await run('remoteEdit3', async () => { for (let i = 0; i < 3; i++) { await fetch(`${B}/api/v1/persons/${v.id}`, { method: 'PATCH', headers: { cookie, origin: B, 'content-type': 'application/json' }, body: JSON.stringify({ birthPlace: 'Город ' + Date.now() }) }); await page.waitForTimeout(1500) } })

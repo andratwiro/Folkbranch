@@ -25,7 +25,7 @@ for (let i = 0; i < 3; i++) {
   photos.push(await (await fetch(A.B + '/api/v1/media', { method: 'POST', headers: { cookie: A.cookie, origin: A.B }, body: f })).json())
 }
 // Heavy files: photos in the data folder, far more than the 256 MB heap limit.
-sh(`docker exec fg-backup-a sh -c 'for i in 1 2 3 4 5 6; do dd if=/dev/urandom of=/data/media/bulk$i.file.bin bs=1M count=100 2>/dev/null; done; chown -R node:node /data/media'`)
+sh(`docker exec fg-backup-a sh -c 'for i in 1 2 3 4 5 6; do dd if=/dev/urandom of=/data/media/bulk$i.file.bin bs=1M count=100 oflag=direct 2>/dev/null; done; chown -R node:node /data/media'`)
 const before = stats('fg-backup-a')
 const peak = { v: 0 }
 const watch = setInterval(() => { try { peak.v = Math.max(peak.v, stats('fg-backup-a').anonMB) } catch {} }, 500)

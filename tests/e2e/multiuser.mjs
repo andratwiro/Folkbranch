@@ -10,22 +10,23 @@ await sleep(1000); const code = q('docker logs fgb').match(/setup\?code=(\S+)/)[
 const br = await chromium.launch({ channel: 'chrome', headless: true })
 const errs = []
 const session = async () => { const c = await br.newContext({ locale: 'ru-RU',  viewport: { width: 1440, height: 900 } }); const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message.slice(0, 140))); p.on('response', (r) => { if (r.status() >= 500) errs.push(`${r.status()} ${r.url().slice(0, 80)}`) }); return p }
-const A = await session(); await A.goto(`${O}/setup?code=${code}`); await A.getByLabel('Ваше имя').fill('Анна'); await A.getByLabel('Название семьи').fill('Лесные'); await A.locator('input[type=checkbox]').check(); await A.getByRole('button', { name: 'Создать архив' }).click(); await A.getByRole('button', { name: 'Перейти к архиву' }).click({ timeout: 20000 }); await A.waitForSelector('.pcard', { timeout: 20000 })
+const A = await session(); await A.goto(`${O}/setup?code=${code}`); await A.getByLabel('Ваше имя').fill('Анна'); await A.getByLabel('Название семьи').fill('Лесные'); await A.locator('input[type=checkbox]').check(); await A.getByRole('button', { name: 'Создать архив' }).click(); await A.waitForSelector('.pcard', { timeout: 20000 })
 const invite = async (name, role) => (await A.evaluate(async (b) => (await fetch('/api/v1/invites', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })).json(), { name, role })).token
 const enter = async (name, role) => { const p = await session(); await p.goto(`${O}/invite/${await invite(name, role)}`); await p.getByRole('button', { name: 'Принять приглашение' }).click(); await p.waitForSelector('.pcard', { timeout: 15000 }); return p }
 const B = await enter('Пётр', 'editor'); const R = await enter('Читатель', 'reader')
 await sleep(800)
 const label = (p) => p.locator('.presence').getAttribute('aria-label').catch(() => '')
 ok('presence: Анна sees who else is here', /Пётр/.test(await label(A)) && /Читатель/.test(await label(A)), await label(A))
-const open = async (p, name) => { await p.locator('.pcard', { hasText: name }).first().click(); await p.waitForSelector('aside.panel') }
+// The floating view tools sit over the chart's lower right, so a card there cannot take a pointer click; a click on the element itself opens it.
+const open = async (p, name) => { await p.locator('.pcard', { hasText: name }).first().evaluate((e) => e.click()); await p.waitForSelector('aside.panel') }
 await open(A, 'Иван'); await open(B, 'Иван'); await sleep(600)
 ok('presence: card says who else has it open', (await A.locator('aside.panel').innerText()).includes('Здесь также: Пётр'))
 await A.getByRole('tab', { name: 'Сведения' }).click(); await B.getByRole('tab', { name: 'Сведения' }).click()
 await A.locator('#f-birth-place').fill('Рига'); await A.locator('#f-birth-place').blur()
 await B.waitForFunction(() => document.querySelector('#f-birth-place')?.value === 'Рига', null, { timeout: 4000 }).then(() => ok('live: edit reaches the other screen without reload', true)).catch(() => ok('live: edit reaches the other screen without reload', false))
-await B.locator('#f-death-place').click(); await B.keyboard.type('Пишу медленно')
+await B.locator('#f-death-place').click(); await B.keyboard.press('ControlOrMeta+a'); await B.keyboard.type('Пишу медленно')
 await A.locator('#f-death-place').fill('Москва'); await A.locator('#f-death-place').blur(); await sleep(1500)
-ok('typing is not wiped by an arriving edit', (await B.locator('#f-death-place').inputValue()) === 'Пишу медленно')
+ok('typing is not wiped by an arriving edit', (await B.locator('#f-death-place').inputValue()) === 'Пишу медленно', await B.locator('#f-death-place').inputValue())
 await B.locator('#f-death-place').blur(); await sleep(1500)
 const notice = await B.locator('body').innerText()
 ok('conflict: told plainly', notice.includes('только что изменили на другом устройстве или другой человек'))

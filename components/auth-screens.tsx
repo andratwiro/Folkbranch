@@ -47,7 +47,8 @@ export function SetupScreen({ needsCode, initialCode = '', initialLang, wrongAdd
         {wrongAddress && <p role="alert" className="rounded-lg bg-muted px-3 py-2 text-sm text-destructive break-anywhere">{t('This is not the address in the settings, and sign-in will not work. The settings say')}: <b>{wrongAddress}</b>. {t('Open that address or change BETTER_AUTH_URL.')}</p>}
         <div className="flex gap-1">
           {/* A transition: the old words stay on screen while a Spanish or Catalan table arrives. */}
-          {LANGS.map((l) => <button type="button" key={l} onClick={() => { setLangCookie(l); startTransition(() => setLang(l)) }} className={lang === l ? 'bar-btn on' : 'bar-btn'}>{langLabel(l)}</button>)}
+          {/* English first, as before the language registry: a newcomer's first screen leads with it. */}
+          {[...LANGS].sort((a, b) => Number(b === 'en') - Number(a === 'en')).map((l) => <button type="button" key={l} onClick={() => { setLangCookie(l); startTransition(() => setLang(l)) }} className={lang === l ? 'bar-btn on' : 'bar-btn'}>{langLabel(l)}</button>)}
         </div>
         <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Your name')}<input required autoFocus className={field} value={name} onChange={(e) => setName(e.target.value)} /></label>
         <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Family name')}<input required className={field} value={familyName} onChange={(e) => setFamilyName(e.target.value)} /></label>

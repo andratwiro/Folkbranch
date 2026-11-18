@@ -8,10 +8,13 @@ const ok = (n, c, x = '') => { console.log(`${c ? 'PASS' : 'FAIL'} ${n}${x ? ' �
 const SHOTS = process.env.SHOTS
 
 let B = process.env.FB_BASE
+let created = false
 if (!B) {
   B = 'http://localhost:3453'
-  try { sh('docker rm -fv fb-en') } catch {}
+  // Never remove a container this script did not create: stop and ask instead.
+  if (sh('docker ps -aq --filter name=^fb-en$')) throw new Error('container fb-en exists and this script did not create it: remove it by hand or set FB_BASE')
   sh(`docker run -d --name fb-en -p 127.0.0.1:3453:3000 -e BETTER_AUTH_URL=${B} -e SETUP_TOKEN=x ${IMAGE}`)
+  created = true
 }
 await waitUp(B, 180000)
 
@@ -40,13 +43,13 @@ const check = async (page, where) => {
 }
 
 // The first screen speaks the browser's language.
-for (const [locale, heading] of [['ru-RU', 'Семейный архив'], ['en-US', 'Family archive'], ['de-DE', 'Family archive']]) {
+for (const [locale, heading, lang] of [['ru-RU', 'Семейный архив', 'ru'], ['en-US', 'Family archive', 'en'], ['de-DE', 'Familienarchiv', 'de']]) {
   const ctx = await br.newContext({ locale })
   const page = await ctx.newPage()
   await page.goto(`${B}/setup?code=x`)
   await page.getByRole('heading', { name: heading }).waitFor()
   await page.waitForLoadState('networkidle')
-  await page.waitForFunction((lang) => document.documentElement.lang === lang, locale === 'ru-RU' ? 'ru' : 'en', { timeout: 15000 })
+  await page.waitForFunction((l) => document.documentElement.lang === l, lang, { timeout: 15000 })
   ok(`${locale} opens in its language`, true)
   await ctx.close()
 }
@@ -167,7 +170,7 @@ if (await settings.isVisible().catch(() => false)) {
   await settings.click()
   const dialog = page.getByRole('dialog').first()
   await dialog.waitFor()
-  for (const name of ['Getting started', 'My account', 'Users and access', 'General settings', 'AI assistant', 'Data and backups', 'Outside programs', 'Faces and voice']) {
+  for (const name of ['Getting started', 'My account', 'Users and access', 'General settings', 'Ways to sign in', 'AI', 'Assistant', 'Speech recognition', 'Face recognition', 'MCP server and access tokens', 'Data and backups']) {
     // On a narrow screen a section takes the whole dialog, and the list is one step back.
     const back = dialog.getByRole('button', { name: 'Settings', exact: true })
     if (await back.isVisible().catch(() => false)) { await back.click(); await page.waitForTimeout(100) }
@@ -190,8 +193,9 @@ const language = async (value, word) => {
   for (let i = 0; i < 2 && await page.locator('[role=dialog]').count(); i++) { await page.keyboard.press('Escape'); await page.waitForTimeout(200) }
   await page.getByRole('button', { name: /^(Settings|Настройки)/ }).first().click()
   const d = page.getByRole('dialog').first()
-  await d.getByRole('button', { name: /^(General settings|Общие параметры)$/ }).click()
-  await d.getByRole('combobox', { name: /^(Language|Язык)$/ }).click()
+  // The interface language is on My account; the archive's own language is under General settings.
+  await d.getByRole('button', { name: /^(My account|Мой аккаунт)$/ }).click()
+  await d.getByRole('combobox', { name: /^(Interface language|Язык интерфейса)$/ }).click()
   await page.getByRole('option', { name: value === 'ru' ? 'Русский' : 'English' }).click()
   await page.waitForLoadState('load')
   // The bar's button, not the way back inside the open settings, which is named the same.
@@ -217,9 +221,10 @@ await check(guest, 'invite-bad-link')
 await out.close()
 
 ok('no page errors', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '))
-seen.delete('Русский') // The language's own name on the first screen.
+// The languages' own names on the first screen (Ukrainian is a draft, so its picker label carries "beta").
+for (const name of ['Русский', 'Українська · beta']) seen.delete(name)
 ok('no Russian on any screen', seen.size === 0, `${seen.size} found`)
 for (const [text, where] of seen) console.log(`  [${where}] ${text}`)
 await br.close()
-if (!process.env.FB_BASE) sh('docker rm -fv fb-en')
+if (created) sh('docker rm -fv fb-en')
 if (fails.length) console.log('FAILED:', fails.join(', '))

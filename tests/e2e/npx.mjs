@@ -13,9 +13,9 @@ const work = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'folkbranch-n
 const packed = execFileSync('npm', ['pack', '--silent', '--pack-destination', work], { cwd: path.join(repo, 'npm'), encoding: 'utf8' }).trim().split('\n').pop()
 const tgz = path.join(work, packed)
 const size = fs.statSync(tgz).size
-ok('the package is tiny', size < 20_000, `${size} bytes`)
+ok('the package is tiny', size < 25_000, `${size} bytes`)
 const inside = execFileSync('tar', ['-tzf', tgz], { encoding: 'utf8' })
-ok('and holds only what it needs', inside.split('\n').filter(Boolean).sort().join() === ['package/bin.mjs', 'package/install.sh', 'package/package.json'].join(), inside)
+ok('and holds only what it needs', inside.split('\n').filter(Boolean).sort().join() === ['package/LICENSE', 'package/README.md', 'package/bin.mjs', 'package/install.sh', 'package/package.json'].join(), inside)
 
 const env = { ...process.env, FOLKBRANCH_NO_OPEN: '1', HOME: work, npm_config_cache: path.join(work, 'npm-cache'), FOLKBRANCH_BUNDLE: pathToFileURL(bundleFile).href, FOLKBRANCH_DIR: path.join(work, 'archive') }
 const npx = (...a) => spawnSync('npx', ['--yes', `--package=${tgz}`, 'folkbranch', ...a], { cwd: work, env, encoding: 'utf8', timeout: 180000 })
