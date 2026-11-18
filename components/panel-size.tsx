@@ -22,7 +22,7 @@ export function useStoredSize(key: string, initial: number, clamp: (n: number) =
 export const useAssistantWidth = () => useStoredSize('assistant-width', 420, (w) => Math.round(Math.max(340, Math.min(w, Math.min(900, window.innerWidth - 80)))))
 
 /** The handle on a panel's edge: drag it, or use the arrow keys when it has focus. A double click goes back to `home`. */
-export function PanelEdge({ width, onWidth, home = 420, edge = 'right', label = 'Ширина чата', className }: { width: number; onWidth: (w: number) => void; home?: number; edge?: 'right' | 'left' | 'top'; label?: string; className?: string }) {
+export function PanelEdge({ width, onWidth, home = 420, edge = 'right', label = 'Chat width', className }: { width: number; onWidth: (w: number) => void; home?: number; edge?: 'right' | 'left' | 'top'; label?: string; className?: string }) {
   const { t } = useApp()
   const start = useRef<{ at: number; width: number } | null>(null)
   const place = (e: { clientX: number; clientY: number }) => (edge === 'top' ? e.clientY : e.clientX)

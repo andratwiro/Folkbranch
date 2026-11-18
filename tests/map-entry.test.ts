@@ -140,8 +140,8 @@ describe('the way in through the archive itself', () => {
   it('offers two differently named kinds for a move and a residence, and no two items read the same', () => {
     // The add-fact list is read in the interface language; two Russian kinds used to read "Military service"
     // and gave a menu with one item twice. Both move kinds stay apart so a residence and a move can be told.
-    expect([translate('en', 'Место жительства'), translate('en', 'Переезд')]).toEqual(['Residence', 'Move'])
-    expect(translate('en', 'Служба')).not.toBe(translate('en', 'Воинская служба'))
+    expect([translate('en', 'Residence'), translate('en', 'Move')]).toEqual(['Residence', 'Move'])
+    expect(translate('en', 'Service_daemon')).not.toBe(translate('en', 'Military service'))
   })
   it('offers a residence column and pairs it with its year', () => {
     const mapping = guessMapping(['Имя', 'Дата рождения', 'Место рождения', 'Год', 'Где жил'])
@@ -164,7 +164,7 @@ describe('the way in through the archive itself', () => {
     expect(unplacedStops(saved, g, list)).toContainEqual({ text: 'Новосёлки', what: 'Residence', date: '1941–1944', why: 'no-coords' })
     // A residence at a place with no point never becomes a stop on the map; it is only reported as a gap.
     const tl = mapTimeline(g, list)
-    expect(tl.tracks.find((t) => t.personId === id)?.stops.map((s) => s.what)).toEqual(['Рождение'])
+    expect(tl.tracks.find((t) => t.personId === id)?.stops.map((s) => s.what)).toEqual(['Birth'])
     expect(tl.missing).toContainEqual(expect.objectContaining({ what: 'Residence', place: 'Новосёлки', gap: 'no-coords' }))
   })
 })

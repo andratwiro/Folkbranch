@@ -8,32 +8,32 @@ interface Feature { icon: LucideIcon; title: string; text: string; go?: { sectio
 
 /** What the app can do, in the words a relative would use. Each card can lead to where it is switched on. */
 const FEATURES: Feature[] = [
-  { icon: Sparkles, title: 'ИИ-ассистент', text: 'Спросите «кто мои двоюродные?» или «где пробелы в роде Соколовых?». Он ищет по архиву и предлагает правки, а вы подтверждаете каждую. Нужен ваш ключ одного из сервисов.', go: { section: 'assistant', label: 'Подключить', owner: true } },
-  { icon: Share2, title: 'Позвать родных', text: 'Ссылка-приглашение впускает человека в архив. Ссылка для просмотра показывает семью без входа, а можно отдать только одну ветку.', go: { section: 'people', label: 'Пригласить', owner: true } },
-  { icon: ScanFace, title: 'Лица на фото', text: 'Назовите человека на одном снимке, и программа предложит его на остальных, даже в другом возрасте. Всё считается на вашем устройстве, фото никуда не уходят.', go: { section: 'smart', label: 'Включить' } },
-  { icon: Mic, title: 'Голос в текст', text: 'Запишите, как бабушка рассказывает историю, и она станет текстом. Модель можно скачать на устройство. Или владелец один раз подключает облачный сервис и платит, а остальным ничего ставить не нужно.', go: { section: 'smart', label: 'Выбрать способ' } },
-  { icon: Cloud, title: 'Расшифровка в облаке', text: 'Один сервис распознавания речи на всех: Groq, OpenAI, Mistral, OpenRouter, китайский SiliconFlow или ваш собственный сервер. Ключ вводится один раз, у месяца есть предел расхода.', go: { section: 'speech', label: 'Подключить', owner: true } },
-  { icon: ScanFace, title: 'Лица в облаке', text: 'Один сервис распознавания лиц на всех: Amazon Rekognition, Face++, Luxand.cloud или свой CompreFace. Ключ вводится один раз, у месяца есть предел расхода, а модель на устройство скачивать не нужно.', go: { section: 'faces', label: 'Подключить', owner: true } },
-  { icon: Baby, title: 'Попросить родных рассказать', text: 'Ссылка для одного человека, который не станет регистрироваться: открыть на телефоне, нажать большую кнопку и говорить. Рассказ придёт вам на проверку.', go: { section: 'people', label: 'Создать ссылку', owner: true } },
-  { icon: FileUp, title: 'Дерево вместе с фото', text: 'Загрузите файл дерева (GEDCOM, Gramps, таблицу или текст) и сразу все фотографии. Файлы сами найдут своих людей по тому, что написано в дереве и в названиях файлов.', go: { section: 'data', label: 'Загрузить' } },
-  { icon: Map, title: 'Карта мест', text: 'Где жила семья и куда переезжала. На карточке человека места идут по порядку жизни.' },
-  { icon: CalendarDays, title: 'Даты и календарь', text: 'Ближайшие дни рождения и годовщины, а ещё файл для календаря на телефоне: никто не забудет поздравить.' },
-  { icon: GitMerge, title: 'Двойники', text: 'В «Проверке» собраны похожие карточки. Объедините их: ничего не пропадает, а одно действие вернёт всё обратно.' },
-  { icon: History, title: 'История и отмена', text: 'Любую правку видно: кто, когда и что изменил. Любую можно откатить, в том числе импорт.' },
-  { icon: Printer, title: 'Печать и веер предков', text: 'Лист о человеке для печати или PDF, схема в виде веера предков, а вся схема печатается на листах.' },
-  { icon: Terminal, title: 'Внешние программы', text: 'Claude, Codex и другие программы подключаются по ключу, читают архив и предлагают правки. Ничего не меняется без вашего подтверждения.', go: { section: 'agents', label: 'Подключить', owner: true } },
+  { icon: Sparkles, title: 'AI assistant', text: 'Ask “who are my cousins?” or “where are the gaps in the Sokolov line?”. It searches the archive and suggests changes, and you confirm each one. It needs your own key from one of the services.', go: { section: 'assistant', label: 'Connect', owner: true } },
+  { icon: Share2, title: 'Invite relatives', text: 'An invitation link lets a person into the archive. A view link shows the family without signing in, and can show just one branch.', go: { section: 'people', label: 'Invite', owner: true } },
+  { icon: ScanFace, title: 'Faces in photos', text: 'Name a person in one photo and the program offers them in the others, even at another age. It all runs on your device; photos go nowhere.', go: { section: 'smart', label: 'Turn on' } },
+  { icon: Mic, title: 'Voice to text', text: 'Record a grandmother telling a story and it becomes text. The model can be downloaded to the device. Or the owner connects a cloud service once and pays, and nobody else has to install anything.', go: { section: 'smart', label: 'Choose a way' } },
+  { icon: Cloud, title: 'Cloud transcription', text: 'One speech recognition service for everyone: Groq, OpenAI, Mistral, OpenRouter, the Chinese SiliconFlow or your own server. The key is entered once, and each month has a spending limit.', go: { section: 'speech', label: 'Connect', owner: true } },
+  { icon: ScanFace, title: 'Cloud faces_short', text: 'One face recognition service for everyone: Amazon Rekognition, Face++, Luxand.cloud or your own CompreFace. The key is entered once, each month has a spending limit, and no model needs downloading.', go: { section: 'faces', label: 'Connect', owner: true } },
+  { icon: Baby, title: 'Ask relatives to tell a story', text: 'A link for one person who will not sign up: open it on a phone, press the big button and speak. The story comes to you for review.', go: { section: 'people', label: 'Create a link', owner: true } },
+  { icon: FileUp, title: 'A tree with its photos', text: 'Load the tree file (GEDCOM, Gramps, a table or text) and all the photos at once. Files find their people by what the tree says and by the file names.', go: { section: 'data', label: 'Load' } },
+  { icon: Map, title: 'Map of places', text: 'Where the family lived and where it moved. On a person\'s card the places follow the order of their life.' },
+  { icon: CalendarDays, title: 'Dates and calendar', text: 'Coming birthdays and anniversaries, and a file for your phone\'s calendar so nobody forgets to call.' },
+  { icon: GitMerge, title: 'Duplicates', text: 'Similar cards are gathered in Review. Merge them: nothing is lost, and one action brings it all back.' },
+  { icon: History, title: 'History and undo', text: 'Every change shows who made it, when, and what. Any of them can be undone, an import included.' },
+  { icon: Printer, title: 'Printing and the ancestor fan', text: 'A sheet about a person to print or save as PDF, a chart as a fan of ancestors, and the whole chart prints on sheets.' },
+  { icon: Terminal, title: 'Outside programs', text: 'Claude, Codex and other programs connect with a key, read the archive and suggest changes. Nothing changes without your confirmation.', go: { section: 'agents', label: 'Connect', owner: true } },
 ]
 
 /** Things most people never find on their own. */
 const TIPS: { icon: LucideIcon; text: string }[] = [
-  { icon: MousePointer2, text: 'Правая кнопка мыши. По человеку: открыть, добавить родителя, супруга или ребёнка, удалить. По пустому месту: добавить человека туда, загрузить файл, найти.' },
-  { icon: Link2, text: 'Наведите курсор на человека, и загорится вся его линия, предки и потомки.' },
-  { icon: UsersRound, text: 'Кнопка «Кого показать» оставляет на схеме одну ветку, и все списки, поиск и даты тоже начинают показывать только её. Вид можно сохранить и отправить ссылкой.' },
-  { icon: Lightbulb, text: 'Потяните за портрет к другой карточке, и появится связь. Потяните за подпись, и карточка сдвинется, а родство не изменится.' },
-  { icon: FileUp, text: 'Перетащите файл с деревом прямо на схему: откроется загрузка. Можно сразу с фотографиями.' },
-  { icon: Smartphone, text: 'Добавьте архив на главный экран телефона: он откроется как приложение, а страница выдержит короткую недоступность сервера.' },
-  { icon: Lightbulb, text: 'Поиск ищет по имени, дате, месту, профессии и понимает слова вроде «жена Ивана».' },
-  { icon: Lightbulb, text: 'Если сведения расходятся, не выбирайте одно: запишите оба значения. Они сохранятся как версии, и позже будет видно, какое подтвердилось.' },
+  { icon: MousePointer2, text: 'Right-click. On a person: open, add a parent, spouse or child, delete. On empty space: add a person there, load a file, search.' },
+  { icon: Link2, text: 'Hover over a person and their whole line lights up, ancestors and descendants.' },
+  { icon: UsersRound, text: 'The “Who to show” button keeps one branch on the chart, and all lists, search and dates then show only that branch. A view can be saved and sent as a link.' },
+  { icon: Lightbulb, text: 'Drag a portrait to another card to make a link. Drag the caption to move the card; the relationship does not change.' },
+  { icon: FileUp, text: 'Drop a tree file straight onto the chart to start loading it. Photos can come along.' },
+  { icon: Smartphone, text: 'Add the archive to your phone\'s home screen: it opens like an app, and the page waits out a short server outage.' },
+  { icon: Lightbulb, text: 'Search looks through names, dates, places and professions, and understands phrases like “Ivan\'s wife”.' },
+  { icon: Lightbulb, text: 'When sources disagree, do not pick one: record both values. They are kept as versions, and later you can see which one held.' },
 ]
 
 export function FeatureGuide({ onGo }: { onGo?: (section: GuideSection) => void }) {
@@ -42,7 +42,7 @@ export function FeatureGuide({ onGo }: { onGo?: (section: GuideSection) => void 
   return (
     <div className="flex min-w-0 flex-col gap-5 text-sm">
       <section>
-        <h3 className="mb-2 font-serif text-base font-medium">{t('Что умеет приложение')}</h3>
+        <h3 className="mb-2 font-serif text-base font-medium">{t('What the app can do')}</h3>
         <ul className="grid gap-2 sm:grid-cols-2">
           {FEATURES.map(({ icon: Icon, title, text, go }) => (
             <li key={title} className="flex min-w-0 flex-col gap-1.5 rounded-lg border border-border bg-white p-3">
@@ -54,7 +54,7 @@ export function FeatureGuide({ onGo }: { onGo?: (section: GuideSection) => void 
         </ul>
       </section>
       <section>
-        <h3 className="mb-2 font-serif text-base font-medium">{t('Знаете ли вы')}</h3>
+        <h3 className="mb-2 font-serif text-base font-medium">{t('Did you know')}</h3>
         <ul className="flex flex-col gap-2">
           {TIPS.map(({ icon: Icon, text }) => (
             <li key={text} className="flex gap-2.5"><Icon size={15} className="mt-0.5 flex-none text-accent" aria-hidden /> <span className="min-w-0 break-anywhere">{t(text)}</span></li>

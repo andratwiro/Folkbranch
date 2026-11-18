@@ -10,10 +10,10 @@ export function FeatureTour({ onClose, onGo }: { onClose: () => void; onGo: (sec
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
       <DialogContent className="flex max-h-[calc(100dvh-32px)] max-w-2xl flex-col gap-3 overflow-y-auto sm:max-w-2xl">
-        <DialogTitle className="font-serif text-xl font-medium">{t('Добро пожаловать в семейный архив')}</DialogTitle>
-        <DialogDescription className="text-sm text-ink-soft">{t('Коротко о том, что здесь можно делать. Это всегда можно открыть снова: Настройки → Возможности и советы.')}</DialogDescription>
+        <DialogTitle className="font-serif text-xl font-medium">{t('Welcome to the family archive')}</DialogTitle>
+        <DialogDescription className="text-sm text-ink-soft">{t('A short look at what you can do here. You can always open it again: Settings → Features and tips.')}</DialogDescription>
         <FeatureGuide onGo={onGo} />
-        <Button type="button" className="shrink-0 self-start" onClick={onClose}>{t('Понятно')}</Button>
+        <Button type="button" className="shrink-0 self-start" onClick={onClose}>{t('Got it')}</Button>
       </DialogContent>
     </Dialog>
   )

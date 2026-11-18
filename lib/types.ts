@@ -3,8 +3,9 @@ export type Sex = 'M' | 'F' | 'U'
 export type Certainty = 'documented' | 'family' | 'assumed'
 export type ParentKind = 'birth' | 'adopted' | 'foster' | 'step'
 export type UnionKind = 'marriage' | 'civil'
+import { collator, langDef, langOf, type Lang } from './languages'
+export type { Lang }
 export type UnionEnd = '' | 'divorced' | 'separated' | 'widowed'
-export type Lang = 'ru' | 'en' | 'es' | 'ca'
 
 export interface Person {
   id: string
@@ -210,18 +211,32 @@ export interface Box {
   h: number
 }
 
-export const personName = (p: Pick<Person, 'givenName' | 'surname'>) =>
-  [p.givenName, p.surname].filter(Boolean).join(' ').trim()
+/** The language names are written in on this page: the archive's, which is the language of its data. A server passes the language it means. */
+const nameLang = (): Lang | undefined => (typeof document === 'undefined' ? undefined : langOf(document.documentElement.dataset.archiveLang ?? document.documentElement.lang))
+
+/**
+ * "Anna Petrova", or "Petrova Anna" in a language the registry says writes the surname first (Chinese, Japanese, Korean, Hungarian,
+ * Vietnamese). Without a language it reads the page's archive language, and a server without one writes the given name first.
+ */
+export const personName = (p: Pick<Person, 'givenName' | 'surname'>, lang: Lang | undefined = nameLang()) =>
+  (lang && langDef(lang).nameOrder === 'surname-first' ? [p.surname, p.givenName] : [p.givenName, p.surname]).filter(Boolean).join(' ').trim()
+
+/** The full name as the language's culture writes it: "Иван Петрович Иванов" where the registry says people carry a patronymic, and the order above. */
+export const fullName = (p: Pick<Person, 'givenName' | 'surname'> & { patronymic?: string }, lang: Lang | undefined = nameLang()) =>
+  (lang && langDef(lang).nameOrder === 'surname-first' ? [p.surname, p.givenName] : [p.givenName, lang && langDef(lang).patronymic ? p.patronymic : '', p.surname]).filter(Boolean).join(' ').trim()
+
+/** Orders two people by the name the language writes first, in the language's own alphabet ("ä" in German, "ñ" in Spanish, "ё" in Russian). */
+export const compareNames = (a: Pick<Person, 'givenName' | 'surname'>, b: Pick<Person, 'givenName' | 'surname'>, lang: Lang | undefined = nameLang()) =>
+  collator(lang ?? 'en').compare(personName(a, lang), personName(b, lang))
 
 let serverOpenEnd: (() => string) | null = null
 /** The server says how a living person's open range ends in the archive's language; a browser reads the language of its page. */
 export const setOpenEnd = (f: () => string) => { serverOpenEnd = f }
-/** The page's own word for it: this file cannot reach the tables. The server's word comes from "н. в." ("now") in them. A language not here reads 'now'. */
-const OPEN_END: Partial<Record<Lang, string>> = { ru: 'н. в.', en: 'now', es: 'hoy', ca: 'avui' }
+/** The page's own word for it comes from the registry: this file cannot reach the tables. The server's word is the phrase "now" in them. */
 // Dates belong to the archive's data, so they keep its language even when the interface is read in another.
 const openEnd = () => (typeof document !== 'undefined'
-  ? (OPEN_END[(document.documentElement.dataset.archiveLang ?? document.documentElement.lang).slice(0, 2) as Lang] ?? 'now')
-  : serverOpenEnd?.() ?? 'н. в.')
+  ? langDef(langOf(document.documentElement.dataset.archiveLang ?? document.documentElement.lang)).openEnd
+  : serverOpenEnd?.() ?? 'now')
 
 export function lifeYears(p: Person, unknown = '?', open: string = openEnd()): string {
   const b = p.birthDate || (p.birthYear ? String(p.birthYear) : '')

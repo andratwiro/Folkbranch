@@ -65,7 +65,7 @@ function PlaceForm({ draft, places, onDone }: { draft: Draft; places: Place[]; o
       qc.invalidateQueries({ queryKey: ['place-guesses'] })
       onDone()
     } catch (e) {
-      notify(`${t('Не сохранилось')}: ${(e as Error).message}`)
+      notify(`${t('Not saved_failed')}: ${(e as Error).message}`)
     } finally {
       setBusy(false)
     }
@@ -74,42 +74,42 @@ function PlaceForm({ draft, places, onDone }: { draft: Draft; places: Place[]; o
   const badCoords = [lat, lon].some((s) => s.trim() && !Number.isFinite(num(s)))
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-white p-3">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Название')}<Input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} /></label>
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Title_name')}<Input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} /></label>
       <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Что это')}<Select value={d.kind} onChange={(kind) => setD({ ...d, kind })} options={[{ value: '', label: t('Не указано') }, ...PLACE_KINDS.map((k) => ({ value: k, label: t(k) }))]} /></label>
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Входит в')}<Select value={d.parentId ?? ''} onChange={(v) => setD({ ...d, parentId: v || null })} options={[{ value: '', label: t('Никуда') }, ...places.filter((p) => !inside.has(p.id) && p.id !== d.id).map((p) => ({ value: p.id, label: p.kind ? `${p.name} (${t(p.kind).toLowerCase()})` : p.name }))]} /></label>
+        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Kind')}<Select value={d.kind} onChange={(kind) => setD({ ...d, kind })} options={[{ value: '', label: t('Not given') }, ...PLACE_KINDS.map((k) => ({ value: k, label: t(k) }))]} /></label>
+        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Part of')}<Select value={d.parentId ?? ''} onChange={(v) => setD({ ...d, parentId: v || null })} options={[{ value: '', label: t('Nothing') }, ...places.filter((p) => !inside.has(p.id) && p.id !== d.id).map((p) => ({ value: p.id, label: p.kind ? `${p.name} (${t(p.kind).toLowerCase()})` : p.name }))]} /></label>
       </div>
       <div className="flex flex-col gap-1 text-xs text-ink-soft">
-        {t('Другие и старые названия')}
+        {t('Other and older names')}
         {d.otherNames.map((n, i) => (
           <div key={i} className="flex gap-1.5">
-            <Input aria-label={t('Название')} value={n.name} placeholder={t('Например, Калинин')} onChange={(e) => setName(i, { name: e.target.value })} />
-            <Input aria-label={t('Годы')} className="w-32 flex-none" value={n.years} placeholder={t('1931–1990')} onChange={(e) => setName(i, { years: e.target.value })} />
-            <button type="button" aria-label={t('Убрать')} title={t('Убрать')} className="grid size-9 flex-none place-items-center text-ink-faint hover:text-destructive" onClick={() => setD({ ...d, otherNames: d.otherNames.filter((_, j) => j !== i) })}><X size={14} /></button>
+            <Input aria-label={t('Title_name')} value={n.name} placeholder={t('For example, Kalinin')} onChange={(e) => setName(i, { name: e.target.value })} />
+            <Input aria-label={t('Years')} className="w-32 flex-none" value={n.years} placeholder={t('1931–1990')} onChange={(e) => setName(i, { years: e.target.value })} />
+            <button type="button" aria-label={t('Remove')} title={t('Remove')} className="grid size-9 flex-none place-items-center text-ink-faint hover:text-destructive" onClick={() => setD({ ...d, otherNames: d.otherNames.filter((_, j) => j !== i) })}><X size={14} /></button>
           </div>
         ))}
-        <button type="button" className="self-start underline underline-offset-2 hover:text-ink" onClick={() => setD({ ...d, otherNames: [...d.otherNames, { name: '', years: '' }] })}>+ {t('название')}</button>
+        <button type="button" className="self-start underline underline-offset-2 hover:text-ink" onClick={() => setD({ ...d, otherNames: [...d.otherNames, { name: '', years: '' }] })}>+ {t('name')}</button>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Широта')}<Input inputMode="decimal" value={lat} placeholder="56.86" onChange={(e) => setLat(e.target.value)} onPaste={(e) => { if (splitPair(e.clipboardData.getData('text'))) e.preventDefault() }} onBlur={(e) => splitPair(e.target.value)} /></label>
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Долгота')}<Input inputMode="decimal" value={lon} placeholder="35.90" onChange={(e) => setLon(e.target.value)} /></label>
+        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Latitude')}<Input inputMode="decimal" value={lat} placeholder="56.86" onChange={(e) => setLat(e.target.value)} onPaste={(e) => { if (splitPair(e.clipboardData.getData('text'))) e.preventDefault() }} onBlur={(e) => splitPair(e.target.value)} /></label>
+        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Longitude')}<Input inputMode="decimal" value={lon} placeholder="35.90" onChange={(e) => setLon(e.target.value)} /></label>
       </div>
-      {badCoords && <p role="alert" className="text-xs text-destructive">{t('Координаты пишутся числом, например 56.86')}</p>}
+      {badCoords && <p role="alert" className="text-xs text-destructive">{t('Coordinates are numbers, such as 56.86')}</p>}
       {point && (
         <p role={point.block ? 'alert' : 'status'} className={`text-xs ${point.block ? 'text-destructive' : 'text-rust'}`}>
-          {point.kind === 'range' && t('Широта от −90 до 90, долгота от −180 до 180. Проверьте координаты')}
-          {point.kind === 'zero' && t('0, 0 — пустая точка в океане. Проверьте координаты')}
-          {point.kind === 'sea' && t('Точка в море — проверьте координаты')}
+          {point.kind === 'range' && t('Latitude runs from −90 to 90 and longitude from −180 to 180. Check the coordinates')}
+          {point.kind === 'zero' && t('0, 0 is an empty point in the ocean, not a place. Check the coordinates')}
+          {point.kind === 'sea' && t('The point is at sea — check the coordinates')}
           {point.kind === 'swapped' && <>
-            {t('Похоже, широта и долгота перепутаны')}{' '}
-            <button type="button" className="underline underline-offset-2 hover:text-ink" onClick={swap}>{t('Поменять местами')}</button>
+            {t('Latitude and longitude look swapped')}{' '}
+            <button type="button" className="underline underline-offset-2 hover:text-ink" onClick={swap}>{t('Swap')}</button>
           </>}
         </p>
       )}
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Заметка')}<Textarea rows={2} value={d.note} onChange={(e) => setD({ ...d, note: e.target.value })} /></label>
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Note')}<Textarea rows={2} value={d.note} onChange={(e) => setD({ ...d, note: e.target.value })} /></label>
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" disabled={busy || !d.name.trim() || badCoords || !!point?.block} onClick={save}>{t('Сохранить')}</Button>
-        <Button size="sm" variant="outline" onClick={onDone}>{t('Отмена')}</Button>
+        <Button size="sm" disabled={busy || !d.name.trim() || badCoords || !!point?.block} onClick={save}>{t('Save')}</Button>
+        <Button size="sm" variant="outline" onClick={onDone}>{t('Cancel')}</Button>
       </div>
     </div>
   )
@@ -155,48 +155,48 @@ export function PlacesTab({ onOpen }: { onOpen: (id: string) => void }) {
   const merge = async (a: Place, b: Place) => {
     const score = (p: Place) => (p.lat !== null ? 2 : 0) + (p.parentId ? 1 : 0)
     const [keep, drop] = score(b) > score(a) ? [b, a] : [a, b]
-    if (!(await confirm(t('Объединить «{a}» и «{b}»?').replace('{a}', () => keep.name).replace('{b}', () => drop.name), t('Объединить'), t('Карточки людей не изменятся. Вернуть можно в истории.')))) return
+    if (!(await confirm(t('Merge “{a}” and “{b}”?').replace('{a}', () => keep.name).replace('{b}', () => drop.name), t('Merge'), t('People\'s cards stay as they are. It can be undone from the history.')))) return
     await api(`places/${keep.id}/merge`, { method: 'POST', json: { from: drop.id } })
     await qc.invalidateQueries({ queryKey: ['places'] })
     qc.invalidateQueries({ queryKey: ['graph'] })
   }
   const remove = async (p: Place) => {
-    if (!(await confirm(t('Удалить сведения о месте «{name}»?').replace('{name}', () => p.name), t('Удалить'), t('Карточки людей не изменятся. Вернуть можно в истории.')))) return
+    if (!(await confirm(t('Delete the place\'s details «{name}»?').replace('{name}', () => p.name), t('Delete'), t('People\'s cards stay as they are. It can be undone from the history.')))) return
     await api(`places/${p.id}`, { method: 'DELETE' })
     qc.invalidateQueries({ queryKey: ['places'] })
   }
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-ink-soft">{t('Места из карточек. Укажите, во что место входило, и его старые названия: тогда поиск найдёт людей и по прежнему имени.')}</p>
-      <Segmented label={t('Как показать')} value={view} onChange={setView} options={[['list', t('Списком')], ['map', t('На карте')]]} />
+      <p className="text-ink-soft">{t('Places from the cards. Say what a place was part of and its older names, and search finds people by the old name too.')}</p>
+      <Segmented label={t('How to show')} value={view} onChange={setView} options={[['list', t('As a list')], ['map', t('On a map')]]} />
       {view === 'map' && (marks.length
         ? <PlaceMap marks={marks} onPerson={onOpen} className="h-80" />
-        : <p className="text-ink-soft">{t('На карте пока пусто: ни у одного места нет широты и долготы. Их можно добавить в сведениях о месте.')}</p>)}
+        : <p className="text-ink-soft">{t('The map is empty for now: no place has a latitude and longitude yet. Add them under a place.')}</p>)}
       {view === 'list' && <>
       <div className="flex gap-2">
-        <Input aria-label={t('Найти место')} placeholder={t('Найти место')} value={filter} onChange={(e) => setFilter(e.target.value)} />
-        {canEdit && <Button size="sm" variant="outline" className="flex-none" onClick={() => { setAt('new'); setEditing(blank('')) }}><Plus /> {t('Место')}</Button>}
+        <Input aria-label={t('Find a place')} placeholder={t('Find a place')} value={filter} onChange={(e) => setFilter(e.target.value)} />
+        {canEdit && <Button size="sm" variant="outline" className="flex-none" onClick={() => { setAt('new'); setEditing(blank('')) }}><Plus /> {t('Place')}</Button>}
       </div>
       {editing && at === 'new' && <PlaceForm draft={editing} places={places} onDone={() => setEditing(null)} />}
       {canEdit && twins.length > 0 && (
         // Probably one place entered twice: said once, above the list, with a way to make them one.
-        <section className="rounded-md border border-border p-2 text-sm" aria-label={t('Похожие места')}>
-          <h4 className="font-medium">{t('Похожие места')}</h4>
-          <p className="text-xs text-ink-soft">{t('Возможно, одно место записано дважды. Объединение оставит одну запись со всеми названиями; вернуть можно в истории.')}</p>
+        <section className="rounded-md border border-border p-2 text-sm" aria-label={t('Similar places')}>
+          <h4 className="font-medium">{t('Similar places')}</h4>
+          <p className="text-xs text-ink-soft">{t('One place may have been entered twice. Merging keeps one record with all the names; it can be undone in History.')}</p>
           <ul className="mt-1 flex flex-col gap-1">
             {twins.slice(0, 20).map(([a, b]) => (
               <li key={`${a.id}|${b.id}`} className="flex flex-wrap items-baseline gap-x-2">
                 <span className="break-anywhere">{placeChain(a, places).map((x) => x.name).join(' → ')}</span>
-                <span className="text-ink-faint">{t('и')}</span>
+                <span className="text-ink-faint">{t('and')}</span>
                 <span className="break-anywhere">{placeChain(b, places).map((x) => x.name).join(' → ')}</span>
-                <button type="button" className="ml-auto text-xs underline underline-offset-2 hover:text-ink" onClick={() => merge(a, b)}>{t('Объединить')}</button>
+                <button type="button" className="ml-auto text-xs underline underline-offset-2 hover:text-ink" onClick={() => merge(a, b)}>{t('Merge')}</button>
               </li>
             ))}
           </ul>
         </section>
       )}
       {canEdit && guessData && <PointGuessList data={guessData} />}
-      {!rows.length && <p className="text-ink-faint">{t('Мест пока нет.')}</p>}
+      {!rows.length && <p className="text-ink-faint">{t('No places yet.')}</p>}
       <ul className="flex flex-col">
         {rows.map((r, i) => {
           const place = r.place
@@ -210,11 +210,11 @@ export function PlacesTab({ onOpen }: { onOpen: (id: string) => void }) {
                 <span className="font-medium break-anywhere">{place ? place.name : r.texts[0]}</span>
                 {place?.kind && <span className="text-xs text-ink-soft">{t(place.kind).toLowerCase()}</span>}
                 {chain.length > 1 && <span className="text-xs text-ink-soft break-anywhere">{chain.slice(1).map((x) => x.name).join(' → ')}</span>}
-                {link && <a className="inline-flex items-center gap-0.5 text-xs text-ink-soft underline" href={link} target="_blank" rel="noreferrer noopener">{t('на карте')} <ExternalLink size={11} /></a>}
-                <span className="ml-auto text-xs text-ink-faint">{t('Людей')}: {r.people.size}</span>
+                {link && <a className="inline-flex items-center gap-0.5 text-xs text-ink-soft underline" href={link} target="_blank" rel="noreferrer noopener">{t('on a map')} <ExternalLink size={11} /></a>}
+                <span className="ml-auto text-xs text-ink-faint">{t('People_count')}: {r.people.size}</span>
               </div>
-              {place && place.otherNames.length > 0 && <span className="text-xs text-ink-soft break-anywhere">{t('Также')}: {place.otherNames.map((n) => (n.years ? `${n.name} (${n.years})` : n.name)).join(', ')}</span>}
-              {r.texts.length > 1 && <span className="text-xs text-ink-faint break-anywhere">{t('Записано как')}: {r.texts.join('; ')}</span>}
+              {place && place.otherNames.length > 0 && <span className="text-xs text-ink-soft break-anywhere">{t('Also')}: {place.otherNames.map((n) => (n.years ? `${n.name} (${n.years})` : n.name)).join(', ')}</span>}
+              {r.texts.length > 1 && <span className="text-xs text-ink-faint break-anywhere">{t('Written as')}: {r.texts.join('; ')}</span>}
               {r.people.size > 0 && (
                 <span className="flex flex-wrap gap-x-2 text-xs">
                   {[...r.people].slice(0, 8).map((id) => <button key={id} className="pick underline-offset-2 hover:underline" onClick={() => onOpen(id)}>{byId.get(id) ? personName(byId.get(id)!) : ''}</button>)}
@@ -223,8 +223,8 @@ export function PlacesTab({ onOpen }: { onOpen: (id: string) => void }) {
               )}
               {canEdit && !isEditing && (
                 <span className="flex gap-3 text-xs text-ink-soft">
-                  <button className="underline underline-offset-2 hover:text-ink" onClick={() => { setAt(rowKey); setEditing(place ? { ...place } : blank(r.texts[0])) }}>{t(place ? 'Изменить' : 'Добавить сведения')}</button>
-                  {place && <button className="flex items-center gap-1 hover:text-destructive" onClick={() => remove(place)}><Trash2 size={11} /> {t('Удалить')}</button>}
+                  <button className="underline underline-offset-2 hover:text-ink" onClick={() => { setAt(rowKey); setEditing(place ? { ...place } : blank(r.texts[0])) }}>{t(place ? 'Edit' : 'Add details')}</button>
+                  {place && <button className="flex items-center gap-1 hover:text-destructive" onClick={() => remove(place)}><Trash2 size={11} /> {t('Delete')}</button>}
                 </span>
               )}
               {canEdit && !isEditing && !onMap(place) && (() => { const g = guesses.get(guessKey(place?.id ?? null, r.texts[0])); return g ? <PointCandidates guess={g} /> : null })()}
@@ -257,37 +257,37 @@ export function ArchivesTab() {
       await qc.invalidateQueries({ queryKey: ['repositories'] })
       setEditing(null)
     } catch (e) {
-      notify(`${t('Не сохранилось')}: ${(e as Error).message}`)
+      notify(`${t('Not saved_failed')}: ${(e as Error).message}`)
     }
   }
   const remove = async (r: Repository) => {
-    if (!(await confirm(t('Удалить архив «{name}»?').replace('{name}', () => r.name), t('Удалить'), t('Источники останутся, но без ссылки на архив. Вернуть можно в истории.')))) return
+    if (!(await confirm(t('Delete archive «{name}»?').replace('{name}', () => r.name), t('Delete'), t('Sources stay, without the archive. It can be undone from the history.')))) return
     await api(`repositories/${r.id}`, { method: 'DELETE' })
     qc.invalidateQueries({ queryKey: ['repositories'] })
   }
   const form = editing && (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-white p-3">
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Название')}<Input value={editing.name} placeholder={t('Например, Государственный архив Тверской области')} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Адрес')}<Input value={editing.address} onChange={(e) => setEditing({ ...editing, address: e.target.value })} /></label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Сайт')}<Input value={editing.url} placeholder="https://…" onChange={(e) => setEditing({ ...editing, url: e.target.value })} /></label>
-      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Заметка')}<Textarea rows={2} value={editing.note} placeholder={t('Например, как заказать копию')} onChange={(e) => setEditing({ ...editing, note: e.target.value })} /></label>
-      <div className="flex gap-2"><Button size="sm" disabled={!editing.name.trim()} onClick={save}>{t('Сохранить')}</Button><Button size="sm" variant="outline" onClick={() => setEditing(null)}>{t('Отмена')}</Button></div>
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Title_name')}<Input value={editing.name} placeholder={t('For example, State Archive of Tver Region')} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></label>
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Address')}<Input value={editing.address} onChange={(e) => setEditing({ ...editing, address: e.target.value })} /></label>
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Website')}<Input value={editing.url} placeholder="https://…" onChange={(e) => setEditing({ ...editing, url: e.target.value })} /></label>
+      <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Note')}<Textarea rows={2} value={editing.note} placeholder={t('For example, how to order a copy')} onChange={(e) => setEditing({ ...editing, note: e.target.value })} /></label>
+      <div className="flex gap-2"><Button size="sm" disabled={!editing.name.trim()} onClick={save}>{t('Save')}</Button><Button size="sm" variant="outline" onClick={() => setEditing(null)}>{t('Cancel')}</Button></div>
     </div>
   )
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-ink-soft">{t('Где хранятся источники. Выберите архив у источника в карточке человека, и он появится здесь.')}</p>
-      {canEdit && !editing && <Button size="sm" variant="outline" className="self-start" onClick={() => setEditing({ id: null, name: '', address: '', url: '', note: '' })}><Plus /> {t('Архив')}</Button>}
+      <p className="text-ink-soft">{t('Where sources are kept. Choose an archive for a source on a person\'s card, and it shows here.')}</p>
+      {canEdit && !editing && <Button size="sm" variant="outline" className="self-start" onClick={() => setEditing({ id: null, name: '', address: '', url: '', note: '' })}><Plus /> {t('Archive')}</Button>}
       {editing && !editing.id && form}
-      {!list.length && !editing && <p className="text-ink-faint">{t('Архивов пока нет.')}</p>}
+      {!list.length && !editing && <p className="text-ink-faint">{t('No archives yet.')}</p>}
       <ul className="flex flex-col">
         {list.map((r) => (
           <li key={r.id} className="flex flex-col gap-0.5 border-b border-border py-2 last:border-0">
-            <div className="flex flex-wrap items-baseline gap-2"><span className="font-medium break-anywhere">{r.name}</span><span className="ml-auto text-xs text-ink-faint">{t('Источников')}: {uses.get(r.id) ?? 0}</span></div>
+            <div className="flex flex-wrap items-baseline gap-2"><span className="font-medium break-anywhere">{r.name}</span><span className="ml-auto text-xs text-ink-faint">{t('Sources')}: {uses.get(r.id) ?? 0}</span></div>
             {r.address && <span className="text-xs text-ink-soft break-anywhere">{r.address}</span>}
             {/^https?:\/\//i.test(r.url) && <a className="inline-flex items-center gap-0.5 self-start text-xs text-ink-soft underline break-all" href={r.url} target="_blank" rel="noreferrer noopener">{r.url} <ExternalLink size={11} /></a>}
             {r.note && <span className="text-xs break-anywhere">{r.note}</span>}
-            {canEdit && editing?.id !== r.id && <span className="flex gap-3 text-xs text-ink-soft"><button className="underline underline-offset-2 hover:text-ink" onClick={() => setEditing({ ...r })}>{t('Изменить')}</button><button className="flex items-center gap-1 hover:text-destructive" onClick={() => remove(r)}><Trash2 size={11} /> {t('Удалить')}</button></span>}
+            {canEdit && editing?.id !== r.id && <span className="flex gap-3 text-xs text-ink-soft"><button className="underline underline-offset-2 hover:text-ink" onClick={() => setEditing({ ...r })}>{t('Edit')}</button><button className="flex items-center gap-1 hover:text-destructive" onClick={() => remove(r)}><Trash2 size={11} /> {t('Delete')}</button></span>}
             {editing?.id === r.id && form}
           </li>
         ))}

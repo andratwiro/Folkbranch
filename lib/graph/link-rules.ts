@@ -14,13 +14,13 @@ export interface Relation { type: LinkType; to: string; other: string; otherPare
 /** The drag is allowed, is refused with a reason to show, or means nothing because the two are already linked. */
 export type LinkVerdict = Relation | { refuse: string } | null
 
-const TWO_PARENTS = 'У этого человека уже двое родителей. Чтобы заменить одного, сначала удалите связь с ним'
-const OTHER_PARENT = 'У этого человека уже есть родитель вне этой пары. Чтобы заменить его, сначала удалите связь с ним'
+const TWO_PARENTS = 'This person already has two parents'
+const OTHER_PARENT = 'This person already has a parent outside this couple. To replace them, remove that link first'
 
 export function relationFor(w: LinkWorld, source: LinkSource, target: string): LinkVerdict {
   const sex = w.sexOf(target)
   const childType: LinkType = sex === 'F' ? 'daughter' : 'son'
-  const childLabel = sex === 'F' ? 'дочь' : sex === 'M' ? 'сын' : 'ребёнок'
+  const childLabel = sex === 'F' ? 'daughter' : sex === 'M' ? 'son' : 'child'
   const parentsOf = (id: string) => w.parents.get(id) ?? []
   if ('parents' in source) {
     const [a, b] = source.parents
@@ -41,7 +41,7 @@ export function relationFor(w: LinkWorld, source: LinkSource, target: string): L
   const dy = (w.rowOf(target) - w.rowOf(s)) * (w.rootsBelow ? -1 : 1)
   if (dy < 0) {
     if (parentsOf(s).length >= 2) return { refuse: TWO_PARENTS }
-    return { type: sex === 'F' ? 'mother' : 'father', to: s, other: target, otherParentId: null, label: sex === 'F' ? 'мать' : sex === 'M' ? 'отец' : 'родитель' }
+    return { type: sex === 'F' ? 'mother' : 'father', to: s, other: target, otherParentId: null, label: sex === 'F' ? 'mother' : sex === 'M' ? 'father' : 'parent' }
   }
   if (dy > 0) {
     // A child with no parents yet belongs to the couple, if there is exactly one.
@@ -50,5 +50,5 @@ export function relationFor(w: LinkWorld, source: LinkSource, target: string): L
     if (parentsOf(target).length >= 2) return { refuse: TWO_PARENTS }
     return { type: childType, to: s, other: target, otherParentId: other, label: childLabel }
   }
-  return { type: 'spouse', to: s, other: target, otherParentId: null, label: 'супруг' }
+  return { type: 'spouse', to: s, other: target, otherParentId: null, label: 'spouse' }
 }

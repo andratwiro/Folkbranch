@@ -25,21 +25,21 @@ function personFields(p: Person, places: Place[]): SearchField[] {
   }
   const shown = new Set([p.givenName, p.surname, p.patronymic, p.maidenName, p.birthDate, p.birthPlace, p.deathDate, p.deathPlace].map(normal))
   return [
-    ...field('givenName', 'Имя', p.givenName, 1),
-    ...field('surname', 'Фамилия', p.surname, 1),
-    ...field('patronymic', 'Отчество', p.patronymic, 0.9, 'f-patronymic'),
-    ...field('maidenName', 'Девичья фамилия', p.maidenName, 0.9),
-    ...field('otherNames', 'Другие имена', p.otherNames, 0.85),
-    ...field('birthDate', 'Рождение', p.birthDate, 0.95, 'f-birth-date'),
-    ...field('birthPlace', 'Место рождения', p.birthPlace, 0.8, 'f-birth-place'),
-    ...field('deathDate', 'Смерть', p.deathDate, 0.95, 'f-death-date'),
-    ...field('deathPlace', 'Место смерти', p.deathPlace, 0.8, 'f-death-place'),
-    ...field('tags', 'Группы', shownTags(p.tags).join(', '), 0.75),
+    ...field('givenName', 'Given name', p.givenName, 1),
+    ...field('surname', 'Surname', p.surname, 1),
+    ...field('patronymic', 'Patronymic', p.patronymic, 0.9, 'f-patronymic'),
+    ...field('maidenName', 'Maiden name', p.maidenName, 0.9),
+    ...field('otherNames', 'Other names', p.otherNames, 0.85),
+    ...field('birthDate', 'Birth', p.birthDate, 0.95, 'f-birth-date'),
+    ...field('birthPlace', 'Birthplace', p.birthPlace, 0.8, 'f-birth-place'),
+    ...field('deathDate', 'Death', p.deathDate, 0.95, 'f-death-date'),
+    ...field('deathPlace', 'Place of death', p.deathPlace, 0.8, 'f-death-place'),
+    ...field('tags', 'Groups', shownTags(p.tags).join(', '), 0.75),
     // Older and other names of the places, and what they belonged to: "Тверь" finds someone born in "Калинин".
-    ...field('place', 'Место', [...new Set([p.birthPlace, p.deathPlace, ...p.facts.map((f) => f.place)].map((x) => placeWords(x, places)).join(' ').split(' '))].join(' '), 0.6, 'f-birth-place'),
-    ...p.facts.flatMap((f) => field('fact', 'Факты', [f.kind, f.date, f.place, factWords(f)].filter(Boolean).join(', '), 0.7)),
-    ...p.sources.flatMap((s) => field('source', 'Источники', [s.title, s.ref, s.page].filter(Boolean).join(', '), 0.55, 'f-sources')),
-    ...p.claims.flatMap((c) => field('claim', 'Другая версия', [shown.has(normal(c.value)) ? '' : c.value, c.reason].filter(Boolean).join(', '), 0.5)),
+    ...field('place', 'Place', [...new Set([p.birthPlace, p.deathPlace, ...p.facts.map((f) => f.place)].map((x) => placeWords(x, places)).join(' ').split(' '))].join(' '), 0.6, 'f-birth-place'),
+    ...p.facts.flatMap((f) => field('fact', 'Facts', [f.kind, f.date, f.place, factWords(f)].filter(Boolean).join(', '), 0.7)),
+    ...p.sources.flatMap((s) => field('source', 'Sources_plural', [s.title, s.ref, s.page].filter(Boolean).join(', '), 0.55, 'f-sources')),
+    ...p.claims.flatMap((c) => field('claim', 'Another version', [shown.has(normal(c.value)) ? '' : c.value, c.reason].filter(Boolean).join(', '), 0.5)),
   ]
 }
 
@@ -50,14 +50,14 @@ function buildDocs(actor: Actor): SearchDoc[] {
   for (const page of readablePages(actor)) {
     const doc = docs.get(page.personId)
     if (!doc) continue
-    if (page.title) doc.fields.push({ key: 'pageTitle', label: tell('Биография'), text: page.title, tab: 'pages', weight: 0.6, refId: page.id })
+    if (page.title) doc.fields.push({ key: 'pageTitle', label: tell('Biography'), text: page.title, tab: 'pages', weight: 0.6, refId: page.id })
     const text = plain(blocksToMarkdown(JSON.parse(page.content)))
-    if (text) doc.fields.push({ key: 'page', label: tell('Биография'), text, tab: 'pages', weight: 0.5, refId: page.id })
+    if (text) doc.fields.push({ key: 'page', label: tell('Biography'), text, tab: 'pages', weight: 0.5, refId: page.id })
   }
   for (const m of listAllMedia(actor, 100_000)) {
     const text = noLinks([m.caption, m.date, m.place].filter(Boolean).join(', '))
     if (!text) continue
-    for (const t of m.tags) docs.get(t.personId ?? '')?.fields.push({ key: 'photo', label: tell('Фото'), text, tab: 'photos', weight: 0.5, refId: m.id })
+    for (const t of m.tags) docs.get(t.personId ?? '')?.fields.push({ key: 'photo', label: tell('Photos_short'), text, tab: 'photos', weight: 0.5, refId: m.id })
   }
   // Someone's own words stay among people, as they do in the card.
   if (!actor.tokenId && !actor.assistant) {
@@ -68,7 +68,7 @@ function buildDocs(actor: Actor): SearchDoc[] {
       if (!doc) continue
       for (const s of listStories(actor, id)) {
         const text = noLinks([s.title, s.body, s.tellerName, s.toldOn].filter(Boolean).join('. '))
-        if (text) doc.fields.push({ key: 'story', label: tell('Рассказы'), text, tab: 'stories', weight: 0.5, refId: s.id })
+        if (text) doc.fields.push({ key: 'story', label: tell('Stories'), text, tab: 'stories', weight: 0.5, refId: s.id })
       }
     }
   }
@@ -94,22 +94,22 @@ function indexFor(actor: Actor): Indexes {
 
 type Who = (id: string) => string[]
 const ROLES: [RegExp, 'parents' | 'children' | 'spouses' | 'siblings' | 'grandchildren' | 'grandparents', Sex | null, string][] = [
-  [/^(жен[аыуе]|женой|супруга|супруги|wife)$/, 'spouses', 'F', 'жена'], [/^(муж|мужа|мужу|мужем|супруг|husband)$/, 'spouses', 'M', 'муж'],
-  [/^(мать|матери|матерью|мама|мамы|маме|mother)$/, 'parents', 'F', 'мать'], [/^(отец|отца|отцу|отцом|папа|папы|father)$/, 'parents', 'M', 'отец'], [/^(родители|родителей|родителя|родитель|parents)$/, 'parents', null, 'родитель'],
-  [/^(сын|сына|сыну|сыном|сыновья|son)$/, 'children', 'M', 'сын'], [/^(дочь|дочери|дочка|дочки|дочерью|daughter)$/, 'children', 'F', 'дочь'], [/^(дети|детей|ребенок|ребенка|children)$/, 'children', null, 'ребёнок'],
-  [/^(брат|брата|брату|братом|brother)$/, 'siblings', 'M', 'брат'], [/^(сестра|сестры|сестре|сестру|sister)$/, 'siblings', 'F', 'сестра'],
-  [/^(внучка|внучки|granddaughter)$/, 'grandchildren', 'F', 'внучка'], [/^(внук|внука|grandson)$/, 'grandchildren', 'M', 'внук'],
-  [/^(бабушка|бабушки|бабка|grandmother)$/, 'grandparents', 'F', 'бабушка'], [/^(дед|деда|дедушка|дедушки|grandfather)$/, 'grandparents', 'M', 'дедушка'],
+  [/^(жен[аыуе]|женой|супруга|супруги|wife)$/, 'spouses', 'F', 'wife'], [/^(муж|мужа|мужу|мужем|супруг|husband)$/, 'spouses', 'M', 'husband'],
+  [/^(мать|матери|матерью|мама|мамы|маме|mother)$/, 'parents', 'F', 'mother'], [/^(отец|отца|отцу|отцом|папа|папы|father)$/, 'parents', 'M', 'father'], [/^(родители|родителей|родителя|родитель|parents)$/, 'parents', null, 'parent'],
+  [/^(сын|сына|сыну|сыном|сыновья|son)$/, 'children', 'M', 'son'], [/^(дочь|дочери|дочка|дочки|дочерью|daughter)$/, 'children', 'F', 'daughter'], [/^(дети|детей|ребенок|ребенка|children)$/, 'children', null, 'child'],
+  [/^(брат|брата|брату|братом|brother)$/, 'siblings', 'M', 'brother'], [/^(сестра|сестры|сестре|сестру|sister)$/, 'siblings', 'F', 'sister'],
+  [/^(внучка|внучки|granddaughter)$/, 'grandchildren', 'F', 'granddaughter'], [/^(внук|внука|grandson)$/, 'grandchildren', 'M', 'grandson'],
+  [/^(бабушка|бабушки|бабка|grandmother)$/, 'grandparents', 'F', 'grandmother'], [/^(дед|деда|дедушка|дедушки|grandfather)$/, 'grandparents', 'M', 'grandfather'],
 ]
 
 /** The same relatives in Spanish and Catalan, as normal() leaves the words (germà as germa). Only an archive in either language reads them. */
 const ROLES_ES_CA: typeof ROLES = [
-  [/^(esposa|mujer|dona|muller)$/, 'spouses', 'F', 'жена'], [/^(esposo|marido|marit|espos|home)$/, 'spouses', 'M', 'муж'],
-  [/^(madre|mare)$/, 'parents', 'F', 'мать'], [/^(padre|pare)$/, 'parents', 'M', 'отец'], [/^(padres|pares)$/, 'parents', null, 'родитель'],
-  [/^(hijo|fill)$/, 'children', 'M', 'сын'], [/^(hija|filla)$/, 'children', 'F', 'дочь'], [/^(hijos|fills)$/, 'children', null, 'ребёнок'],
-  [/^(hermano|germa)$/, 'siblings', 'M', 'брат'], [/^(hermana|germana)$/, 'siblings', 'F', 'сестра'],
-  [/^(nieta|neta)$/, 'grandchildren', 'F', 'внучка'], [/^(nieto|net)$/, 'grandchildren', 'M', 'внук'],
-  [/^(abuela|avia)$/, 'grandparents', 'F', 'бабушка'], [/^(abuelo|avi)$/, 'grandparents', 'M', 'дедушка'],
+  [/^(esposa|mujer|dona|muller)$/, 'spouses', 'F', 'wife'], [/^(esposo|marido|marit|espos|home)$/, 'spouses', 'M', 'husband'],
+  [/^(madre|mare)$/, 'parents', 'F', 'mother'], [/^(padre|pare)$/, 'parents', 'M', 'father'], [/^(padres|pares)$/, 'parents', null, 'parent'],
+  [/^(hijo|fill)$/, 'children', 'M', 'son'], [/^(hija|filla)$/, 'children', 'F', 'daughter'], [/^(hijos|fills)$/, 'children', null, 'child'],
+  [/^(hermano|germa)$/, 'siblings', 'M', 'brother'], [/^(hermana|germana)$/, 'siblings', 'F', 'sister'],
+  [/^(nieta|neta)$/, 'grandchildren', 'F', 'granddaughter'], [/^(nieto|net)$/, 'grandchildren', 'M', 'grandson'],
+  [/^(abuela|avia)$/, 'grandparents', 'F', 'grandmother'], [/^(abuelo|avi)$/, 'grandparents', 'M', 'grandfather'],
 ]
 /** "la esposa de Iván", "l'avi d'en Joan": [article] relative, de / del / d', [personal article] name. */
 const OF_NAME = /^(?:(?:el|la|los|las|els|les)\s+|l')?(\p{L}+)\s+(?:del?\s+|d')(?:(?:en|na|el|la)\s+|l')?(.+)$/u
@@ -151,7 +151,7 @@ function byRelation(actor: Actor, names: SearchIndex, query: string): SearchResu
       const p = people.get(id)
       if (!p || (sex && p.sex !== sex) || out.has(id)) continue
       const text = `${tell(word)}: ${baseName}`
-      out.set(id, { personId: id, score: 3 + base.score, partial: false, terms: [baseName], matches: [{ key: 'relation', label: tell('Семья'), tab: 'family', text, ranges: [[0, text.length]] }] })
+      out.set(id, { personId: id, score: 3 + base.score, partial: false, terms: [baseName], matches: [{ key: 'relation', label: tell('Family'), tab: 'family', text, ranges: [[0, text.length]] }] })
     }
   }
   return [...out.values()]

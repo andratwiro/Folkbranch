@@ -18,14 +18,14 @@ function parseYears(s: string) {
 
 type Concrete = 'father' | 'mother' | 'son' | 'daughter' | 'spouse'
 const CHOICES: Partial<Record<QuickType, [Concrete, string][]>> = {
-  parent: [['father', 'Отец'], ['mother', 'Мать']],
-  father: [['father', 'Отец'], ['mother', 'Мать']],
-  mother: [['mother', 'Мать'], ['father', 'Отец']],
-  child: [['son', 'Сын'], ['daughter', 'Дочь']],
-  son: [['son', 'Сын'], ['daughter', 'Дочь']],
-  daughter: [['daughter', 'Дочь'], ['son', 'Сын']],
+  parent: [['father', 'Father'], ['mother', 'Mother']],
+  father: [['father', 'Father'], ['mother', 'Mother']],
+  mother: [['mother', 'Mother'], ['father', 'Father']],
+  child: [['son', 'Son'], ['daughter', 'Daughter']],
+  son: [['son', 'Son'], ['daughter', 'Daughter']],
+  daughter: [['daughter', 'Daughter'], ['son', 'Son']],
 }
-const TITLE: Record<Concrete, string> = { father: 'Добавить отца', mother: 'Добавить мать', son: 'Добавить сына', daughter: 'Добавить дочь', spouse: 'Добавить супруга' }
+const TITLE: Record<Concrete, string> = { father: 'Add father', mother: 'Add mother', son: 'Add son', daughter: 'Add daughter', spouse: 'Add spouse' }
 
 type State = { type: QuickType; to: string; otherParent?: string } | { type: null; to: null; at?: { x: number; rank: number } } | null
 
@@ -87,7 +87,7 @@ export function QuickAdd({ state, onClose }: { state: State; onClose: (createdId
     <Dialog open={!!state} onOpenChange={(o) => !o && reset()}>
       <DialogContent className="max-w-sm gap-3" showCloseButton={false} onInteractOutside={(e) => { if (name.trim()) e.preventDefault() }}>
         <DialogTitle className="font-serif font-medium text-lg">
-          {type ? t(TITLE[type]) : t(graph.persons.length ? 'Новый человек, пока без родства' : 'Первый человек в архиве')}
+          {type ? t(TITLE[type]) : t(graph.persons.length ? 'A new person, no relation yet' : 'First person in the archive')}
           {target && <span className="block font-sans font-normal text-xs text-ink-soft mt-0.5">{personName(target)}</span>}
         </DialogTitle>
         {choices && (
@@ -98,10 +98,10 @@ export function QuickAdd({ state, onClose }: { state: State; onClose: (createdId
           </div>
         )}
         <form onSubmit={(e) => { e.preventDefault(); submit() }} className="flex flex-col gap-2">
-          <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Имя и фамилия')} aria-label={t('Имя и фамилия')} className={inputClass} />
+          <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Full name')} aria-label={t('Full name')} className={inputClass} />
           {matches.length > 0 && (
             <div className="flex flex-col rounded-lg border border-border overflow-hidden">
-              <span className="px-2 pt-1 text-xs text-ink-soft">{t('Уже есть в архиве')}</span>
+              <span className="px-2 pt-1 text-xs text-ink-soft">{t('Already in the archive_exists')}</span>
               {matches.map((m) => (
                 <button type="button" key={m.id} className="flex items-center gap-2 px-2 py-1.5 hover:bg-muted text-left" onClick={async () => { await linkExisting.mutateAsync(m.id); reset(m.id) }}>
                   <Mini person={m} size={22} /> <span className="truncate">{personName(m)}</span> <span className="ml-auto text-xs text-ink-faint">{lifeYears(m)}</span>
@@ -109,15 +109,15 @@ export function QuickAdd({ state, onClose }: { state: State; onClose: (createdId
               ))}
             </div>
           )}
-          <input value={years} onChange={(e) => setYears(e.target.value)} placeholder={t('например 1920 – 1985')} aria-label={t('Годы жизни')} title={t('Годы жизни')} className={inputClass} />
+          <input value={years} onChange={(e) => setYears(e.target.value)} placeholder={t('e.g. 1920 – 1985')} aria-label={t('Years of life_years')} title={t('Years of life_years')} className={inputClass} />
           {isChild && spouses.length > 0 && (
-            <label className="flex items-center gap-2 text-xs text-ink-soft">{t('Второй родитель')}
-              <Select className="flex-1" aria-label={t('Второй родитель')} value={otherParent ?? ''} onChange={(v) => setOther(v || null)} options={[...spouses.map((s) => ({ value: s, label: personName(byId.get(s)!) || t('Скрыто') })), { value: '', label: '—' }]} />
+            <label className="flex items-center gap-2 text-xs text-ink-soft">{t('Other parent')}
+              <Select className="flex-1" aria-label={t('Other parent')} value={otherParent ?? ''} onChange={(v) => setOther(v || null)} options={[...spouses.map((s) => ({ value: s, label: personName(byId.get(s)!) || t('Hidden_neuter') })), { value: '', label: '—' }]} />
             </label>
           )}
-          {(create.error || linkExisting.error) && <p className="text-xs text-destructive">{t('Не удалось сохранить')}: {String((create.error ?? linkExisting.error)?.message)}</p>}
+          {(create.error || linkExisting.error) && <p className="text-xs text-destructive">{t('Could not save')}: {String((create.error ?? linkExisting.error)?.message)}</p>}
           <Button size="lg" className="mt-1" disabled={!name.trim()} loading={create.isPending}>
-            {t('Добавить')}
+            {t('Add')}
           </Button>
         </form>
       </DialogContent>

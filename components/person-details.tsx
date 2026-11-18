@@ -50,12 +50,12 @@ function FactRow({ fact, person, readOnly, fresh, kinds, places, onChange, onRem
   if (readOnly) {
     return (
       <div className="min-w-0 border-l-2 border-border pl-2.5 py-0.5 flex flex-col gap-0.5">
-        <span className="break-anywhere font-medium">{f.date || <span className="text-xs italic font-normal text-ink-faint">{t('Дата неизвестна')}</span>}{f.kind && ` · ${f.kind}`}</span>
-        {f.place ? <ReadText value={f.place} className="text-ink-soft" /> : <span className="text-xs italic text-ink-faint">{t('Место неизвестно')}</span>}
+        <span className="break-anywhere font-medium">{f.date || <span className="text-xs italic font-normal text-ink-faint">{t('Date unknown')}</span>}{f.kind && ` · ${f.kind}`}</span>
+        {f.place ? <ReadText value={f.place} className="text-ink-soft" /> : <span className="text-xs italic text-ink-faint">{t('Place unknown')}</span>}
         {f.note && <ReadText value={f.note} />}
         {Object.entries(f.fields ?? {}).filter(([, v]) => v).map(([k, v]) => <span key={k} className="break-anywhere"><span className="text-ink-soft">{t(k)}:</span> {v}</span>)}
         {(f.people ?? []).filter((x) => x.name).map((x, i) => <Participant key={i} person={x} />)}
-        {f.source && <span className="text-xs text-ink-soft break-anywhere">{t('Источник')}: <ReadText value={f.source} /></span>}
+        {f.source && <span className="text-xs text-ink-soft break-anywhere">{t('Source')}: <ReadText value={f.source} /></span>}
       </div>
     )
   }
@@ -70,22 +70,22 @@ function FactRow({ fact, person, readOnly, fresh, kinds, places, onChange, onRem
   )
   return (
     <div className="group relative rounded-md border border-border px-2.5 py-1.5 flex flex-col gap-1 min-w-0">
-      <div className="pr-6 max-sm:pr-9">{field('kind', 'Что произошло', 'font-medium', kinds, fresh && !fact.kind)}</div>
+      <div className="pr-6 max-sm:pr-9">{field('kind', 'What happened', 'font-medium', kinds, fresh && !fact.kind)}</div>
       <div className="grid grid-cols-[64px_minmax(0,1fr)] gap-x-2 gap-y-0.5 items-baseline">
-        {row('Когда', 'date', 'например, 1912', undefined, fresh && !!fact.kind)}
+        {row('When', 'date', 'e.g. 1912', undefined, fresh && !!fact.kind)}
         {/* The place of a move or a residence, with the same hint the card gives: a place the archive cannot
             draw leaves the event off the map, and the reason belongs here, not only in the map's gap list.
             While the field is being typed in, the hint waits: half a word is not a wrong place. */}
-        <span className="text-xs text-ink-faint">{t('Где')}</span>
-        <span className="flex min-w-0 flex-col">{field('place', 'например, Пермь', 'text-ink', places, false, 'Где')}<PlaceHint text={editing === 'place' ? '' : f.place} placeId={f.placeId} onPick={(placeId) => { const next = { ...f, placeId }; setF(next); commit(next) }} /></span>
+        <span className="text-xs text-ink-faint">{t('Where')}</span>
+        <span className="flex min-w-0 flex-col">{field('place', 'e.g. Paris', 'text-ink', places, false, 'Where')}<PlaceHint text={editing === 'place' ? '' : f.place} placeId={f.placeId} onPick={(placeId) => { const next = { ...f, placeId }; setF(next); commit(next) }} /></span>
         {extra.map((k) => (
           <Fragment key={k}>
             <span className="text-xs text-ink-faint">{t(k)}</span>
             <GrowText value={f.fields?.[k] ?? ''} placeholder={t(k)} aria-label={t(k)} className="text-ink" onChange={(e) => setF({ ...f, fields: { ...f.fields, [k]: e.target.value } })} onBlur={() => commit()} />
           </Fragment>
         ))}
-        {row('Заметка', 'note', 'подробности')}
-        {row('Источник', 'source', 'документ, архив, чей рассказ')}
+        {row('Note', 'note', 'details')}
+        {row('Source', 'source', 'document, archive, who told it')}
       </div>
       <People fact={f} onChange={(people) => { const next = { ...f, people }; setF(next); commit(next) }} />
       {!readOnly && <RowRemove onRemove={onRemove} />}
@@ -120,18 +120,18 @@ function People({ fact, onChange }: { fact: Fact; onChange: (people: FactPerson[
         const card = x.personId ? byId.get(x.personId) : null
         return (
           <div key={i} className="flex flex-wrap items-center gap-1.5 min-w-0 text-sm">
-            <Select look="small" className="!w-auto" aria-label={t('Роль')} value={x.role} onChange={(role) => set(i, { role })} options={roles} />
+            <Select look="small" className="!w-auto" aria-label={t('Role')} value={x.role} onChange={(role) => set(i, { role })} options={roles} />
             {card
-              ? <span className="min-w-0 break-anywhere">{personName(card) || t('Без названия')}</span>
-              : <GrowText value={x.name} placeholder={t('Имя, как в записи')} aria-label={t('Имя, как в записи')} className="min-w-[8rem] flex-1" onChange={(e) => set(i, { name: e.target.value })} />}
+              ? <span className="min-w-0 break-anywhere">{personName(card) || t('Untitled')}</span>
+              : <GrowText value={x.name} placeholder={t('Name as in the record')} aria-label={t('Name as in the record')} className="min-w-[8rem] flex-1" onChange={(e) => set(i, { name: e.target.value })} />}
             <PersonPopover onPick={(id) => { const p = byId.get(id); set(i, { personId: id, name: p ? personName(p) : x.name }) }}>
-              <button type="button" className="text-xs text-ink-soft underline underline-offset-2 hover:text-ink">{t(card ? 'Другая карточка' : 'Выбрать карточку')}</button>
+              <button type="button" className="text-xs text-ink-soft underline underline-offset-2 hover:text-ink">{t(card ? 'Another card' : 'Choose a card')}</button>
             </PersonPopover>
-            <button type="button" aria-label={t('Убрать участника')} title={t('Убрать участника')} className="ml-auto grid size-6 place-items-center text-ink-faint hover:text-destructive" onClick={() => onChange(list.filter((_, j) => j !== i))}><X size={13} /></button>
+            <button type="button" aria-label={t('Remove participant')} title={t('Remove participant')} className="ml-auto grid size-6 place-items-center text-ink-faint hover:text-destructive" onClick={() => onChange(list.filter((_, j) => j !== i))}><X size={13} /></button>
           </div>
         )
       })}
-      <button type="button" className="self-start text-xs text-ink-soft underline underline-offset-2 hover:text-ink" onClick={() => onChange([...list, { personId: null, name: '', role: firstRole(fact.kind, t) }])}>+ {t('участник')}</button>
+      <button type="button" className="self-start text-xs text-ink-soft underline underline-offset-2 hover:text-ink" onClick={() => onChange([...list, { personId: null, name: '', role: firstRole(fact.kind, t) }])}>+ {t('participant')}</button>
     </div>
   )
 }
@@ -139,23 +139,23 @@ function People({ fact, onChange }: { fact: Fact; onChange: (people: FactPerson[
 /** Only on hover where there is hover; a finger always sees it. */
 function RowRemove({ onRemove }: { onRemove: () => void }) {
   const { t } = useApp()
-  return <button aria-label={t('Удалить')} title={t('Удалить')} className="absolute right-0.5 top-0.5 grid place-items-center size-6 opacity-0 group-hover:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 text-ink-faint hover:text-destructive" onClick={onRemove}><X size={13} /></button>
+  return <button aria-label={t('Delete')} title={t('Delete')} className="absolute right-0.5 top-0.5 grid place-items-center size-6 opacity-0 group-hover:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 text-ink-faint hover:text-destructive" onClick={onRemove}><X size={13} /></button>
 }
 
 /** Common kinds of fact, one click each, so the same wording is reused and GEDCOM gets its tags. */
-const FACT_KINDS = ['Профессия', 'Место жительства', 'Образование', 'Крещение', 'Воинская служба', 'Служба', 'Награда', 'Ранение', 'Плен', 'Переезд', 'Сословие', 'Титул', 'Членство', 'Языки', 'Внешность', 'Вероисповедание', 'Национальность', 'Погребение', 'Причина смерти']
+const FACT_KINDS = ['Occupation', 'Residence', 'Education', 'Christening', 'Military service', 'Service_daemon', 'Award', 'Wound', 'Captivity', 'Move', 'Estate', 'Title', 'Membership', 'Languages', 'Physical description', 'Religion', 'Nationality', 'Burial', 'Cause of death']
 
 /** Where genealogical records usually come from; the kind fills the title in one click. */
 const SOURCE_RELIABILITY: Record<string, Reliability> = { 'Метрическая книга': 'original', 'Перепись': 'original', 'Архив ЗАГС': 'original', 'Военный архив': 'original', 'Семейный документ': 'original', 'Рассказ родных': 'witness' }
 
-const SOURCE_KINDS = ['Метрическая книга', 'Перепись', 'Архив ЗАГС', 'Военный архив', 'Семейный документ', 'Рассказ родных', '']
+const SOURCE_KINDS = ['Parish register', 'Census', 'Civil registry', 'Military archive', 'Family document', 'Family account', '']
 
 /** One source: where it is, its reference, the sheet and a link. Saved when a field loses focus. */
 function SourceRow({ source, readOnly, fresh, onChange, onRemove }: { source: Source; readOnly: boolean; fresh: boolean; onChange: (s: Source) => void; onRemove: () => void }) {
   const { t } = useApp()
   const [s, setS] = useState(source)
   // A family account has no archive reference to ask for.
-  const personal = [t('Рассказ родных'), t('Семейный документ')].includes(s.title)
+  const personal = [t('Family account'), t('Family document')].includes(s.title)
   const { data: repos = [] } = useRepositories()
   const repoName = repos.find((r) => r.id === s.repositoryId)?.name ?? ''
   useEffect(() => setS(source), [source])
@@ -176,32 +176,32 @@ function SourceRow({ source, readOnly, fresh, onChange, onRemove }: { source: So
   )
   return (
     <div className="group relative rounded-md border border-border px-2.5 py-1.5 flex flex-col gap-1 min-w-0">
-      <div className="pr-6 max-sm:pr-9">{field('title', 'Название источника', 'font-medium', fresh && !source.title)}</div>
+      <div className="pr-6 max-sm:pr-9">{field('title', 'Source name', 'font-medium', fresh && !source.title)}</div>
       <div className="grid grid-cols-[64px_minmax(0,1fr)] gap-x-2 gap-y-0.5 items-baseline">
-        <span className="text-xs text-ink-faint">{t('Что это')}</span>
+        <span className="text-xs text-ink-faint">{t('Kind')}</span>
         {readOnly
           ? <span className="text-ink-soft">{t(RELIABILITY[s.reliability ?? 'copy'])}</span>
-          : <Select look="quiet" aria-label={t('Что это')} value={s.reliability ?? 'copy'} onChange={(v) => { const next = { ...s, reliability: v as Reliability }; setS(next); onChange(next) }} options={Object.entries(RELIABILITY).map(([k, v]) => ({ value: k, label: t(v) }))} />}
-        {row(personal ? 'Подробнее' : 'Шифр', 'ref', personal ? 'кто рассказал или где хранится' : 'фонд, опись, дело', fresh && !!source.title)}
-        {!personal && row('Лист', 'page', 'например, 12')}
-        {row('Ссылка', 'url', 'https://…')}
-        {!personal && row('Запись', 'record', 'номер записи, строка')}
-        {row('Дата документа', 'date', 'когда составлен')}
+          : <Select look="quiet" aria-label={t('Kind')} value={s.reliability ?? 'copy'} onChange={(v) => { const next = { ...s, reliability: v as Reliability }; setS(next); onChange(next) }} options={Object.entries(RELIABILITY).map(([k, v]) => ({ value: k, label: t(v) }))} />}
+        {row(personal ? 'Details_more' : 'Reference', 'ref', personal ? 'who told it or where it is kept' : 'collection, series, file', fresh && !!source.title)}
+        {!personal && row('Page_sheet', 'page', 'e.g. 12')}
+        {row('Link_url', 'url', 'https://…')}
+        {!personal && row('Entry', 'record', 'entry number, line')}
+        {row('Date of the document', 'date', 'when it was written')}
         {!personal && (repoName || !readOnly) && (
           <>
-            <span className="text-xs text-ink-faint">{t('Архив')}</span>
+            <span className="text-xs text-ink-faint">{t('Archive')}</span>
             {readOnly
               ? <span className="text-ink-soft break-anywhere">{repoName}</span>
-              : <Select look="quiet" aria-label={t('Архив')} value={s.repositoryId ?? ''} onChange={(v) => { const next = { ...s, repositoryId: v || undefined }; setS(next); onChange(next) }} options={[{ value: '', label: repos.length ? t('Не выбран') : t('Архивы добавляются в «Даты, места и архивы»') }, ...repos.map((r) => ({ value: r.id, label: r.name }))]} />}
+              : <Select look="quiet" aria-label={t('Archive')} value={s.repositoryId ?? ''} onChange={(v) => { const next = { ...s, repositoryId: v || undefined }; setS(next); onChange(next) }} options={[{ value: '', label: repos.length ? t('Not chosen') : t('Archives are added under «Dates, places and archives»') }, ...repos.map((r) => ({ value: r.id, label: r.name }))]} />}
           </>
         )}
       </div>
       {(s.transcription || !readOnly) && (
         <details className="text-sm" open={!!s.transcription && readOnly}>
-          <summary className="cursor-pointer text-xs text-ink-faint">{t('Расшифровка записи')}{s.transcription ? '' : ` (${t('пусто')})`}</summary>
+          <summary className="cursor-pointer text-xs text-ink-faint">{t('Transcription')}{s.transcription ? '' : ` (${t('empty')})`}</summary>
           {readOnly
             ? <p className="mt-1 whitespace-pre-wrap break-anywhere">{s.transcription}</p>
-            : <GrowText value={s.transcription ?? ''} placeholder={t('Текст записи, как читается')} aria-label={t('Расшифровка записи')} className="mt-1 w-full text-ink" onChange={(e) => setS({ ...s, transcription: e.target.value })} onBlur={commit} />}
+            : <GrowText value={s.transcription ?? ''} placeholder={t('The record as it reads')} aria-label={t('Transcription')} className="mt-1 w-full text-ink" onChange={(e) => setS({ ...s, transcription: e.target.value })} onBlur={commit} />}
         </details>
       )}
       {!readOnly && <RowRemove onRemove={onRemove} />}
@@ -209,9 +209,9 @@ function SourceRow({ source, readOnly, fresh, onChange, onRemove }: { source: So
   )
 }
 
-const NAME_LABELS: Partial<Record<ClaimField, string>> = { givenName: 'Имя', patronymic: 'Отчество', surname: 'Фамилия', maidenName: 'Девичья фамилия' }
+const NAME_LABELS: Partial<Record<ClaimField, string>> = { givenName: 'Given name', patronymic: 'Patronymic', surname: 'Surname', maidenName: 'Maiden name' }
 
-const REJECT_REASONS = ['опечатка', 'другой человек', 'опровергнуто документом']
+const REJECT_REASONS = ['typo', 'another person', 'disproved by a document']
 
 /** Under a value: where it comes from and whether others disagree. A click opens all its versions. */
 function Versions({ person, field, current, change, attach }: { person: Person; field: ClaimField; current: () => Person; change: (p: ClaimPatch) => void; attach: (s: Source) => void }) {
@@ -236,14 +236,14 @@ function Versions({ person, field, current, change, attach }: { person: Person; 
     then(id || null)
   }
   const sourceSelect = (selected: string | null, onPick: (id: string | null) => void) => (
-    <Select look="quiet" aria-label={t('Источник')} value={selected ?? ''} onChange={(v) => pick(v, onPick)} options={[{ value: '', label: t('Указать источник') }, ...known.map((s) => ({ value: s.id ?? '', label: s.title || t('Без названия') }))]} />
+    <Select look="quiet" aria-label={t('Source')} value={selected ?? ''} onChange={(v) => pick(v, onPick)} options={[{ value: '', label: t('add a source') }, ...known.map((s) => ({ value: s.id ?? '', label: s.title || t('Untitled') }))]} />
   )
   const unclaimedName = NAME_FIELDS.includes(field) && !person.claims.some((c) => c.field === field)
-  const sourceWord = '+ источник'
-  const otherWord = '+ другой вариант'
+  const sourceWord = '+ source'
+  const otherWord = '+ another version'
   // Nothing written yet means nothing to source: four empty links in a row said nothing.
   if (!main && !list.length) return null
-  const label = conflict ? `⚠ +${others} ${mainSource?.title ?? t('Указать источник')}` : mainSource ? `${others ? `+${others} ` : ''}${mainSource.title}` : unclaimedName || main ? t(sourceWord) : t(otherWord)
+  const label = conflict ? `⚠ +${others} ${mainSource?.title ?? t('add a source')}` : mainSource ? `${others ? `+${others} ` : ''}${mainSource.title}` : unclaimedName || main ? t(sourceWord) : t(otherWord)
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -256,17 +256,17 @@ function Versions({ person, field, current, change, attach }: { person: Person; 
           return (
             <div key={c.id} className={cn('rounded-md border border-border px-2 py-1.5 flex flex-col gap-1', off && 'opacity-60')}>
               <label className="flex items-center gap-2 min-w-0">
-                {!off && canEdit && <input type="radio" name={`main-${field}`} className="accent-[var(--ink)] size-4 flex-none" checked={c.status === 'accepted'} aria-label={t('Основное значение')} onChange={() => change(accept(current(), field, c.id))} />}
+                {!off && canEdit && <input type="radio" name={`main-${field}`} className="accent-[var(--ink)] size-4 flex-none" checked={c.status === 'accepted'} aria-label={t('Main value')} onChange={() => change(accept(current(), field, c.id))} />}
                 <span className={cn('break-anywhere min-w-0', off ? 'line-through' : 'font-medium')}>{c.value}</span>
-                <span className="ml-auto flex-none text-xs text-ink-faint">{t(off ? 'отвергнуто' : c.status === 'accepted' ? 'основное' : 'возможно')}</span>
+                <span className="ml-auto flex-none text-xs text-ink-faint">{t(off ? 'rejected' : c.status === 'accepted' ? 'main' : 'possible')}</span>
               </label>
-              {off && c.reason && <span className="text-xs text-ink-soft">{t('Причина')}: {c.reason}</span>}
+              {off && c.reason && <span className="text-xs text-ink-soft">{t('Reason')}: {c.reason}</span>}
               <div className="flex flex-wrap items-center gap-x-2 min-w-0 text-xs text-ink-soft">
                 {canEdit && !off ? sourceSelect(c.sourceId, (id) => change(setSource(current(), field, c.id, id))) : source && <span className="break-anywhere min-w-0">{source.title}</span>}
                 {source && <span className="flex-none text-ink-faint">{t(RELIABILITY[source.reliability ?? 'copy'])}</span>}
                 {canEdit && (off
-                  ? <button className="pick ml-auto flex-none hover:text-ink" onClick={() => change(restore(current(), field, c.id))}>{t('Вернуть')}</button>
-                  : <button className="pick ml-auto flex-none hover:text-destructive" onClick={() => setRejecting(rejecting === c.id ? null : c.id)}>{t('Отвергнуть')}</button>)}
+                  ? <button className="pick ml-auto flex-none hover:text-ink" onClick={() => change(restore(current(), field, c.id))}>{t('Restore')}</button>
+                  : <button className="pick ml-auto flex-none hover:text-destructive" onClick={() => setRejecting(rejecting === c.id ? null : c.id)}>{t('Reject_refuse')}</button>)}
               </div>
               {rejecting === c.id && (
                 <div className="flex flex-wrap gap-1">
@@ -278,12 +278,12 @@ function Versions({ person, field, current, change, attach }: { person: Person; 
         })}
         {canEdit && (
           <form className="flex flex-col gap-1.5" onSubmit={(e) => { e.preventDefault(); const v = value.trim(); if (!v) return; change(addVersion(current(), field, v, pending)); setValue(''); setPending(null) }}>
-            <input value={value} onChange={(e) => setValue(e.target.value)} placeholder={t('Другая версия значения')} aria-label={t('Другая версия значения')} className={inputClass} />
+            <input value={value} onChange={(e) => setValue(e.target.value)} placeholder={t('Another version of the value')} aria-label={t('Another version of the value')} className={inputClass} />
             <div className="flex items-center gap-2 min-w-0">
               {sourceSelect(pending, setPending)}
-              <button className="bar-btn border border-border ml-auto flex-none" disabled={!value.trim()}>{t('Добавить')}</button>
+              <button className="bar-btn border border-border ml-auto flex-none" disabled={!value.trim()}>{t('Add')}</button>
             </div>
-            {!known.length && <p className="text-xs text-ink-faint">{t('Источники добавляются ниже, в разделе «Источники»')}</p>}
+            {!known.length && <p className="text-xs text-ink-faint">{t('Add sources below, under Sources')}</p>}
           </form>
         )}
       </PopoverContent>
@@ -308,29 +308,29 @@ function LifeLine({ person }: { person: Person }) {
   if (events.length < 2 && !undated.length) return null
   return (
     <details className="group">
-      <summary className="cursor-pointer text-base font-medium">{t('Хронология жизни')}</summary>
+      <summary className="cursor-pointer text-base font-medium">{t('Life in order')}</summary>
       <ol className="mt-1.5 flex flex-col gap-1.5 border-l border-border pl-3 text-sm">
         {events.map((e, i) => (
           <li key={i} className="min-w-0">
-            <span className="font-medium">{e.date}</span>{e.age !== null && <span className="text-ink-soft"> · {t('возраст')} {e.age}</span>}
+            <span className="font-medium">{e.date}</span>{e.age !== null && <span className="text-ink-soft"> · {t('age')} {e.age}</span>}
             <span className="block break-anywhere">{t(e.title)}{e.note && ': '}{e.otherId ? <button className="pick underline underline-offset-2 hover:text-ink" onClick={() => focus(e.otherId, { center: true })}>{e.note}</button> : e.note}</span>
-            {e.place !== null && (e.place ? <span className="block break-anywhere text-ink-soft">📍 {e.place}</span> : <span className="block text-xs italic text-ink-faint">📍 {t('Место неизвестно')}</span>)}
+            {e.place !== null && (e.place ? <span className="block break-anywhere text-ink-soft">📍 {e.place}</span> : <span className="block text-xs italic text-ink-faint">📍 {t('Place unknown')}</span>)}
           </li>
         ))}
         {undated.length > 0 && (
           <li className="min-w-0">
-            <span className="font-medium italic text-ink-soft">{t('Без даты')}</span>
+            <span className="font-medium italic text-ink-soft">{t('Undated')}</span>
             {undated.map((e, i) => (
               <span key={i} className="block break-anywhere text-ink-soft">{t(e.title)}{e.note && ': '}{e.note}{e.place && ` · ${e.place}`}</span>
             ))}
           </li>
         )}
       </ol>
-      {marks.length > 0 && <button type="button" className="pick mt-2 text-sm underline underline-offset-2 hover:text-ink" onClick={() => setMap(!map)}>{t(map ? 'Скрыть карту' : 'Места жизни на карте')}</button>}
+      {marks.length > 0 && <button type="button" className="pick mt-2 text-sm underline underline-offset-2 hover:text-ink" onClick={() => setMap(!map)}>{t(map ? 'Hide the map' : 'Places of this life on a map')}</button>}
       {map && <PlaceMap marks={marks} path onPerson={(id) => focus(id, { center: true })} className="mt-2 h-64" />}
       {unplaced.length > 0 && (
         <p className="mt-1.5 text-xs text-ink-soft break-anywhere">
-          {t('не на карте')}: {unplaced.map((u) => `${t(u.what)}${u.date ? ` ${u.date}` : ''}, ${u.text} — ${t(u.why === 'unknown' ? 'нет в списке мест' : u.why === 'no-date' ? 'нет года' : u.why === 'ambiguous' ? 'несколько мест с таким названием' : 'у места нет координат')}`).join(' · ')}
+          {t('not on the map')}: {unplaced.map((u) => `${t(u.what)}${u.date ? ` ${u.date}` : ''}, ${u.text} — ${t(u.why === 'unknown' ? 'not among the places' : u.why === 'no-date' ? 'no year' : u.why === 'ambiguous' ? 'several places have this name' : 'place has no coordinates')}`).join(' · ')}
         </p>
       )}
     </details>
@@ -374,39 +374,39 @@ export function Details({ person, patch: send }: { person: Person; patch: (p: Pa
     <div className="@container px-4 pb-5 flex flex-col gap-4 text-sm">
       {(card.documented + card.told + card.conflict > 0) && (
         <p className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
-          {card.conflict > 0 && <span className="text-destructive">⚠ {t('расхождений')}: {card.conflict}</span>}
-          {card.documented > 0 && <span className="text-ink-soft">{t('по документу')}: {card.documented}</span>}
-          {card.told > 0 && <span className="text-ink-soft">{t('со слов')}: {card.told}</span>}
+          {card.conflict > 0 && <span className="text-destructive">⚠ {t('conflicts')}: {card.conflict}</span>}
+          {card.documented > 0 && <span className="text-ink-soft">{t('documented')}: {card.documented}</span>}
+          {card.told > 0 && <span className="text-ink-soft">{t('by word of mouth')}: {card.told}</span>}
         </p>
       )}
 
       <div className="grid grid-cols-[104px_minmax(0,1fr)_minmax(0,1fr)] @max-[440px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 @max-[440px]:gap-x-2 gap-y-2 items-baseline">
-        <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Жив или нет')}</div>
+        <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Status')}</div>
         <div className="col-span-2 @max-[440px]:col-span-2 flex flex-wrap items-center gap-2">
-          <Segmented label={t('Жив или нет')} disabled={ro} value={alive ? 'alive' : 'dead'} onChange={(v) => { patch({ living: v === 'alive' }); if (v === 'dead') setTimeout(() => document.getElementById('f-death-date')?.focus(), 80) }} options={[['alive', t(u ? 'Жив(а)' : f ? 'Жива' : 'Жив')], ['dead', t(u ? 'Умер(ла)' : f ? 'Умерла' : 'Умер')]]} />
-          {years !== null && years >= 0 && <span className="text-ink-soft">{alive ? ageWords(years, lang) : `${t('Возраст при смерти')}: ${ageWords(years, lang)}`}</span>}
+          <Segmented label={t('Status')} disabled={ro} value={alive ? 'alive' : 'dead'} onChange={(v) => { patch({ living: v === 'alive' }); if (v === 'dead') setTimeout(() => document.getElementById('f-death-date')?.focus(), 80) }} options={[['alive', t(u ? 'Living_either' : f ? 'Living_female' : 'Living_male')], ['dead', t(u ? 'Deceased_either' : f ? 'Deceased_female' : 'Deceased')]]} />
+          {years !== null && years >= 0 && <span className="text-ink-soft">{alive ? ageWords(years, lang) : `${t('lived')}: ${ageWords(years, lang)}`}</span>}
         </div>
 
         <span className="@max-[440px]:hidden" />
-        <span className="text-xs text-ink-soft @max-[440px]:hidden">{t('Дата')}</span>
-        <span className="text-xs text-ink-soft @max-[440px]:hidden">{t('Место')}</span>
+        <span className="text-xs text-ink-soft @max-[440px]:hidden">{t('Date')}</span>
+        <span className="text-xs text-ink-soft @max-[440px]:hidden">{t('Place')}</span>
 
-        <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Рождение')}</div>
-        <span className="text-xs text-ink-soft @min-[441px]:hidden -mb-1.5">{t('Дата')}</span>
-        <span className="text-xs text-ink-soft @min-[441px]:hidden -mb-1.5">{t('Место')}</span>
-        <span className="flex min-w-0 flex-col"><DateField id="f-birth-date" readOnly={ro} value={person.birthDate} placeholder={t('например, 1890')} onSave={saveClaimField('birthDate')} /><DateHint date={person.birthDate} field="birth" person={person} onFix={ro ? undefined : saveClaimField('birthDate')} /></span>
-        <span className="flex min-w-0 flex-col"><Field id="f-birth-place" suggestions={places} readOnly={ro} value={person.birthPlace} placeholder={t('например, Пермь')} onSave={saveClaimField('birthPlace')} /><PlaceHint text={person.birthPlace} placeId={person.birthPlaceId} onPick={ro ? undefined : (birthPlaceId) => patch({ birthPlaceId })} /></span>
+        <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Birth')}</div>
+        <span className="text-xs text-ink-soft @min-[441px]:hidden -mb-1.5">{t('Date')}</span>
+        <span className="text-xs text-ink-soft @min-[441px]:hidden -mb-1.5">{t('Place')}</span>
+        <span className="flex min-w-0 flex-col"><DateField id="f-birth-date" readOnly={ro} value={person.birthDate} placeholder={t('e.g. 1890_comma')} onSave={saveClaimField('birthDate')} /><DateHint date={person.birthDate} field="birth" person={person} onFix={ro ? undefined : saveClaimField('birthDate')} /></span>
+        <span className="flex min-w-0 flex-col"><Field id="f-birth-place" suggestions={places} readOnly={ro} value={person.birthPlace} placeholder={t('e.g. Paris')} onSave={saveClaimField('birthPlace')} /><PlaceHint text={person.birthPlace} placeId={person.birthPlaceId} onPick={ro ? undefined : (birthPlaceId) => patch({ birthPlaceId })} /></span>
         <span className="@max-[440px]:hidden" />
         <Versions person={person} field="birthDate" current={current} change={change} attach={attachSource} />
         <Versions person={person} field="birthPlace" current={current} change={change} attach={attachSource} />
 
         {!alive && (
           <>
-            <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Смерть')}</div>
-        <span className="text-xs text-ink-soft @min-[441px]:hidden -mb-1.5">{t('Дата')}</span>
-        <span className="text-xs text-ink-soft @min-[441px]:hidden -mb-1.5">{t('Место')}</span>
-            <span className="flex min-w-0 flex-col"><DateField id="f-death-date" readOnly={ro} value={person.deathDate} placeholder={t('например, 1950')} onSave={saveClaimField('deathDate')} /><DateHint date={person.deathDate} field="death" person={person} onFix={ro ? undefined : saveClaimField('deathDate')} /></span>
-            <span className="flex min-w-0 flex-col"><Field id="f-death-place" suggestions={places} readOnly={ro} value={person.deathPlace} placeholder={t('например, Пермь')} onSave={saveClaimField('deathPlace')} /><PlaceHint text={person.deathPlace} placeId={person.deathPlaceId} onPick={ro ? undefined : (deathPlaceId) => patch({ deathPlaceId })} /></span>
+            <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Death')}</div>
+        <span className="text-xs text-ink-soft @min-[441px]:hidden -mb-1.5">{t('Date')}</span>
+        <span className="text-xs text-ink-soft @min-[441px]:hidden -mb-1.5">{t('Place')}</span>
+            <span className="flex min-w-0 flex-col"><DateField id="f-death-date" readOnly={ro} value={person.deathDate} placeholder={t('e.g. 1950_comma')} onSave={saveClaimField('deathDate')} /><DateHint date={person.deathDate} field="death" person={person} onFix={ro ? undefined : saveClaimField('deathDate')} /></span>
+            <span className="flex min-w-0 flex-col"><Field id="f-death-place" suggestions={places} readOnly={ro} value={person.deathPlace} placeholder={t('e.g. Paris')} onSave={saveClaimField('deathPlace')} /><PlaceHint text={person.deathPlace} placeId={person.deathPlaceId} onPick={ro ? undefined : (deathPlaceId) => patch({ deathPlaceId })} /></span>
             <span className="@max-[440px]:hidden" />
             <Versions person={person} field="deathDate" current={current} change={change} attach={attachSource} />
             <Versions person={person} field="deathPlace" current={current} change={change} attach={attachSource} />
@@ -415,18 +415,18 @@ export function Details({ person, patch: send }: { person: Person; patch: (p: Pa
 
         {(person.otherNames || !ro) && (
           <>
-            <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Другие имена')}</div>
-            <div className="col-span-2 @max-[440px]:col-span-2"><Field readOnly={ro} value={person.otherNames} placeholder={t('прозвище, имя в крещении')} onSave={save('otherNames')} /></div>
+            <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Other names')}</div>
+            <div className="col-span-2 @max-[440px]:col-span-2"><Field readOnly={ro} value={person.otherNames} placeholder={t('nickname, baptismal name')} onSave={save('otherNames')} /></div>
           </>
         )}
 
-        <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Пол')}</div>
-        <div className="col-span-2 @max-[440px]:col-span-2"><Segmented id="f-sex" label={t('Пол')} disabled={ro} value={person.sex} onChange={(sex) => patch({ sex })} options={[['M', t('Мужской')], ['F', t('Женский')], ['U', t('Неизвестно')]]} /></div>
+        <div className="text-ink-soft @max-[440px]:col-span-2 @max-[440px]:-mb-1">{t('Sex')}</div>
+        <div className="col-span-2 @max-[440px]:col-span-2"><Segmented id="f-sex" label={t('Sex')} disabled={ro} value={person.sex} onChange={(sex) => patch({ sex })} options={[['M', t('Male')], ['F', t('Female')], ['U', t('Unknown')]]} /></div>
       </div>
 
       {(canEdit || person.claims.some((c) => NAME_LABELS[c.field])) && (
         <details open={NAME_FIELDS.some((f) => hasConflict(person, f))} className="text-sm">
-          <summary className="cursor-pointer text-base font-medium min-h-6">{t('Откуда известно имя')}</summary>
+          <summary className="cursor-pointer text-base font-medium min-h-6">{t('Where the name comes from')}</summary>
           <div className="grid grid-cols-[104px_minmax(0,1fr)_minmax(0,1fr)] @max-[440px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 gap-y-1 items-center mt-1">
             {NAME_FIELDS.filter((f) => person[f as keyof Person]).map((f) => (
               <Fragment key={f}>
@@ -439,14 +439,14 @@ export function Details({ person, patch: send }: { person: Person; patch: (p: Pa
         </details>
       )}
 
-      {badOrder && <p role="alert" className="text-xs text-destructive">{t('Дата смерти раньше даты рождения: проверьте годы')}</p>}
-      {tooOld && canEdit && <p className="text-xs text-ink-soft">{t('Больше 110 лет.')} <button className="underline hover:text-ink" onClick={() => patch({ living: false })}>{t('Отметить как умершего')}</button></p>}
+      {badOrder && <p role="alert" className="text-xs text-destructive">{t('Death date is before birth date: check the years')}</p>}
+      {tooOld && canEdit && <p className="text-xs text-ink-soft">{t('Over 110 years old.')} <button className="underline hover:text-ink" onClick={() => patch({ living: false })}>{t('Mark as deceased')}</button></p>}
 
       <LifeLine person={person} />
 
       {(person.facts.length > 0 || !ro) && (
         <section className="flex flex-col gap-1.5">
-          <h4 className="text-base font-medium">{t('Факты')}</h4>
+          <h4 className="text-base font-medium">{t('Facts')}</h4>
           {(ro ? [...person.facts].sort((a, b) => (yearOf(a.date) ?? 9999) - (yearOf(b.date) ?? 9999)) : person.facts).map((fact, i) => (
             <FactRow
               key={i}
@@ -460,13 +460,13 @@ export function Details({ person, patch: send }: { person: Person; patch: (p: Pa
               onRemove={() => edit('facts', (list) => list.filter((_, j) => j !== i))}
             />
           ))}
-          {!ro && <AddMenu label={t('Добавить факт')} items={[...FACT_KINDS.map((k): [string, string] => [k, t(k)]), ['', t('Другое')]]} onPick={(k) => { setFresh(writer.get('facts').length); edit('facts', (list) => [...list, { id: Math.random().toString(36).slice(2, 10), kind: k && t(k), date: '', place: '', note: '', source: '' }]) }} />}
+          {!ro && <AddMenu label={t('Add a fact')} items={[...FACT_KINDS.map((k): [string, string] => [k, t(k)]), ['', t('Other_neuter')]]} onPick={(k) => { setFresh(writer.get('facts').length); edit('facts', (list) => [...list, { id: Math.random().toString(36).slice(2, 10), kind: k && t(k), date: '', place: '', note: '', source: '' }]) }} />}
         </section>
       )}
 
       {(person.sources.length > 0 || !ro) && (
         <section className="flex flex-col gap-1.5">
-          <h4 id="f-sources" tabIndex={-1} className="text-base font-medium">{t('Источники')}</h4>
+          <h4 id="f-sources" tabIndex={-1} className="text-base font-medium">{t('Sources_plural')}</h4>
           {person.sources.map((source, i) => (
             <SourceRow
               key={i}
@@ -477,27 +477,27 @@ export function Details({ person, patch: send }: { person: Person; patch: (p: Pa
               onRemove={() => edit('sources', (list) => list.filter((_, j) => j !== i))}
             />
           ))}
-          {!ro && <AddMenu label={t('Добавить источник')} items={SOURCE_KINDS.map((k): [string, string] => [k, k ? t(k) : t('Другой источник')])} onPick={(k) => { setFreshSource(writer.get('sources').length); edit('sources', (list) => [...list, { id: Math.random().toString(36).slice(2, 10), title: k && t(k), ref: '', page: '', url: '', reliability: SOURCE_RELIABILITY[k] ?? 'copy' }]) }} />}
+          {!ro && <AddMenu label={t('Add a source')} items={SOURCE_KINDS.map((k): [string, string] => [k, k ? t(k) : t('Another source')])} onPick={(k) => { setFreshSource(writer.get('sources').length); edit('sources', (list) => [...list, { id: Math.random().toString(36).slice(2, 10), title: k && t(k), ref: '', page: '', url: '', reliability: SOURCE_RELIABILITY[k] ?? 'copy' }]) }} />}
         </section>
       )}
 
       {!ro && alive && !me.guest && <ContactsBlock personId={person.id} />}
       {/* Who may see it, after what it says. */}
 
-      {!ro && !alive && <SwitchRow title={t('Скрыть от читателей')} description={t('Карточку, страницы и рассказы увидят только редакторы, как у живых.')} checked={!!person.keepPrivate} onChange={(on) => patch({ keepPrivate: on })} />}
+      {!ro && !alive && <SwitchRow title={t('Hide from readers')} description={t('Only editors will see the card, its pages and stories, as with the living.')} checked={!!person.keepPrivate} onChange={(on) => patch({ keepPrivate: on })} />}
 
-      {ro && person.keepPrivate && <p className="text-xs text-ink-soft">{t('Скрыт от читателей')}</p>}
+      {ro && person.keepPrivate && <p className="text-xs text-ink-soft">{t('Hidden from readers')}</p>}
 
 
       {(shownTags(person.tags).length > 0 || !ro) && (
         <section className="flex flex-col gap-1.5">
-          <h4 className="text-base font-medium">{t('Группы')}</h4>
-          {!ro && <p className="text-xs text-ink-soft">{t('Например: родня по отцу. Помогает показывать людей вместе.')}</p>}
+          <h4 className="text-base font-medium">{t('Groups')}</h4>
+          {!ro && <p className="text-xs text-ink-soft">{t('For example, the father\'s side. Shows people together.')}</p>}
           <div className="flex flex-wrap gap-1.5 items-center">
             {shownTags(person.tags).map((tag) => (
               <span key={tag} className="flex items-center gap-0.5 rounded-2xl bg-muted pl-2.5 pr-0.5 min-h-6 text-xs break-anywhere min-w-0">
                 {tag}
-                {!ro && <button aria-label={`${t('Удалить')}: ${tag}`} className="grid place-items-center size-6 flex-none text-ink-faint hover:text-destructive" onClick={() => edit('tags', (list) => list.filter((x) => x !== tag))}><X size={11} /></button>}
+                {!ro && <button aria-label={`${t('Delete')}: ${tag}`} className="grid place-items-center size-6 flex-none text-ink-faint hover:text-destructive" onClick={() => edit('tags', (list) => list.filter((x) => x !== tag))}><X size={11} /></button>}
               </span>
             ))}
             {!ro && <TagInput existing={person.tags} onAdd={(tag) => edit('tags', (list) => [...list, tag])} />}
@@ -507,7 +507,7 @@ export function Details({ person, patch: send }: { person: Person; patch: (p: Pa
 
       {!ro && (
         <PersonPopover onPick={setSameAs} exclude={[person.id]}>
-          <button className="self-start text-xs text-ink-soft underline underline-offset-2 hover:text-ink">{t('Объединить с другой карточкой…')}</button>
+          <button className="self-start text-xs text-ink-soft underline underline-offset-2 hover:text-ink">{t('Merge with another card…')}</button>
         </PersonPopover>
       )}
       {sameAs && <MergeDialog a={person.id} b={sameAs} onClose={() => setSameAs(null)} />}

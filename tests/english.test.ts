@@ -83,8 +83,8 @@ export function cyrillicOutsideStrings(text: string) {
 
 describe('the repository is in English', () => {
   it('in documentation, except the Russian readme and guides', () => {
-    const bad = files.filter((f) => DOCS.test(f) && !f.endsWith('.ru.md') && CYRILLIC.test(fs.readFileSync(f, 'utf8')
-      // A Russian example of what a person types may be quoted: «…», "…" or `…`.
+    const bad = files.filter((f) => DOCS.test(f) && !f.endsWith('.ru.md') && !f.startsWith('locales/glossary/') && CYRILLIC.test(fs.readFileSync(f, 'utf8')
+      // A language's glossary is written with its own words. A Russian example of what a person types may be quoted: «…», "…" or `…`.
       .replace(/«[^»\n]*»|"[^"\n]*"|`[^`\n]*`/g, '')
       // A link to the Russian version is named in Russian, as people look for it.
       .replace(/\[[^\]]*\]\([^)]*\.ru\.md\)/g, '')))

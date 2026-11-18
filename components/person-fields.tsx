@@ -45,7 +45,7 @@ export function ReadText({ value, className }: { value: string; className?: stri
 export function OpenAddress({ value }: { value: string }) {
   const { t } = useApp()
   if (!isUrl(value)) return null
-  return <a href={value.trim()} target="_blank" rel="noreferrer noopener" aria-label={t('Открыть ссылку')} title={t('Открыть ссылку')} className="flex-none grid place-items-center size-6 [@media(pointer:coarse)]:size-10 text-ink-soft hover:text-ink"><ExternalLink size={13} /></a>
+  return <a href={value.trim()} target="_blank" rel="noreferrer noopener" aria-label={t('Open the link')} title={t('Open the link')} className="flex-none grid place-items-center size-6 [@media(pointer:coarse)]:size-10 text-ink-soft hover:text-ink"><ExternalLink size={13} /></a>
 }
 
 /** A button that opens a short list, for adding something: an action, not a field holding a value. */
@@ -91,7 +91,7 @@ export function Field({ value, onSave, placeholder, className, readOnly, id, sug
           if (v === value) return
           // Someone changed it while this was being typed: theirs stands, and what was typed is not lost from view.
           if (started !== null && started !== value) {
-            notify(`${t('Это только что изменили на другом устройстве или другой человек. Показано новое, проверьте его.')} ${t('Ваш вариант')}: ${v}`)
+            notify(`${t('This was just changed on another device or by someone else. The new version is shown; please check it.')} ${t('What you typed')}: ${v}`)
             return setV(value)
           }
           onSave(v)
@@ -112,7 +112,7 @@ export function Hints({ items, onPick }: { items: string[]; onPick: (value: stri
   )
 }
 
-export const CERTAINTY: Record<Certainty, string> = { documented: 'по документу', family: 'со слов семьи', assumed: 'предположение' }
+export const CERTAINTY: Record<Certainty, string> = { documented: 'documented', family: 'family account', assumed: 'assumption' }
 
 /** Adds a label on Enter; suggests existing ones so the same group is reused, not retyped. */
 export function TagInput({ existing, onAdd }: { existing: string[]; onAdd: (tag: string) => void }) {
@@ -129,8 +129,8 @@ export function TagInput({ existing, onAdd }: { existing: string[]; onAdd: (tag:
     <span className="relative">
       <input
         value={v}
-        placeholder={t('Название группы')}
-        aria-label={t('Название группы')}
+        placeholder={t('Group or label')}
+        aria-label={t('Group or label')}
         onChange={(e) => setV(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(hint[0] ?? v) } }}
         onBlur={() => v.trim() && add(v)}
@@ -145,7 +145,7 @@ export function TagInput({ existing, onAdd }: { existing: string[]; onAdd: (tag:
   )
 }
 
-const QUALIFIERS: [string, string][] = [['', 'точно'], ['~', 'около'], ['<', 'до'], ['>', 'после']]
+const QUALIFIERS: [string, string][] = [['', 'exact'], ['~', 'about'], ['<', 'before'], ['>', 'after']]
 
 /** A date with how sure it is: stored as the "~1890", "<1890", ">1890" that GEDCOM export understands. */
 export function DateField({ value, onSave, readOnly, placeholder, id }: { value: string; onSave: (v: string) => void; readOnly: boolean; placeholder: string; id?: string }) {
@@ -157,7 +157,7 @@ export function DateField({ value, onSave, readOnly, placeholder, id }: { value:
     <div className="flex items-baseline gap-1 min-w-0 w-full">
       {rest && (readOnly
         ? q && <span className="text-ink-soft flex-none">{t(QUALIFIERS.find(([k]) => k === q)![1])}</span>
-        : <Select look="quiet" className="flex-none" aria-label={t('Точность даты')} value={q} onChange={(v) => onSave(v + rest)} options={QUALIFIERS.map(([k, label]) => ({ value: k, label: t(label) }))} />)}
+        : <Select look="quiet" className="flex-none" aria-label={t('Date accuracy')} value={q} onChange={(v) => onSave(v + rest)} options={QUALIFIERS.map(([k, label]) => ({ value: k, label: t(label) }))} />)}
       <Field id={id} readOnly={readOnly} value={rest} placeholder={placeholder} onSave={(v) => onSave(v.trim() ? (/^[~<>]/.test(v) ? v : q + v) : '')} />
     </div>
   )

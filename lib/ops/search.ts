@@ -1,4 +1,6 @@
 // Finding things in the archive: by what is written anywhere, or by exact conditions on people.
+import { collator } from '../languages'
+import { archiveLang } from './app-config'
 import { factWords } from '../fact-kinds'
 import MiniSearch from 'minisearch'
 import { z } from 'zod'
@@ -102,7 +104,7 @@ export function queryPeople(actor: Actor, x: z.infer<typeof queryInput>) {
     && (x.hasSources === undefined || (p.sources.length > 0) === x.hasSources)
     && (x.hasParents === undefined || withParents.has(p.id) === x.hasParents))
   const year = (v: number | null) => v ?? Infinity
-  found.sort(x.sort === 'name' ? (a, b) => fullName(a).localeCompare(fullName(b)) : x.sort === 'death' ? (a, b) => year(a.deathYear) - year(b.deathYear) : (a, b) => year(a.birthYear) - year(b.birthYear))
+  found.sort(x.sort === 'name' ? (a, b) => collator(archiveLang()).compare(fullName(a), fullName(b)) : x.sort === 'death' ? (a, b) => year(a.deathYear) - year(b.deathYear) : (a, b) => year(a.birthYear) - year(b.birthYear))
   const groupKey = (p: Person) => (x.groupBy === 'decade' ? (p.birthYear ? `${Math.floor(p.birthYear / 10) * 10}s` : '') : x.groupBy ? String(p[x.groupBy as 'birthPlace' | 'surname' | 'sex'] ?? '') : '') || 'unknown'
   return {
     total: found.length,

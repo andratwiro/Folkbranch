@@ -135,10 +135,10 @@ export function audioUsed() {
 
 /** Kept exactly as recorded. Nothing here plays it or converts it. */
 export async function storeAudio(buf: Buffer, originalName: string, uploadedBy: string) {
-  if (buf.length > MAX_AUDIO) throw new OpError(413, tell('Запись слишком большая: можно до 50 МБ'))
+  if (buf.length > MAX_AUDIO) throw new OpError(413, tell('The recording is too large: up to 50 MB'))
   const type = soundType(buf)
-  if (!type) throw new OpError(400, tell('Этот файл не похож на звукозапись'))
-  if (audioUsed() + buf.length > audioLimit()) throw new OpError(507, tell('Место для записей голоса закончилось'))
+  if (!type) throw new OpError(400, tell('This file does not look like a sound recording'))
+  if (audioUsed() + buf.length > audioLimit()) throw new OpError(507, tell('The room for voice recordings has run out'))
   const id = newId()
   const filename = `${id}.voice${type.ext}`
   await writeAtomic(mediaFile(filename), buf)
@@ -151,7 +151,7 @@ export function commitUpload(actor: Actor, r: StoredUpload, personId?: string | 
   requireRole(actor, 'editor')
   // The person may have been deleted while the draft waited: a tag must not point at nobody.
   if (personId) getPersonRow(personId)
-  mutate(actor, { summary: `${say('Загрузить фото')}: ${r.originalName}`, personIds: personId ? [personId] : [] }, (c) => {
+  mutate(actor, { summary: `${say('Upload photo')}: ${r.originalName}`, personIds: personId ? [personId] : [] }, (c) => {
     c.insert('media', r)
     if (personId) c.insert('mediaTags', { id: newId(), mediaId: r.id, personId })
   })
@@ -282,7 +282,7 @@ export async function readAvatar(mediaId: string, crop: string | null) {
 export function updateMedia(actor: Actor, id: string, patch: { caption?: string; date?: string; place?: string }) {
   requireRole(actor, 'editor')
   const r = row(id)
-  mutate(actor, { summary: `${say('Подпись')}: ${r.originalName}`, key: `media:${id}` }, (c) => c.update('media', id, patch))
+  mutate(actor, { summary: `${say('Caption')}: ${r.originalName}`, key: `media:${id}` }, (c) => c.update('media', id, patch))
 }
 
 export function deleteMedia(actor: Actor, id: string) {
@@ -292,10 +292,10 @@ export function deleteMedia(actor: Actor, id: string) {
   if (r.kind === 'audio') throw new OpError(400, 'a voice is removed with its story')
   // A biography that still shows this photo would be left with a broken picture.
   const shown = db.select({ id: schema.pages.id }).from(schema.pages).where(sql`instr(${schema.pages.content}, ${`/media/${id}/`}) > 0`).limit(1).get()
-  if (shown) throw new OpError(409, tell('Фото стоит на странице. Сначала уберите его оттуда'))
+  if (shown) throw new OpError(409, tell('This photo is used on a page. Remove it from there first'))
   // Files stay on disk so the deletion can be rolled back.
   const tags = db.select().from(schema.mediaTags).where(eq(schema.mediaTags.mediaId, id)).all()
-  mutate(actor, { summary: `${say('Удалить')}: ${r.originalName}`, personIds: tags.flatMap((t) => t.personId ?? []) }, (c: Changes) => {
+  mutate(actor, { summary: `${say('Delete')}: ${r.originalName}`, personIds: tags.flatMap((t) => t.personId ?? []) }, (c: Changes) => {
     tags.forEach((t) => c.remove('mediaTags', t.id))
     db.select().from(schema.persons).where(eq(schema.persons.avatarMediaId, id)).all().forEach((p) => c.update('persons', p.id, { avatarMediaId: null, avatarCrop: null }))
     c.remove('media', id)
@@ -312,7 +312,7 @@ export function addTag(actor: Actor, mediaId: string, who: { personId?: string |
   // A typo or a stale id would leave a mark that names nobody.
   if (personId) getPersonRow(personId)
   const db = getDb()
-  return mutate(actor, { summary: `${say('Фото')}: ${r.originalName}`, personIds: personId ? [personId] : [] }, (c) => {
+  return mutate(actor, { summary: `${say('Photos_short')}: ${r.originalName}`, personIds: personId ? [personId] : [] }, (c) => {
     // Replace the frameless tag from upload rather than listing the person twice.
     const loose = personId ? db.select().from(schema.mediaTags).where(eq(schema.mediaTags.mediaId, mediaId)).all().find((t) => t.personId === personId && t.x === null) : undefined
     if (loose && box) return c.update('mediaTags', loose.id, { ...box })
@@ -324,5 +324,5 @@ export function removeTag(actor: Actor, id: string) {
   requireRole(actor, 'editor')
   const t = getDb().select().from(schema.mediaTags).where(eq(schema.mediaTags.id, id)).get()
   if (!t) throw new OpError(404, 'not found')
-  mutate(actor, { summary: `${say('Удалить')}: ${say('Фото')}`, personIds: t.personId ? [t.personId] : [] }, (c) => c.remove('mediaTags', id))
+  mutate(actor, { summary: `${say('Delete')}: ${say('Photos_short')}`, personIds: t.personId ? [t.personId] : [] }, (c) => c.remove('mediaTags', id))
 }

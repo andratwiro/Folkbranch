@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button'
 interface Side { id: string; name: string; updatedAt: number; parents: number; children: number; unions: number; pages: number; photos: number; stories: number }
 interface Plan { blocked: string | null; warnings: string[]; fields: { field: string; keep: string; drop: string }[]; keep: Side; drop: Side }
 
-const LABEL: Record<string, string> = { givenName: 'Имя', patronymic: 'Отчество', surname: 'Фамилия', maidenName: 'Девичья фамилия', birthDate: 'Рождение', birthPlace: 'Место рождения', deathDate: 'Смерть', deathPlace: 'Место смерти', sex: 'Пол' }
-const SEX: Record<string, string> = { M: 'Мужской', F: 'Женский', U: 'Неизвестно' }
+const LABEL: Record<string, string> = { givenName: 'Given name', patronymic: 'Patronymic', surname: 'Surname', maidenName: 'Maiden name', birthDate: 'Birth', birthPlace: 'Birthplace', deathDate: 'Death', deathPlace: 'Place of death', sex: 'Sex' }
+const SEX: Record<string, string> = { M: 'Male', F: 'Female', U: 'Unknown' }
 
 /** Side by side, with a choice only where the two cards disagree. Nothing changes until the button is pressed. */
 export function MergeDialog({ a, b, onClose }: { a: string; b: string; onClose: () => void }) {
@@ -23,10 +23,10 @@ export function MergeDialog({ a, b, onClose }: { a: string; b: string; onClose: 
   const [error, setError] = useState('')
   const { data: plan } = useQuery({ queryKey: ['merge', ids[0], ids[1]], queryFn: () => api<Plan>(`merge/preview?keep=${ids[0]}&drop=${ids[1]}`), gcTime: 0 })
   /** Two cards of one person usually carry one name, so the name alone says nothing. */
-  const whose = (side: Side) => { const p = byId.get(side.id); return [side.name || t('Без названия'), p && lifeYears(p)].filter(Boolean).join(', ') }
+  const whose = (side: Side) => { const p = byId.get(side.id); return [side.name || t('Untitled'), p && lifeYears(p)].filter(Boolean).join(', ') }
   const shown = (field: string, v: string) => (field === 'sex' ? t(SEX[v] ?? v) : v)
   const differ = plan?.fields.filter((f) => f.field !== 'otherNames' && f.keep && f.drop && f.keep !== f.drop && !(f.field === 'sex' && (f.keep === 'U' || f.drop === 'U'))) ?? []
-  const moved = plan ? [['Родители', plan.drop.parents], ['Дети', plan.drop.children], ['Супруги', plan.drop.unions], ['Страницы', plan.drop.pages], ['Фото', plan.drop.photos], ['Рассказы', plan.drop.stories]].filter(([, n]) => n) : []
+  const moved = plan ? [['Parents', plan.drop.parents], ['Children', plan.drop.children], ['Spouses', plan.drop.unions], ['Pages', plan.drop.pages], ['Photos_short', plan.drop.photos], ['Stories', plan.drop.stories]].filter(([, n]) => n) : []
   const go = async () => {
     if (!plan) return
     setBusy(true)
@@ -35,7 +35,7 @@ export function MergeDialog({ a, b, onClose }: { a: string; b: string; onClose: 
       const { keepId, historyId } = await api<{ keepId: string; historyId: string }>('merge', { json: { keepId: plan.keep.id, dropId: plan.drop.id, choose, seen: { keep: plan.keep.updatedAt, drop: plan.drop.updatedAt } } })
       await qc.invalidateQueries()
       focus(keepId, { center: true })
-      notify(t('Карточки объединены'), [{ label: t('Отменить'), run: () => { api(`history/${historyId}/undo`, { json: {} }).then(() => qc.invalidateQueries()).catch((e) => notify(String(e.message))) } }])
+      notify(t('Cards merged'), [{ label: t('Undo'), run: () => { api(`history/${historyId}/undo`, { json: {} }).then(() => qc.invalidateQueries()).catch((e) => notify(String(e.message))) } }])
       onClose()
     } catch (e) {
       setError(String((e as Error).message))
@@ -46,18 +46,18 @@ export function MergeDialog({ a, b, onClose }: { a: string; b: string; onClose: 
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
       <DialogContent className="max-w-xl max-h-[calc(100dvh-32px)] overflow-auto">
-        <DialogTitle className="font-serif text-lg font-medium">{t('Объединить карточки')}</DialogTitle>
+        <DialogTitle className="font-serif text-lg font-medium">{t('Merge the cards')}</DialogTitle>
         {plan && (
           <div className="flex min-w-0 flex-col gap-3 text-sm">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="break-anywhere min-w-0"><span className="text-ink-soft">{t('Останется')}:</span> <b className="font-medium">{whose(plan.keep)}</b></span>
-              <button type="button" className="bar-btn border border-border !h-7 flex-none" onClick={() => { setIds([ids[1], ids[0]]); setChoose({}) }}><ArrowLeftRight size={13} /> {t('Поменять местами')}</button>
+              <span className="break-anywhere min-w-0"><span className="text-ink-soft">{t('Stays')}:</span> <b className="font-medium">{whose(plan.keep)}</b></span>
+              <button type="button" className="bar-btn border border-border !h-7 flex-none" onClick={() => { setIds([ids[1], ids[0]]); setChoose({}) }}><ArrowLeftRight size={13} /> {t('Swap')}</button>
             </div>
-            <p className="break-anywhere"><span className="text-ink-soft">{t('Будет убрана')}:</span> {whose(plan.drop)}</p>
-            {plan.blocked && <p role="alert" className="rounded-lg bg-muted px-3 py-2 text-destructive">{t('Объединить нельзя')}: {plan.blocked}</p>}
+            <p className="break-anywhere"><span className="text-ink-soft">{t('Will be removed')}:</span> {whose(plan.drop)}</p>
+            {plan.blocked && <p role="alert" className="rounded-lg bg-muted px-3 py-2 text-destructive">{t('Cannot be merged')}: {plan.blocked}</p>}
             {!plan.blocked && differ.length > 0 && (
               <div className="flex flex-col gap-2">
-                <p className="text-ink-soft">{t('Что считать основным? Другое значение не пропадёт, а останется как другая версия.')}</p>
+                <p className="text-ink-soft">{t('Which is the main one? The other value is not lost: it stays as another version.')}</p>
                 {differ.map((f) => (
                   <fieldset key={f.field} className="min-w-0">
                     <legend className="text-xs text-ink-soft">{t(LABEL[f.field] ?? f.field)}</legend>
@@ -73,13 +73,13 @@ export function MergeDialog({ a, b, onClose }: { a: string; b: string; onClose: 
                 ))}
               </div>
             )}
-            {!plan.blocked && moved.length > 0 && <p className="text-ink-soft">{t('Перейдёт на оставшуюся карточку')}: {moved.map(([k, n]) => `${t(String(k)).toLowerCase()} ${n}`).join(', ')}.</p>}
+            {!plan.blocked && moved.length > 0 && <p className="text-ink-soft">{t('Moves to the card that stays')}: {moved.map(([k, n]) => `${t(String(k)).toLowerCase()} ${n}`).join(', ')}.</p>}
             {plan.warnings.map((w) => <p key={w} className="text-destructive break-anywhere">{w}</p>)}
             {error && <p role="alert" className="text-destructive break-anywhere">{error}</p>}
-            <p className="text-xs text-ink-soft">{t('Вернуть всё как было можно в разделе «История».')}</p>
+            <p className="text-xs text-ink-soft">{t('Everything can be put back in History.')}</p>
             <div className="flex gap-2">
-              <Button type="button" disabled={busy || !!plan.blocked} onClick={go}>{t('Объединить')}</Button>
-              <button type="button" className="bar-btn border border-border" onClick={onClose}>{t('Отмена')}</button>
+              <Button type="button" disabled={busy || !!plan.blocked} onClick={go}>{t('Merge')}</Button>
+              <button type="button" className="bar-btn border border-border" onClick={onClose}>{t('Cancel')}</button>
             </div>
           </div>
         )}

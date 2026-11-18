@@ -82,7 +82,7 @@ export function AiOverview({ onGo }: { onGo: Go }) {
   /** Never $0 for a price nobody knows; ≈ where the figure is ours, not the provider's. */
   const spend = (u: Spend) => (u.dollars === 0 && u.unpriced > 0 ? '—' : `${money(u.dollars)}${u.unpriced > 0 ? '+' : ''}`)
   /** Said under the figure: part of it, or all of it, has no price we know. */
-  const unknown = (u: Spend) => (u.unpriced > 0 ? (u.dollars === 0 ? t('цена неизвестна') : t('часть без цены')) : null)
+  const unknown = (u: Spend) => (u.unpriced > 0 ? (u.dollars === 0 ? t('price unknown') : t('some unpriced')) : null)
   const line = (...parts: (string | null | false | undefined)[]) => parts.filter(Boolean).join(' · ')
   const [now] = useState(() => Date.now())
   // A straight line from the days gone; before the 5th there is too little to draw it.
@@ -97,8 +97,8 @@ export function AiOverview({ onGo }: { onGo: Go }) {
 
   // What each function can be switched to: a service from the list of keys and one of its models.
   const [adding, setAdding] = useState<string | null>(null)
-  const withoutKey = (what: 'assistant' | 'speech') => (keys?.available ?? []).filter((a) => a.can[what] && !keys!.keys.some((k) => k.service === a.service)).map((a) => ({ value: `add|${a.service}`, label: `${t(a.label)} · ${t('добавить ключ')}` }))
-  const speechOptions = [{ value: 'device', label: t('На этом устройстве, бесплатно') }, ...withoutKey('speech'), ...(keys?.keys ?? []).filter((k) => k.can.speech).flatMap((k) => [{ value: `${k.service}|auto`, label: `${t(k.label)} · ${t('самая новая проверенная')}` }, ...(sttPreset(k.service as never)?.models ?? []).map((m) => ({ value: `${k.service}|${m.id}`, label: `${t(k.label)} · ${t(m.label)}` }))])]
+  const withoutKey = (what: 'assistant' | 'speech') => (keys?.available ?? []).filter((a) => a.can[what] && !keys!.keys.some((k) => k.service === a.service)).map((a) => ({ value: `add|${a.service}`, label: `${t(a.label)} · ${t('add a key')}` }))
+  const speechOptions = [{ value: 'device', label: t('On this device, free') }, ...withoutKey('speech'), ...(keys?.keys ?? []).filter((k) => k.can.speech).flatMap((k) => [{ value: `${k.service}|auto`, label: `${t(k.label)} · ${t('newest tested')}` }, ...(sttPreset(k.service as never)?.models ?? []).map((m) => ({ value: `${k.service}|${m.id}`, label: `${t(k.label)} · ${t(m.label)}` }))])]
   const speechValue = speech?.current ? `${speech.current.provider}|${speech.current.model}` : 'device'
   const assistantValue = provider?.connected ? (provider.auto ? `${provider.provider}|auto` : `${provider.provider}|${provider.model}`) : ''
   // "auto" keeps moving to the newest tested model of the line; a named model stays as chosen.
@@ -113,13 +113,13 @@ export function AiOverview({ onGo }: { onGo: Go }) {
   }
   const assistantOptions = [...new Set(choices.map((c) => c.provider))].flatMap((p) => {
     const of = choices.filter((c) => c.provider === p)
-    return [...(of[0].autoPossible ? [{ value: `${p}|auto`, label: `${t(of[0].label)} · ${t('самая новая проверенная')}` }] : []), ...of.map((c) => ({ value: `${c.provider}|${c.model}`, label: `${t(c.label)} · ${c.modelLabel}` }))]
+    return [...(of[0].autoPossible ? [{ value: `${p}|auto`, label: `${t(of[0].label)} · ${t('newest tested')}` }] : []), ...of.map((c) => ({ value: `${c.provider}|${c.model}`, label: `${t(c.label)} · ${c.modelLabel}` }))]
   }).concat(withoutKey('assistant'))
   const pickSpeech = (v: string) => {
     if (v.startsWith('add|')) return setAdding(v.slice(4))
     if (v === 'device') {
       return void (async () => {
-        if (speech?.current && !await confirm(t('Отключить расшифровку в облаке?'), t('Отключить'), t('Редакторы вернутся к моделям на своих устройствах. Выбранная модель и предел минут будут забыты.'))) return
+        if (speech?.current && !await confirm(t('Disconnect cloud transcription?'), t('Disconnect'), t('Editors go back to the models on their devices. The chosen model and the minute limit will be forgotten.'))) return
         await apply(() => api('transcription', { method: 'DELETE' }))
       })()
     }
@@ -127,9 +127,9 @@ export function AiOverview({ onGo }: { onGo: Go }) {
     void apply(() => api('transcription', { method: 'PUT', json: { provider: p, model: m.join('|'), sameKey: true } }))
   }
   const removeKey = async (k: KeyRow) => {
-    const uses = [k.usedBy.assistant && t('ассистент'), k.usedBy.speech && t('распознавание речи')].filter(Boolean).join(', ')
-    const note = `${t('Ключ будет удалён из архива: чтобы вернуть его, вставьте ключ снова.')}${uses ? ` ${t('Выключатся')}: ${uses}.` : ''}`
-    if (!await confirm(`${t('Удалить ключ')} ${t(k.label)}?`, t('Удалить ключ'), note)) return
+    const uses = [k.usedBy.assistant && t('assistant'), k.usedBy.speech && t('speech recognition')].filter(Boolean).join(', ')
+    const note = `${t('The key will be removed from the archive: to bring it back, paste it again.')}${uses ? ` ${t('Will be switched off')}: ${uses}.` : ''}`
+    if (!await confirm(`${t('Remove the key')} ${t(k.label)}?`, t('Remove the key'), note)) return
     await apply(() => api(`ai/keys/${k.service}`, { method: 'DELETE' }))
   }
 
@@ -150,10 +150,10 @@ export function AiOverview({ onGo }: { onGo: Go }) {
     try {
       const out = await api<Applied>('ai-settings', { method: 'PUT', json: JSON.parse(await f.text()) })
       const device = out.onDevice ? applyChoices(out.onDevice) : []
-      setResult({ ...out, applied: [...out.applied, ...(device.length ? [t('Модели на этом устройстве')] : [])] })
+      setResult({ ...out, applied: [...out.applied, ...(device.length ? [t('Models on this device')] : [])] })
       await qc.invalidateQueries()
     } catch (e) {
-      notify(e instanceof SyntaxError ? t('Это не файл настроек ИИ приложения') : (e as Error).message)
+      notify(e instanceof SyntaxError ? t('This is not an AI settings file of the app') : (e as Error).message)
     }
   }
   const mcpUrl = typeof location === 'undefined' ? '/api/mcp' : `${location.origin}/api/mcp`
@@ -161,103 +161,103 @@ export function AiOverview({ onGo }: { onGo: Go }) {
   return (
     <div className="flex min-w-0 flex-col gap-6 text-sm">
       <section>
-        <Head right={forecast != null ? <span className="text-ink-faint">{t('К концу месяца')} ≈{money(forecast)}</span> : undefined}>{t('Использование')}</Head>
+        <Head right={forecast != null ? <span className="text-ink-faint">{t('By month end')} ≈{money(forecast)}</span> : undefined}>{t('Usage')}</Head>
         <div className="grid grid-cols-3 gap-3 max-[520px]:grid-cols-1">
-          <Usage icon={<MessageSquare size={14} />} label={t('Ассистент')} value={provider ? (priced ? spend(provider.month) : provider.tokensToday.toLocaleString(lang)) : '…'}
-            unit={!provider ? '' : priced ? t('за месяц') : t('токенов сегодня')}
-            used={provider?.connected ? [provider.tokensToday, provider.dailyLimit] : null} limitLabel={provider ? (priced ? `${t('сегодня')} ${provider.tokensToday.toLocaleString(lang)} ${t('из')} ${provider.dailyLimit.toLocaleString(lang)} ${t('токенов')}` : `${t('из')} ${provider.dailyLimit.toLocaleString(lang)} ${t('токенов')}`) : ''}
-            sub={provider ? line(unknown(provider.month), balance?.remaining != null && `${t('на ключе')} ${money(balance.remaining)}`, !provider.connected && t('не подключён')) : ''} />
-          <Usage icon={<AudioLines size={14} />} label={t('Распознавание речи')} value={speech ? (speech.current ? spend(speech.usage) : money(0)) : '…'} unit={speech?.current ? t('за месяц') : ''}
-            used={speech?.current?.limitMinutes ? [speech.usage.minutes, speech.current.limitMinutes] : null} limitLabel={speech?.current ? `${speech.usage.minutes} ${t('из')} ${speech.current.limitMinutes || '∞'} ${t('мин')}` : ''}
-            sub={speech?.current ? line(unknown(speech.usage)) : t('на устройстве, бесплатно')} />
-          <Usage icon={<ScanFace size={14} />} label={t('Распознавание лиц')} value={faces ? (faces.current ? spend(faces.usage) : money(0)) : '…'} unit={faces?.current ? t('за месяц') : ''}
-            used={faces?.current?.limitRequests ? [faces.usage.requests, faces.current.limitRequests] : null} limitLabel={faces?.current ? `${faces.usage.requests} ${t('из')} ${faces.current.limitRequests || '∞'} ${t('запросов')}` : ''}
-            sub={faces?.current ? line(unknown(faces.usage)) : t('на устройстве, бесплатно')} />
+          <Usage icon={<MessageSquare size={14} />} label={t('Assistant')} value={provider ? (priced ? spend(provider.month) : provider.tokensToday.toLocaleString(lang)) : '…'}
+            unit={!provider ? '' : priced ? t('this month') : t('tokens today')}
+            used={provider?.connected ? [provider.tokensToday, provider.dailyLimit] : null} limitLabel={provider ? (priced ? `${t('today')} ${provider.tokensToday.toLocaleString(lang)} ${t('of')} ${provider.dailyLimit.toLocaleString(lang)} ${t('tokens')}` : `${t('of')} ${provider.dailyLimit.toLocaleString(lang)} ${t('tokens')}`) : ''}
+            sub={provider ? line(unknown(provider.month), balance?.remaining != null && `${t('left on the key')} ${money(balance.remaining)}`, !provider.connected && t('not connected')) : ''} />
+          <Usage icon={<AudioLines size={14} />} label={t('Speech recognition')} value={speech ? (speech.current ? spend(speech.usage) : money(0)) : '…'} unit={speech?.current ? t('this month') : ''}
+            used={speech?.current?.limitMinutes ? [speech.usage.minutes, speech.current.limitMinutes] : null} limitLabel={speech?.current ? `${speech.usage.minutes} ${t('of')} ${speech.current.limitMinutes || '∞'} ${t('min')}` : ''}
+            sub={speech?.current ? line(unknown(speech.usage)) : t('on the device, free')} />
+          <Usage icon={<ScanFace size={14} />} label={t('Face recognition')} value={faces ? (faces.current ? spend(faces.usage) : money(0)) : '…'} unit={faces?.current ? t('this month') : ''}
+            used={faces?.current?.limitRequests ? [faces.usage.requests, faces.current.limitRequests] : null} limitLabel={faces?.current ? `${faces.usage.requests} ${t('of')} ${faces.current.limitRequests || '∞'} ${t('requests')}` : ''}
+            sub={faces?.current ? line(unknown(faces.usage)) : t('on the device, free')} />
         </div>
       </section>
 
       {report && report.people.length > 0 && (
         <section>
-          <Head>{t('Кто сколько использовал')}</Head>
+          <Head>{t('Who used how much')}</Head>
           <Card>
             {report.people.map((p) => {
-              const cost = (x: Tally) => (x.dollars > 0 ? money(x.dollars) : x.unpriced > 0 ? t('цена неизвестна') : '')
+              const cost = (x: Tally) => (x.dollars > 0 ? money(x.dollars) : x.unpriced > 0 ? t('price unknown') : '')
               const parts = [
-                p.assistant.requests > 0 && `${t('Ассистент')} — ${t('запросов')}: ${p.assistant.requests}, ${t('токенов')}: ${p.assistant.tokens.toLocaleString(lang)}${cost(p.assistant) ? `, ${cost(p.assistant)}` : ''}`,
-                p.speech.requests > 0 && `${t('Распознавание речи')} — ${t('минут')}: ${Math.round(p.speech.seconds / 6) / 10}${cost(p.speech) ? `, ${cost(p.speech)}` : ''}`,
-                p.faces.requests > 0 && `${t('Распознавание лиц')} — ${t('запросов')}: ${p.faces.requests}`,
+                p.assistant.requests > 0 && `${t('Assistant')} — ${t('requests')}: ${p.assistant.requests}, ${t('tokens')}: ${p.assistant.tokens.toLocaleString(lang)}${cost(p.assistant) ? `, ${cost(p.assistant)}` : ''}`,
+                p.speech.requests > 0 && `${t('Speech recognition')} — ${t('minutes')}: ${Math.round(p.speech.seconds / 6) / 10}${cost(p.speech) ? `, ${cost(p.speech)}` : ''}`,
+                p.faces.requests > 0 && `${t('Face recognition')} — ${t('requests')}: ${p.faces.requests}`,
               ].filter(Boolean)
               const total = p.assistant.dollars + p.speech.dollars + p.faces.dollars
-              return <Row key={p.id} icon={<MessageSquare size={15} />} title={p.name ?? t('Без имени')} control={<div className="flex flex-col gap-0.5 text-xs text-ink-soft">{parts.map((x) => <span key={x as string}>{x}</span>)}</div>} right={total > 0 ? <span className="flex-none tabular-nums">{money(total)}</span> : undefined} />
+              return <Row key={p.id} icon={<MessageSquare size={15} />} title={p.name ?? t('No name')} control={<div className="flex flex-col gap-0.5 text-xs text-ink-soft">{parts.map((x) => <span key={x as string}>{x}</span>)}</div>} right={total > 0 ? <span className="flex-none tabular-nums">{money(total)}</span> : undefined} />
             })}
           </Card>
-          <p className="mt-1.5 px-0.5 text-xs text-ink-faint">{t('Деньги — только те, что назвал сам провайдер. Где он цену не сообщает, видно число запросов, а сумму смотрите в его кабинете.')}</p>
+          <p className="mt-1.5 px-0.5 text-xs text-ink-faint">{t('Money is only what the provider itself stated. Where it states no price, you see the number of requests; the sum is in its account.')}</p>
         </section>
       )}
 
       <section>
-        <Head>{t('Функции ИИ')}</Head>
+        <Head>{t('AI features')}</Head>
         <Card>
-          <Row icon={<MessageSquare size={15} />} title={t('Ассистент')} onOpen={() => onGo('assistant')}
-            meta={provider?.source === 'server' ? `${provider.label} · ${provider.model} · ${t('задан на сервере')}` : undefined}
-            control={provider?.source !== 'server' && keys && <Select look="small" className="max-w-xs" aria-label={t('Сервис и модель ассистента')} value={assistantValue} placeholder={t('Не выбрано: ассистент выключен')} onChange={pickAssistant}
+          <Row icon={<MessageSquare size={15} />} title={t('Assistant')} onOpen={() => onGo('assistant')}
+            meta={provider?.source === 'server' ? `${provider.label} · ${provider.model} · ${t('set on the server_masculine')}` : undefined}
+            control={provider?.source !== 'server' && keys && <Select look="small" className="max-w-xs" aria-label={t('The assistant\'s service and model')} value={assistantValue} placeholder={t('Not chosen: the assistant is off')} onChange={pickAssistant}
               options={assistantOptions} />}
-            right={settings && provider?.connected ? <Toggle on={settings.assistantEnabled} label={t('Ассистент')} onChange={switchAssistant} /> : undefined} />
-          <Row icon={<AudioLines size={15} />} title={t('Распознавание речи')} onOpen={() => onGo('speech')}
-            meta={speech?.current?.source === 'server' ? `${speechName} · ${t('задано на сервере')}` : speech?.current?.provider === 'custom' ? speechName : undefined}
-            control={speech?.current?.provider !== 'custom' && speech?.current?.source !== 'server' && <Select look="small" className="max-w-xs" aria-label={t('Сервис и модель распознавания речи')} value={speechValue} onChange={pickSpeech} options={speechOptions} />} />
-          <Row icon={<ScanFace size={15} />} title={t('Распознавание лиц')} onOpen={() => onGo('faces')}
-            meta={faces?.current ? facesName : t('локальная модель в браузере')} />
-          <Row icon={<Cpu size={15} />} title={t('Модели на этом устройстве')} onOpen={() => onGo('smart')}
+            right={settings && provider?.connected ? <Toggle on={settings.assistantEnabled} label={t('Assistant')} onChange={switchAssistant} /> : undefined} />
+          <Row icon={<AudioLines size={15} />} title={t('Speech recognition')} onOpen={() => onGo('speech')}
+            meta={speech?.current?.source === 'server' ? `${speechName} · ${t('set on the server')}` : speech?.current?.provider === 'custom' ? speechName : undefined}
+            control={speech?.current?.provider !== 'custom' && speech?.current?.source !== 'server' && <Select look="small" className="max-w-xs" aria-label={t('Service and model for speech recognition')} value={speechValue} onChange={pickSpeech} options={speechOptions} />} />
+          <Row icon={<ScanFace size={15} />} title={t('Face recognition')} onOpen={() => onGo('faces')}
+            meta={faces?.current ? facesName : t('local model in the browser')} />
+          <Row icon={<Cpu size={15} />} title={t('Models on this device')} onOpen={() => onGo('smart')}
             meta={`${t(chosen('faces').name)} · ${t(chosen('speech').name)}`} />
         </Card>
       </section>
 
       <section>
-        <Head>{t('Провайдеры и API-ключи')}</Head>
+        <Head>{t('Providers and API keys')}</Head>
         <Card>
           {keys?.keys.map((k) => (
             <Row key={k.service} icon={<KeyRound size={15} />} title={t(k.label)}
               meta={`…${k.keyEnding}`} control={<DataTerms service={k.service} />}
               right={<>
-                {k.usedBy.assistant && <Chip>{t('ассистент')}</Chip>}
-                {k.usedBy.speech && <Chip>{t('речь')}</Chip>}
-                {!k.usedBy.assistant && !k.usedBy.speech && <span className="text-xs text-ink-faint">{t('не используется')}</span>}
-                <button type="button" className="grid size-7 flex-none place-items-center rounded-md text-ink-faint hover:bg-black/5 hover:text-destructive" aria-label={`${t('Удалить ключ')} ${t(k.label)}`} onClick={() => void removeKey(k)}><Trash2 size={14} /></button>
+                {k.usedBy.assistant && <Chip>{t('assistant')}</Chip>}
+                {k.usedBy.speech && <Chip>{t('speech')}</Chip>}
+                {!k.usedBy.assistant && !k.usedBy.speech && <span className="text-xs text-ink-faint">{t('not in use')}</span>}
+                <button type="button" className="grid size-7 flex-none place-items-center rounded-md text-ink-faint hover:bg-black/5 hover:text-destructive" aria-label={`${t('Remove the key')} ${t(k.label)}`} onClick={() => void removeKey(k)}><Trash2 size={14} /></button>
               </>} />
           ))}
-          {provider?.source === 'server' && <Row icon={<KeyRound size={15} />} title={provider.label} meta={t('ключ в настройках сервера')} right={<Chip>{t('ассистент')}</Chip>} />}
-          {faces?.current && <Row icon={<ScanFace size={15} />} title={facesName} meta={t('свой ключ, для лиц')} onOpen={() => onGo('faces')} right={<Chip>{t('лица')}</Chip>} control={<DataTerms service={faces.current.provider} />} />}
+          {provider?.source === 'server' && <Row icon={<KeyRound size={15} />} title={provider.label} meta={t('key in the server settings')} right={<Chip>{t('assistant')}</Chip>} />}
+          {faces?.current && <Row icon={<ScanFace size={15} />} title={facesName} meta={t('its own key, for faces')} onOpen={() => onGo('faces')} right={<Chip>{t('faces')}</Chip>} control={<DataTerms service={faces.current.provider} />} />}
           {keys && <AddKey key={adding ?? ''} initial={adding} available={keys.available.filter((a) => !keys.keys.some((k) => k.service === a.service))} onAdded={() => { setAdding(null); return refresh() }} onCancel={() => setAdding(null)} onFaces={() => onGo('faces')} />}
         </Card>
       </section>
 
       <section>
-        <Head>{t('MCP-сервер и токены доступа')}</Head>
+        <Head>{t('MCP server and access tokens')}</Head>
         <Card>
           {live.map((k) => (
             <Row key={k.id} icon={<Plug size={15} />} title={k.name} onOpen={() => onGo('agents')}
-              meta={[k.role === 'reader' ? t('только чтение') : k.review ? t('правки на проверку') : t('правки сразу'), k.expiresAt ? `${t('до')} ${new Date(k.expiresAt).toLocaleDateString(lang)}` : t('бессрочно')].join(' · ')}
-              right={<span className="flex-none text-xs tabular-nums text-ink-soft">{t('вызовов за месяц')}: {report?.tokens.find((x) => x.id === k.id)?.requests ?? 0}</span>} />
+              meta={[k.role === 'reader' ? t('read only') : k.review ? t('edits for review') : t('edits applied at once'), k.expiresAt ? `${t('before')} ${new Date(k.expiresAt).toLocaleDateString(lang)}` : t('no expiry')].join(' · ')}
+              right={<span className="flex-none text-xs tabular-nums text-ink-soft">{t('calls this month')}: {report?.tokens.find((x) => x.id === k.id)?.requests ?? 0}</span>} />
           ))}
-          <Row icon={<Plug size={15} />} title={t('URL сервера')} meta={<span className="font-mono text-[12.5px]">{mcpUrl}</span>}
-            right={<button type="button" className="flex-none font-medium text-[#a4502e]" onClick={() => navigator.clipboard.writeText(mcpUrl).then(() => notify(t('Скопировано')))}>{t('Копировать')}</button>} />
-          <Row icon={<Plus size={15} />} accent title={t('Создать токен доступа')} meta={t('для Claude, ChatGPT, Cursor и других')} onOpen={() => onGo('agents')} />
+          <Row icon={<Plug size={15} />} title={t('Server URL')} meta={<span className="font-mono text-[12.5px]">{mcpUrl}</span>}
+            right={<button type="button" className="flex-none font-medium text-[#a4502e]" onClick={() => navigator.clipboard.writeText(mcpUrl).then(() => notify(t('Copied')))}>{t('Copy_infinitive')}</button>} />
+          <Row icon={<Plus size={15} />} accent title={t('Create an access token')} meta={t('for Claude, ChatGPT, Cursor and others')} onOpen={() => onGo('agents')} />
         </Card>
       </section>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-0.5 text-ink-soft">
-        <span>{t('Конфигурация ИИ')}:</span>
-        <button type="button" className="font-medium text-[#a4502e] disabled:opacity-50" disabled={!file} onClick={download}>{t('Скачать')}</button>
-        <button type="button" className="font-medium text-[#a4502e]" onClick={() => pick.current?.click()}>{t('Загрузить')}</button>
-        <span className="ml-auto text-xs text-ink-faint">{t('экспорт без ключей и токенов')}</span>
+        <span>{t('AI configuration')}:</span>
+        <button type="button" className="font-medium text-[#a4502e] disabled:opacity-50" disabled={!file} onClick={download}>{t('Download')}</button>
+        <button type="button" className="font-medium text-[#a4502e]" onClick={() => pick.current?.click()}>{t('Load')}</button>
+        <span className="ml-auto text-xs text-ink-faint">{t('exported without keys or tokens')}</span>
         <input ref={pick} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void upload(f) }} />
       </div>
       {result && (
         <div role="status" className="flex flex-col gap-1">
-          {result.applied.length > 0 && <p>{t('Применено')}: {result.applied.join(', ')}.</p>}
+          {result.applied.length > 0 && <p>{t('Applied')}: {result.applied.join(', ')}.</p>}
           {result.skipped.map((s) => <p key={s.what} className="text-destructive break-anywhere">{s.what}: {s.why}</p>)}
-          {!result.applied.length && !result.skipped.length && <p>{t('В файле нечего менять.')}</p>}
+          {!result.applied.length && !result.skipped.length && <p>{t('There is nothing to change in the file.')}</p>}
         </div>
       )}
     </div>
@@ -319,30 +319,30 @@ function AddKey({ available, onAdded, onCancel, onFaces, initial }: { available:
       setBusy(false)
     }
   }
-  if (!open) return <Row icon={<Plus size={15} />} accent title={t('Добавить провайдера')} meta={t('ключ подойдёт всем функциям, которые его умеют')} onOpen={() => setOpen(true)} />
+  if (!open) return <Row icon={<Plus size={15} />} accent title={t('Add a provider')} meta={t('one key serves every function that can use it')} onOpen={() => setOpen(true)} />
   return (
     <form ref={form} className="flex flex-col gap-3 bg-[#fcfaf5] p-4" onSubmit={(e) => { e.preventDefault(); if (service && key.trim()) void save() }}>
       <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Сервис')}
-          <Select aria-label={t('Сервис')} value={service} onChange={setService}
-            options={[{ value: '', label: <span className="text-ink-faint">{t('Выберите сервис')}</span>, disabled: true }, ...available.map((a) => ({ value: a.service, label: `${t(a.label)} · ${[a.can.assistant && t('ассистент'), a.can.speech && t('речь')].filter(Boolean).join(', ')}` }))]} />
+        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Service')}
+          <Select aria-label={t('Service')} value={service} onChange={setService}
+            options={[{ value: '', label: <span className="text-ink-faint">{t('Choose a provider')}</span>, disabled: true }, ...available.map((a) => ({ value: a.service, label: `${t(a.label)} · ${[a.can.assistant && t('assistant'), a.can.speech && t('speech')].filter(Boolean).join(', ')}` }))]} />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('API-ключ')}
-          <Input type="password" autoComplete="off" spellCheck={false} value={key} onChange={(e) => setKey(e.target.value)} placeholder={t('Вставьте ключ')} />
+        <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('API key')}
+          <Input type="password" autoComplete="off" spellCheck={false} value={key} onChange={(e) => setKey(e.target.value)} placeholder={t('Paste the key')} />
         </label>
         {chosen?.needsFolder && (
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Идентификатор каталога')}
+          <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Folder ID')}
             <Input value={folder} onChange={(e) => setFolder(e.target.value)} placeholder="b1g…" spellCheck={false} />
           </label>
         )}
       </div>
       {chosen && <DataTerms service={chosen.service} open />}
-      {chosen?.keysUrl && <a className="inline-flex items-center gap-1 self-start text-xs text-[#a4502e] hover:underline" href={chosen.keysUrl} target="_blank" rel="noreferrer">{t('Где взять ключ')} <ExternalLink size={12} /></a>}
+      {chosen?.keysUrl && <a className="inline-flex items-center gap-1 self-start text-xs text-[#a4502e] hover:underline" href={chosen.keysUrl} target="_blank" rel="noreferrer">{t('Where to get a key')} <ExternalLink size={12} /></a>}
       {error && <p role="alert" className="text-xs text-destructive break-anywhere">{error}</p>}
       <div className="flex flex-wrap items-center gap-2">
-        <button type="submit" className="bar-btn on" disabled={busy || !service || !key.trim()}>{busy ? t('Проверяем ключ…') : t('Проверить и добавить')}</button>
-        <button type="button" className="bar-btn" onClick={reset}>{t('Отмена')}</button>
-        <button type="button" className="ml-auto text-xs text-ink-soft hover:text-ink" onClick={onFaces}>{t('Сервис для распознавания лиц')} →</button>
+        <button type="submit" className="bar-btn on" disabled={busy || !service || !key.trim()}>{busy ? t('Checking the key…_we') : t('Check and add')}</button>
+        <button type="button" className="bar-btn" onClick={reset}>{t('Cancel')}</button>
+        <button type="button" className="ml-auto text-xs text-ink-soft hover:text-ink" onClick={onFaces}>{t('A service for face recognition')} →</button>
       </div>
     </form>
   )

@@ -5,7 +5,7 @@ import type { Certainty, Claim, ClaimField, Person, Reliability, Source } from '
 
 export const CLAIM_FIELDS: ClaimField[] = ['birthDate', 'birthPlace', 'deathDate', 'deathPlace']
 export const NAME_FIELDS: ClaimField[] = ['givenName', 'patronymic', 'surname', 'maidenName']
-export const RELIABILITY: Record<Reliability, string> = { original: 'оригинал документа', copy: 'копия или выписка', transcript: 'расшифровка', witness: 'рассказ очевидца', hearsay: 'пересказ', guess: 'предположение' }
+export const RELIABILITY: Record<Reliability, string> = { original: 'original document', copy: 'copy or extract', transcript: 'transcription', witness: 'eyewitness account', hearsay: 'hearsay', guess: 'assumption' }
 
 type Subject = Pick<Person, 'claims' | 'sources' | 'certainty' | ClaimField>
 export type ClaimPatch = Partial<Pick<Person, 'claims' | 'certainty' | ClaimField>>

@@ -14,13 +14,13 @@ export async function goOAuth(id: 'google' | 'yandex' | 'vk', link = false) {
   if (j.url) location.href = j.url
 }
 
-const OAUTH = [['yandex', 'Яндекс ID', 'text-[#fc3f1d]'], ['vk', 'VK ID', 'text-[#0077ff]'], ['google', 'Google', '']] as const
+const OAUTH = [['yandex', 'Yandex ID', 'text-[#fc3f1d]'], ['vk', 'VK ID', 'text-[#0077ff]'], ['google', 'Google', '']] as const
 
 /** One button per way the owner switched on, in the order most people in Russia would look for them. */
 export function OAuthButtons({ methods, t, link, linked = [] }: { methods: SignInMethods; t: (k: string) => string; link?: boolean; linked?: string[] }) {
   return <>{OAUTH.filter(([id]) => methods[id]).map(([id, name, color]) => (
     <button key={id} type="button" className={buttonVariants({ variant: 'outline', size: link ? 'default' : 'lg' })} disabled={linked.includes(id)} onClick={() => goOAuth(id, link)}>
-      <Brand name={id} className={color} /> {linked.includes(id) ? `${t(name)}: ${t('привязан')}` : `${link ? t('Привязать') : t('Войти через')} ${t(name)}`}
+      <Brand name={id} className={color} /> {linked.includes(id) ? `${t(name)}: ${t('linked')}` : `${link ? t('Link') : t('Sign in with')} ${t(name)}`}
     </button>
   ))}</>
 }
@@ -72,7 +72,7 @@ export function MailCode({ t, mode, onDone }: { t: (k: string) => string; mode: 
       : await authPost('/api/auth/email-otp/request-email-change', { newEmail: email })
     setBusy(false)
     if (r.ok) setSent(true)
-    else setError(r.status === 429 ? t('Слишком много попыток. Подождите минуту.') : t('Не получилось отправить код. Проверьте адрес.'))
+    else setError(r.status === 429 ? t('Too many tries. Please wait a minute.') : t('Could not send the code. Check the address.'))
   }
   const check = async () => {
     setBusy(true)
@@ -82,28 +82,28 @@ export function MailCode({ t, mode, onDone }: { t: (k: string) => string; mode: 
       : await authPost('/api/auth/email-otp/change-email', { newEmail: email, otp: code })
     setBusy(false)
     if (r.ok) onDone()
-    else setError(r.status === 429 ? t('Слишком много попыток. Подождите минуту.') : mode === 'sign-in' ? t('Код не подошёл, или эта почта ещё не привязана ни к кому в архиве.') : t('Код не подошёл. Проверьте его или попросите новый.'))
+    else setError(r.status === 429 ? t('Too many tries. Please wait a minute.') : mode === 'sign-in' ? t('The code did not fit, or this email is not linked to anyone in the archive yet.') : t('The code did not fit. Check it or ask for a new one.'))
   }
   return (
     <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); void (sent ? check() : send()) }}>
       {!sent ? (
         <>
           <label className="flex flex-col gap-1 text-sm">
-            {mode === 'sign-in' ? t('Почта') : t('Ваша почта')}
+            {mode === 'sign-in' ? t('Email') : t('Your email')}
             <input className={inputClass} type="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value.trim())} />
           </label>
-          <button className={buttonVariants({ variant: mode === 'sign-in' ? 'outline' : 'default', size: mode === 'sign-in' ? 'lg' : 'default' })} disabled={busy || !email}>{t('Прислать код')}</button>
+          <button className={buttonVariants({ variant: mode === 'sign-in' ? 'outline' : 'default', size: mode === 'sign-in' ? 'lg' : 'default' })} disabled={busy || !email}>{t('Send a code')}</button>
         </>
       ) : (
         <>
-          <p className="text-sm break-anywhere">{t('Код отправлен на')} {email}. {t('Если письма нет, загляните в «Спам».')}</p>
+          <p className="text-sm break-anywhere">{t('Code sent to')} {email}. {t('If there is no letter, look in Spam.')}</p>
           <label className="flex flex-col gap-1 text-sm">
-            {t('Код из письма')}
+            {t('Code from the email')}
             <input className={inputClass} autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} autoFocus />
           </label>
           <div className="flex flex-wrap gap-2">
-            <button className={buttonVariants({ size: mode === 'sign-in' ? 'lg' : 'default' })} disabled={busy || code.length < 6}>{mode === 'sign-in' ? t('Войти') : t('Подтвердить')}</button>
-            <button type="button" className={buttonVariants({ variant: 'ghost', size: mode === 'sign-in' ? 'lg' : 'default' })} onClick={() => { setSent(false); setCode(''); setError('') }}>{t('Другая почта')}</button>
+            <button className={buttonVariants({ size: mode === 'sign-in' ? 'lg' : 'default' })} disabled={busy || code.length < 6}>{mode === 'sign-in' ? t('Sign in') : t('Confirm')}</button>
+            <button type="button" className={buttonVariants({ variant: 'ghost', size: mode === 'sign-in' ? 'lg' : 'default' })} onClick={() => { setSent(false); setCode(''); setError('') }}>{t('Another email')}</button>
           </div>
         </>
       )}

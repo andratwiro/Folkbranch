@@ -54,14 +54,14 @@ export function MapPlaceCard({ x, y, place, year, people, onPick, onZoom, onClos
       <div className="flex items-baseline gap-2 px-1">
         <h3 className="min-w-0 flex-1 truncate font-serif text-base text-ink">{place}</h3>
         <span className="font-serif text-sm tabular-nums text-ink-soft">{year}</span>
-        <button type="button" className="self-center rounded p-1 text-ink-soft hover:bg-muted" aria-label={t('Закрыть')} onClick={onClose}><X size={14} /></button>
+        <button type="button" className="self-center rounded p-1 text-ink-soft hover:bg-muted" aria-label={t('Close')} onClick={onClose}><X size={14} /></button>
       </div>
       {many && (
-        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={`${t('Найти среди')} ${people.length}`} aria-label={t('Найти по имени')}
+        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={`${t('Find among')} ${people.length}`} aria-label={t('Find by name')}
           className="mt-1 h-9 w-full rounded-md border border-border bg-transparent px-2 text-sm" />
       )}
       <ul className="mt-1 flex max-h-64 flex-col overflow-y-auto">
-        {many && typed && !list.length && <li className="px-1 py-2 text-sm text-ink-soft">{t('Никого не нашлось')}</li>}
+        {many && typed && !list.length && <li className="px-1 py-2 text-sm text-ink-soft">{t('Nobody found')}</li>}
         {list.map((p) => (
           <li key={p.id}>
             <button type="button" className="flex min-h-11 w-full items-center gap-2 rounded px-1 py-1 text-left hover:bg-muted" onClick={() => onPick(p.id)}>
@@ -71,12 +71,12 @@ export function MapPlaceCard({ x, y, place, year, people, onPick, onZoom, onClos
                 {/* A stack gathers towns that touch on screen: name each person's own town, or the card claims one village. */}
                 {several && p.place && <span className="block truncate text-xs text-ink-soft">{p.place}</span>}
               </span>
-              <span className="flex-none text-sm text-ink-soft tabular-nums">{t('с')} {p.since}</span>
+              <span className="flex-none text-sm text-ink-soft tabular-nums">{t('since')} {p.since}</span>
             </button>
           </li>
         ))}
       </ul>
-      <button type="button" className="bar-btn mt-1 w-full justify-start" onClick={onZoom}><ZoomIn size={14} /> {t('Приблизить')}</button>
+      <button type="button" className="bar-btn mt-1 w-full justify-start" onClick={onZoom}><ZoomIn size={14} /> {t('Zoom in_near')}</button>
     </div>
   )
 }

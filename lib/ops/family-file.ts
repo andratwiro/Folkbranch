@@ -117,7 +117,7 @@ export async function buildFamilyFile(actor: Actor): Promise<{ html: string; fil
   const layout = layoutFamily(graph, { rootsBelow: false, pins, print: true })
   const byId = new Map(graph.persons.map((p) => [p.id, p]))
   const seen = graph.persons.filter((p) => !p.hidden)
-  const nameOf = (p: Person) => personName(p) || t('Без имени')
+  const nameOf = (p: Person) => personName(p) || t('No name')
 
   // Pictures first: each goes in once, however many people it shows.
   const avatars = new Map<string, string>()
@@ -153,7 +153,7 @@ export async function buildFamilyFile(actor: Actor): Promise<{ html: string; fil
   const relative = (id: string) => {
     const r = byId.get(id)
     if (!r) return ''
-    return r.hidden ? `<li class="soft">${esc(t('Живой родственник'))}</li>` : `<li><a href="#p-${esc(r.id)}">${esc(nameOf(r))}</a></li>`
+    return r.hidden ? `<li class="soft">${esc(t('Living relative'))}</li>` : `<li><a href="#p-${esc(r.id)}">${esc(nameOf(r))}</a></li>`
   }
   const group = (title: string, ids: string[]) => {
     const rows = [...new Set(ids)].map(relative).join('')
@@ -176,14 +176,14 @@ export async function buildFamilyFile(actor: Actor): Promise<{ html: string; fil
     if (!p) return ''
     const at = `transform="translate(${c.x} ${c.y + AVATAR_CY})"`
     // A hidden card is an empty circle: the same words under fourteen of them would say nothing fourteen times.
-    if (p.hidden) return `<g ${at}><title>${esc(t('Живой родственник'))}</title><circle class="ring U" r="${AVATAR + 3}"/></g>`
-    const years = lifeYears(p, '?', t('н. в.'))
+    if (p.hidden) return `<g ${at}><title>${esc(t('Living relative'))}</title><circle class="ring U" r="${AVATAR + 3}"/></g>`
+    const years = lifeYears(p, '?', t('now'))
     let dy = AVATAR + 20
     const text = lines(nameOf(p)).map((line) => { const out = `<text class="name" y="${dy}">${esc(line)}</text>`; dy += 18; return out }).join('')
     const body = `<circle class="ring ${esc(p.sex)}" r="${AVATAR + 3}"/>${face(p)}${text}${years ? `<text class="years" y="${dy}">${esc(years)}</text>` : ''}`
     return `<a href="#p-${esc(p.id)}" ${at}>${body}</a>`
   }).join('')
-  const chart = `<svg xmlns="http://www.w3.org/2000/svg" width="${w + pad * 2}" height="${h + pad * 2}" viewBox="${x - pad} ${y - pad} ${w + pad * 2} ${h + pad * 2}" role="img" aria-label="${esc(t('Схема семьи'))}"><defs><clipPath id="round"><circle r="${AVATAR}"/></clipPath>${defs}</defs>${edges}${unions}${cards}</svg>`
+  const chart = `<svg xmlns="http://www.w3.org/2000/svg" width="${w + pad * 2}" height="${h + pad * 2}" viewBox="${x - pad} ${y - pad} ${w + pad * 2} ${h + pad * 2}" role="img" aria-label="${esc(t('Family chart'))}"><defs><clipPath id="round"><circle r="${AVATAR}"/></clipPath>${defs}</defs>${edges}${unions}${cards}</svg>`
 
   // One card a person: plain HTML shown by the address, so it works where a viewer runs no scripts.
   const cardsHtml = seen.map((p) => {
@@ -198,22 +198,22 @@ export async function buildFamilyFile(actor: Actor): Promise<{ html: string; fil
       const caption = [m.caption, m.date, m.place].filter(Boolean).join(', ')
       return `<figure><div class="photo m-${esc(m.id)}" role="img" aria-label="${esc(caption || nameOf(p))}" style="aspect-ratio:${stored.get(m.id)!.ratio.toFixed(3)}"></div>${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`
     }).join('')
-    const places = [p.birthPlace && `${t('Место рождения')}: ${p.birthPlace}`, p.deathPlace && `${t('Место смерти')}: ${p.deathPlace}`].filter(Boolean).map((s) => `<p>${esc(s as string)}</p>`).join('')
-    const other = [p.maidenName && `${t('Девичья фамилия')}: ${p.maidenName}`, p.otherNames && `${t('Другие имена')}: ${p.otherNames}`].filter(Boolean).map((s) => `<p class="soft">${esc(s as string)}</p>`).join('')
-    return `<article class="card" id="p-${esc(p.id)}"><div class="sheet"><a class="close" href="#_" aria-label="${esc(t('Закрыть'))}">×</a>
+    const places = [p.birthPlace && `${t('Birthplace')}: ${p.birthPlace}`, p.deathPlace && `${t('Place of death')}: ${p.deathPlace}`].filter(Boolean).map((s) => `<p>${esc(s as string)}</p>`).join('')
+    const other = [p.maidenName && `${t('Maiden name')}: ${p.maidenName}`, p.otherNames && `${t('Other names')}: ${p.otherNames}`].filter(Boolean).map((s) => `<p class="soft">${esc(s as string)}</p>`).join('')
+    return `<article class="card" id="p-${esc(p.id)}"><div class="sheet"><a class="close" href="#_" aria-label="${esc(t('Close'))}">×</a>
 <div class="who">${avatars.has(p.id) ? `<svg viewBox="${-AVATAR} ${-AVATAR} ${AVATAR * 2} ${AVATAR * 2}" aria-hidden="true"><use href="#a-${esc(p.id)}"/></svg>` : ''}<div><h2>${esc([p.givenName, p.patronymic, p.surname].filter(Boolean).join(' ') || nameOf(p))}</h2><p class="soft">${esc(lifeYears(p))}</p></div></div>
-${other}${places}${group(t('Родители'), parents(p.id))}${group(t('Супруги'), partners(p.id))}${group(t('Дети'), children(p.id))}
-${facts && `<h3>${esc(t('События'))}</h3>${facts}`}${pages}${photos && `<h3>${esc(t('Фотографии'))}</h3><div class="photos">${photos}</div>`}
-${sources && `<h3>${esc(t('Источники'))}</h3><ul class="links">${sources}</ul>`}</div></article>`
+${other}${places}${group(t('Parents'), parents(p.id))}${group(t('Spouses'), partners(p.id))}${group(t('Children'), children(p.id))}
+${facts && `<h3>${esc(t('Events'))}</h3>${facts}`}${pages}${photos && `<h3>${esc(t('Photos'))}</h3><div class="photos">${photos}</div>`}
+${sources && `<h3>${esc(t('Sources_plural'))}</h3><ul class="links">${sources}</ul>`}</div></article>`
   }).join('\n')
 
   const collator = new Intl.Collator(lang)
   const list = [...seen].sort((a, b) => collator.compare(`${a.surname} ${a.givenName}`, `${b.surname} ${b.givenName}`))
-    .map((p) => `<li><a href="#p-${esc(p.id)}">${esc(nameOf(p))}</a>${lifeYears(p, '?', t('н. в.')) ? `<span>${esc(lifeYears(p, '?', t('н. в.')))}</span>` : ''}</li>`).join('')
+    .map((p) => `<li><a href="#p-${esc(p.id)}">${esc(nameOf(p))}</a>${lifeYears(p, '?', t('now')) ? `<span>${esc(lifeYears(p, '?', t('now')))}</span>` : ''}</li>`).join('')
   const hiddenCount = graph.persons.length - seen.length
   const photoCss = [...stored].map(([id, m]) => `.m-${id}{background-image:url(${m.uri})}`).join('\n')
   const today = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())
-  const title = familyName || t('Семейный архив')
+  const title = familyName || t('Family archive')
 
   const html = `<!doctype html>
 <html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -221,13 +221,13 @@ ${sources && `<h3>${esc(t('Источники'))}</h3><ul class="links">${source
 <meta name="robots" content="noindex"><title>${esc(title)}</title>
 <style>${STYLE}${photoCss}</style></head>
 <body>
-<header><h1>${esc(title)}</h1><p>${seen.length} ${esc(t('чел.'))} · ${esc(today)}</p></header>
-<div class="tools" id="tools" hidden><input id="q" type="search" placeholder="${esc(t('Найти человека'))}" aria-label="${esc(t('Найти человека'))}"><button id="out" type="button" aria-label="${esc(t('Уменьшить'))}">−</button><button id="in" type="button" aria-label="${esc(t('Увеличить'))}">+</button></div>
+<header><h1>${esc(title)}</h1><p>${seen.length} ${esc(t('people'))} · ${esc(today)}</p></header>
+<div class="tools" id="tools" hidden><input id="q" type="search" placeholder="${esc(t('Find a person'))}" aria-label="${esc(t('Find a person'))}"><button id="out" type="button" aria-label="${esc(t('Zoom out'))}">−</button><button id="in" type="button" aria-label="${esc(t('Zoom in'))}">+</button></div>
 <div class="chart" id="chart">${chart}</div>
-${hiddenCount ? `<p class="note">${esc(t('Пустые кружки на схеме: живые родственники, они скрыты.'))}</p>` : ''}
-<section class="people"><h2>${esc(t('Все люди'))}</h2><ul>${list}</ul></section>
+${hiddenCount ? `<p class="note">${esc(t('Empty circles on the chart are living relatives, who are hidden.'))}</p>` : ''}
+<section class="people"><h2>${esc(t('Everyone'))}</h2><ul>${list}</ul></section>
 ${cardsHtml}
-<footer>${esc(t('Этот файл открывается без интернета и регистрации.'))} ${esc(t('Сделано в'))} <a href="${PROJECT_URL}" rel="noopener noreferrer">Folkbranch</a></footer>
+<footer>${esc(t('This file opens with no internet and no account.'))} ${esc(t('Made with'))} <a href="${PROJECT_URL}" rel="noopener noreferrer">Folkbranch</a></footer>
 <script>${SCRIPT}</script>
 </body></html>
 `

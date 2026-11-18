@@ -27,31 +27,31 @@ function ProviderSettings() {
     }
   }
   const remove = async () => {
-    if (!await ask(t('Отключить ассистента от сервиса?'), t('Отключить'), t('Ключ останется в списке провайдеров на странице ИИ: там сервис можно выбрать снова, не вставляя ключ.'))) return
+    if (!await ask(t('Disconnect the assistant from this service?'), t('Disconnect'), t('The key stays in the list of providers on the AI page: the service can be picked there again without pasting the key.'))) return
     await api('assistant/provider', { method: 'DELETE' })
     await qc.invalidateQueries({ queryKey: ['provider'] })
     location.reload()
   }
   return (
-    <Section title={t('Сервис и нейросеть')} description={t('Ассистент работает на вашем ключе: вы платите сервису сами, и то, что ассистент читает, уходит туда.')}>
+    <Section title={t('Service and model')} description={t('The assistant runs on your key: you pay the service yourself, and what the assistant reads goes there.')}>
       {data.connected ? (
-        <p className="text-xs text-ink-soft">{t('Сервис')}: {data.label}{data.keyEnding ? `, ${t('ключ')} …${data.keyEnding}` : ''}{data.source === 'server' ? `. ${t('Ключ уже настроен')}` : ''}</p>
-      ) : <p className="text-xs text-ink-soft">{t('Сначала подключите ключ: без него ассистент не может отвечать.')}</p>}
-      {data.source === 'app' && !changing && data.auto && <p className="text-xs text-ink-soft" role="status">{t('Нейросеть')}: <b className="font-medium text-ink">{data.model}</b>. {t('Выбрана сама: проверенная, а когда выйдет новее в той же линейке, приложение перейдёт на неё без вас.')}</p>}
+        <p className="text-xs text-ink-soft">{t('Service')}: {data.label}{data.keyEnding ? `, ${t('key')} …${data.keyEnding}` : ''}{data.source === 'server' ? `. ${t('The key is set on the server')}` : ''}</p>
+      ) : <p className="text-xs text-ink-soft">{t('Connect a key first: without one the assistant cannot answer.')}</p>}
+      {data.source === 'app' && !changing && data.auto && <p className="text-xs text-ink-soft" role="status">{t('Model')}: <b className="font-medium text-ink">{data.model}</b>. {t('Chosen by the app: a tested one, and when a newer one of the same line comes out, the app moves to it without you.')}</p>}
       {data.source === 'app' && !changing && (
         <details>
-          <summary className="cursor-pointer text-xs text-ink-soft">{t('Для опытных: выбрать нейросеть самому')}</summary>
+          <summary className="cursor-pointer text-xs text-ink-soft">{t('For experts: choose the model yourself')}</summary>
           <div className="mt-2 flex flex-col gap-2">
             <LiveModelSelect key={`${data.provider}:${data.model}`} value={data.model ?? ''} onChange={changeModel} />
-            {!data.auto && data.autoPossible && <Button type="button" variant="outline" size="sm" className="self-start" onClick={async () => { await api('assistant/provider', { method: 'PATCH', json: { auto: true } }); await qc.invalidateQueries({ queryKey: ['provider'] }) }}>{t('Снова выбирать автоматически')}</Button>}
+            {!data.auto && data.autoPossible && <Button type="button" variant="outline" size="sm" className="self-start" onClick={async () => { await api('assistant/provider', { method: 'PATCH', json: { auto: true } }); await qc.invalidateQueries({ queryKey: ['provider'] }) }}>{t('Choose automatically again')}</Button>}
           </div>
         </details>
       )}
       {modelError && <p role="alert" className="text-xs text-destructive">{modelError}</p>}
       {data.source !== 'server' && (changing || !data.connected ? <ProviderForm onDone={() => setChanging(false)} /> : (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={() => setChanging(true)}><KeyRound /> {t('Сменить ключ')}</Button>
-          <Button type="button" variant="outline" onClick={remove}><Trash2 /> {t('Отключить')}</Button>
+          <Button type="button" variant="outline" onClick={() => setChanging(true)}><KeyRound /> {t('Change the key')}</Button>
+          <Button type="button" variant="outline" onClick={remove}><Trash2 /> {t('Disconnect')}</Button>
         </div>
       ))}
     </Section>
@@ -71,9 +71,9 @@ export function AssistantSettings() {
   }
   return (
     <div className="flex min-w-0 flex-col gap-7 text-sm">
-      <Section title={t('Кому доступен')}>
-        <SwitchRow title={t('Включить ассистента')} description={t('Появится для редакторов и владельца.')} checked={data.assistantEnabled} onChange={(on) => set('assistantEnabled', on)} />
-        <SwitchRow title={t('Разрешить читателям пользоваться ассистентом')} description={t('Читатели смогут спрашивать, но не менять. Живых родственников ассистент им не покажет.')} disabled={!data.assistantEnabled} checked={data.assistantForReaders} onChange={(on) => set('assistantForReaders', on)} />
+      <Section title={t('Who can use it')}>
+        <SwitchRow title={t('Turn on the assistant')} description={t('Appears for editors and the owner.')} checked={data.assistantEnabled} onChange={(on) => set('assistantEnabled', on)} />
+        <SwitchRow title={t('Allow readers')} description={t('Readers can ask but not change anything. The assistant will not show them living relatives.')} disabled={!data.assistantEnabled} checked={data.assistantForReaders} onChange={(on) => set('assistantForReaders', on)} />
       </Section>
       <ProviderSettings />
     </div>

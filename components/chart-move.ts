@@ -32,8 +32,8 @@ export function useCardMove(layout: Layout, pins: Record<string, number>, zoom: 
       if (!card) return
       const before = pins[id] ?? null
       pin(id, card.x + (ev.clientX - from) / zoom())
-        .then(() => app.notify(t('Карточка сдвинута. Родство не изменилось'), [{ label: t('Отменить'), run: () => { void pin(id, before) } }]))
-        .catch((err: Error) => app.notify(`${t('Не удалось сохранить')}: ${err.message}`))
+        .then(() => app.notify(t('The card moved. The family links did not change'), [{ label: t('Undo'), run: () => { void pin(id, before) } }]))
+        .catch((err: Error) => app.notify(`${t('Could not save')}: ${err.message}`))
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)

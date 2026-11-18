@@ -8,7 +8,7 @@ import { useSmart } from '@/lib/smart/settings'
 import { CloudError, useCloud } from '@/lib/smart/cloud'
 import { clock, useRecorder } from '@/lib/use-recorder'
 
-const NO_MIC = { insecure: 'Запись голоса работает только по защищённому адресу (https).', unsupported: 'Этот браузер не умеет записывать звук.', denied: 'Нет доступа к микрофону. Разрешите его в браузере.' }
+const NO_MIC = { insecure: 'Voice recording only works on a secure address (https).', unsupported: 'This browser cannot record sound.', denied: 'No access to the microphone. Allow it in the browser.' }
 
 /** Writes what is said into the field of the form it stands in: it reads on this device, and the person sends it. */
 export function DictateButton() {
@@ -40,23 +40,23 @@ export function DictateButton() {
     }
     import('@/lib/smart/speech')
       .then(({ transcribe }) => transcribe(blob, archiveLang, () => {}, stop.signal))
-      .then((text) => { if (text.trim()) write(text.trim()); else notify(t('В записи не удалось разобрать речь')) })
-      .catch((e) => { if (e.name !== 'AbortError') { console.error(e); notify(e instanceof CloudError ? e.message : t('Не удалось расшифровать запись.')) } })
+      .then((text) => { if (text.trim()) write(text.trim()); else notify(t('No speech could be made out in the recording')) })
+      .catch((e) => { if (e.name !== 'AbortError') { console.error(e); notify(e instanceof CloudError ? e.message : t('Could not transcribe the recording.')) } })
       .finally(() => setReading(false))
   }, [clip]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!on || (!cloud.use && (model.status === 'unknown' || model.status === 'unavailable'))) return null
   if (!cloud.use && model.status !== 'ready') {
     const busy = model.status === 'busy'
-    return <PromptInputButton aria-label={t('Сказать голосом')} title={t(busy ? 'Модель скачивается' : 'Сказать голосом')} data-hint={busy ? undefined : `${t('Сначала нужно скачать модель')}, ${packSize('speech')} ${t('МБ')}.`} onClick={() => { if (!busy) notify(`${t('Чтобы говорить голосом, скачайте модель')}, ${packSize('speech')} ${t('МБ')}.`, [{ label: t('Скачать модель'), run: () => downloadPack('speech') }]) }}>{busy ? <Loader2 size={15} className="animate-spin" /> : <Mic size={15} className="opacity-50" />}</PromptInputButton>
+    return <PromptInputButton aria-label={t('Speak instead of typing')} title={t(busy ? 'The model is downloading' : 'Speak instead of typing')} data-hint={busy ? undefined : `${t('First the model needs downloading')}, ${packSize('speech')} ${t('MB')}.`} onClick={() => { if (!busy) notify(`${t('To speak instead of typing, download the model')}, ${packSize('speech')} ${t('MB')}.`, [{ label: t('Download model'), run: () => downloadPack('speech') }]) }}>{busy ? <Loader2 size={15} className="animate-spin" /> : <Mic size={15} className="opacity-50" />}</PromptInputButton>
   }
   return (
     <span ref={self} className="contents">
       {reading
-        ? <PromptInputButton aria-label={t('Остановить расшифровку')} title={t('Остановить расшифровку')} onClick={() => stopReading.current?.abort()}><Loader2 size={15} className="animate-spin" /></PromptInputButton>
+        ? <PromptInputButton aria-label={t('Stop transcribing')} title={t('Stop transcribing')} onClick={() => stopReading.current?.abort()}><Loader2 size={15} className="animate-spin" /></PromptInputButton>
         : rec.recording
-          ? <PromptInputButton aria-label={t('Остановить запись')} title={t('Остановить запись')} onClick={rec.stop}><Square size={13} className="fill-destructive text-destructive" /> <span className="text-xs tabular-nums">{clock(rec.seconds)}</span></PromptInputButton>
-          : <PromptInputButton aria-label={t('Сказать голосом')} title={t('Сказать голосом')} data-hint={t('Текст распознаётся на этом устройстве, потом его можно поправить и отправить.')} onClick={rec.start}><Mic size={15} /></PromptInputButton>}
+          ? <PromptInputButton aria-label={t('Stop recording')} title={t('Stop recording')} onClick={rec.stop}><Square size={13} className="fill-destructive text-destructive" /> <span className="text-xs tabular-nums">{clock(rec.seconds)}</span></PromptInputButton>
+          : <PromptInputButton aria-label={t('Speak instead of typing')} title={t('Speak instead of typing')} data-hint={t('The text is recognised on this device. You can correct it before sending.')} onClick={rec.start}><Mic size={15} /></PromptInputButton>}
     </span>
   )
 }

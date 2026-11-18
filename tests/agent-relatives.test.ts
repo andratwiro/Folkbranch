@@ -147,14 +147,14 @@ describe('what asking costs', () => {
     const res = await assistantResponse(owner, { messages: [{ id: 'q', role: 'user', parts: [{ type: 'text', text: 'Сколько у Корня родственников?' }] }] }, { model: m })
     const raw = await res.text()
     const wall = performance.now() - began
-    expect(raw).toContain('Готово')
+    expect(raw).toContain('Done')
     const perRequest = m.doStreamCalls.map((c) => Math.round((JSON.stringify(c.prompt).length + JSON.stringify(c.tools).length) / 4))
     return { requests: m.doStreamCalls.length, perRequest, tokens: perRequest.reduce((a, b) => a + b, 0), wall, m }
   }
 
   it('answers in fewer round trips and far fewer tokens than reading every card and relative', async () => {
-    const before = await ask([calls(['search_people', { query: 'Корень' }]), calls(['get_person', { id: root.id }]), calls(['use_tools', { groups: ['people'] }]), calls(['get_relatives', { id: root.id }]), say('Готово')])
-    const after = await ask([calls(['count_relatives', { name: 'Корень' }]), say('Готово')])
+    const before = await ask([calls(['search_people', { query: 'Корень' }]), calls(['get_person', { id: root.id }]), calls(['use_tools', { groups: ['people'] }]), calls(['get_relatives', { id: root.id }]), say('Done')])
+    const after = await ask([calls(['count_relatives', { name: 'Корень' }]), say('Done')])
     const row = (name: string, r: typeof before) => `${name.padEnd(8)} requests ${r.requests}  input tokens ${String(r.tokens).padStart(6)}  (${r.perRequest.join(' + ')})  stub wall ${r.wall.toFixed(0)} ms`
     if (process.env.MEASURE) process.stderr.write(`\n${row('before', before)}\n${row('after', after)}\n`)
     expect(after.requests).toBeLessThan(before.requests)
@@ -166,8 +166,8 @@ describe('what asking costs', () => {
 
   it('reads twelve cards in one trimmed call for a fraction of twelve get_person answers', async () => {
     const ids = (await call(owner, 'get_relatives', { id: root.id })).slice(0, 12).map((x: any) => x.id)
-    const before = await ask([calls(...ids.map((id: string): [string, unknown] => ['get_person', { id }])), say('Готово')])
-    const after = await ask([calls(['get_people', { ids }]), say('Готово')])
+    const before = await ask([calls(...ids.map((id: string): [string, unknown] => ['get_person', { id }])), say('Done')])
+    const after = await ask([calls(['get_people', { ids }]), say('Done')])
     if (process.env.MEASURE) process.stderr.write(`\n12 cards: get_person x12 ${before.perRequest.join(' + ')} = ${before.tokens} tokens; get_people ${after.perRequest.join(' + ')} = ${after.tokens} tokens\n`)
     expect(after.requests).toBe(2)
     expect(after.perRequest[1] - after.perRequest[0]).toBeLessThan((before.perRequest[1] - before.perRequest[0]) / 2)

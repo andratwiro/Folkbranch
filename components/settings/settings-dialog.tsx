@@ -25,19 +25,19 @@ export type Section = 'ai' | 'speech' | 'faces' | 'tips' | 'setup' | 'account' |
 
 /** Each screen says what it is for, so nobody has to work it out from the fields. */
 const SECTIONS: Record<Section, [string, string, ComponentType<{ size?: number }>]> = {
-  ai: ['ИИ', 'Использование, функции ИИ, провайдеры и MCP-сервер архива.', Sparkles],
-  speech: ['Распознавание речи', 'Один провайдер распознавания речи для всего архива: подключает и оплачивает владелец.', AudioLines],
-  faces: ['Распознавание лиц', 'Один провайдер распознавания лиц для всего архива: подключает и оплачивает владелец.', ScanFace],
-  tips: ['Возможности и советы', 'Всё, что умеет приложение, и то, что обычно остаётся незамеченным.', Lightbulb],
-  setup: ['С чего начать', 'Что уже готово и что ещё можно подключить. Всё необязательное можно пропустить.', ListChecks],
-  account: ['Мой аккаунт', 'Как вы связаны с архивом и как входите в него.', UserRound],
-  smart: ['Модели на этом устройстве', 'Распознавание лиц и речи прямо в браузере: ничего не уходит наружу.', Cpu],
-  general: ['Общие параметры', 'Название архива и язык приложения. Меняются сразу для всех.', SlidersHorizontal],
-  signin: ['Способы входа', 'Чем родные входят в архив после первой ссылки: Яндекс ID, VK ID, Telegram, Google или код на почту.', DoorOpen],
-  people: ['Пользователи и доступ', 'Кто входит в архив и что может в нём делать, а кому хватит ссылки для просмотра.', Users],
-  assistant: ['Ассистент', 'Чат внутри приложения: отвечает на вопросы о семье и вносит правки с вашего подтверждения.', AssistantIcon],
-  agents: ['MCP-сервер и токены доступа', 'Архив работает как MCP-сервер: Claude, ChatGPT, Cursor и другие клиенты подключаются по токену доступа.', KeyRound],
-  data: ['Данные и резервные копии', 'Добавить людей из файла, скачать данные, сделать копию архива.', DatabaseBackup],
+  ai: ['AI', 'Usage, AI features, providers and the archive\'s MCP server.', Sparkles],
+  speech: ['Speech recognition', 'One speech recognition provider for the whole archive: the owner connects and pays for it.', AudioLines],
+  faces: ['Face recognition', 'One face recognition provider for the whole archive: the owner connects and pays for it.', ScanFace],
+  tips: ['Features and tips', 'Everything the app can do, and what usually goes unnoticed.', Lightbulb],
+  setup: ['Getting started', 'What is ready and what else you can connect. Anything optional can be skipped.', ListChecks],
+  account: ['My account', 'How you relate to the archive and how you sign in.', UserRound],
+  smart: ['Models on this device', 'Face and speech recognition right in the browser: nothing leaves it.', Cpu],
+  general: ['General settings', 'The name of the archive and the language of the app. They change for everyone at once.', SlidersHorizontal],
+  signin: ['Ways to sign in', 'How relatives sign in after the first link: Yandex ID, VK ID, Telegram, Google or a code by email.', DoorOpen],
+  people: ['Users and access', 'Who can sign in and what they can do, and who only needs a view link.', Users],
+  assistant: ['Assistant', 'A chat in the app: it answers questions about the family and makes changes once you confirm.', AssistantIcon],
+  agents: ['MCP server and access tokens', 'The archive is an MCP server: Claude, ChatGPT, Cursor and other clients connect with an access token.', KeyRound],
+  data: ['Data and backups', 'Add people from a file, download data, make a copy of the archive.', DatabaseBackup],
 }
 
 /** The pages that open from the AI screen. */
@@ -51,7 +51,7 @@ export function SettingsDialog({ open, onOpenChange, familyName, providers, onTe
   const [inside, setInside] = useState(!!initial)
   const setSection = (next: Section) => { setSectionNow(next); setInside(true) }
   const groups: [string, Section[]][] = isOwner
-    ? [['', ['setup', 'tips', 'account']], ['Основные настройки', ['general', 'people', 'signin', 'data', 'ai']]]
+    ? [['', ['setup', 'tips', 'account']], ['Main settings', ['general', 'people', 'signin', 'data', 'ai']]]
     : [['', ['account', 'tips', 'smart', 'data']]]
   const [title, description] = SECTIONS[section]
   // For the owner the AI pages open from the AI screen: the list shows only "AI", and each page has a way back to it.
@@ -61,8 +61,8 @@ export function SettingsDialog({ open, onOpenChange, familyName, providers, onTe
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex h-[min(680px,calc(100dvh-32px))] max-w-4xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl">
         <div className="flex min-h-0 flex-1 flex-col sm:flex-row">
-          <nav aria-label={t('Настройки')} className={cn('flex shrink-0 flex-col gap-0.5 overflow-y-auto p-2 max-sm:min-h-0 max-sm:flex-1 sm:w-[268px] sm:border-r sm:border-border sm:bg-muted/40', inside && 'max-sm:hidden')}>
-            <DialogTitle className="px-2.5 pt-1.5 pb-3 font-serif text-lg font-medium">{t('Настройки')}</DialogTitle>
+          <nav aria-label={t('Settings')} className={cn('flex shrink-0 flex-col gap-0.5 overflow-y-auto p-2 max-sm:min-h-0 max-sm:flex-1 sm:w-[268px] sm:border-r sm:border-border sm:bg-muted/40', inside && 'max-sm:hidden')}>
+            <DialogTitle className="px-2.5 pt-1.5 pb-3 font-serif text-lg font-medium">{t('Settings')}</DialogTitle>
             {groups.map(([group, ids]) => (
               <div key={group} className={group ? 'mt-4 border-t border-[#d9d0bd] pt-3.5' : ''}>
                 {group && <div className="px-2.5 pb-1.5 font-serif text-sm font-semibold text-ink">{t(group)}</div>}
@@ -74,8 +74,8 @@ export function SettingsDialog({ open, onOpenChange, familyName, providers, onTe
             ))}
           </nav>
           <div className={cn('min-h-0 min-w-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6', !inside && 'max-sm:hidden')}>
-            <button type="button" className="pick -ml-1 mb-2 flex items-center gap-0.5 text-sm text-ink-soft hover:text-ink min-h-9 sm:hidden" onClick={() => setInside(false)}><ChevronLeft size={16} /> {t('Настройки')}</button>
-            {underAi && <button type="button" className="pick -ml-1 mb-1 flex items-center gap-0.5 text-sm text-[#a4502e] hover:text-ink min-h-8" onClick={() => setSectionNow('ai')}><ChevronLeft size={16} /> {t('ИИ')}</button>}
+            <button type="button" className="pick -ml-1 mb-2 flex items-center gap-0.5 text-sm text-ink-soft hover:text-ink min-h-9 sm:hidden" onClick={() => setInside(false)}><ChevronLeft size={16} /> {t('Settings')}</button>
+            {underAi && <button type="button" className="pick -ml-1 mb-1 flex items-center gap-0.5 text-sm text-[#a4502e] hover:text-ink min-h-8" onClick={() => setSectionNow('ai')}><ChevronLeft size={16} /> {t('AI')}</button>}
             <header className="mb-5 pr-6">
               <h2 className="font-serif text-xl font-medium">{t(title)}</h2>
               <DialogDescription className="mt-0.5 text-sm text-ink-soft">{t(description)}</DialogDescription>

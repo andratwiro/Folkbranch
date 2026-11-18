@@ -27,7 +27,7 @@ export function StoryRequests() {
   const refresh = () => qc.invalidateQueries({ queryKey: ['story-requests'] })
   const origin = useLinkOrigin()
   return (
-    <Section title={t('Попросить рассказать')} description={t('Ссылка для одного человека: открыть на телефоне, нажать большую кнопку и говорить. Аккаунт не нужен, архив по ссылке не виден, а запись ждёт вашей проверки.')}>
+    <Section title={t('Ask for a story')} description={t('A link for one person: open it on a phone, press one big button and talk. No account, the archive stays out of sight, and the recording waits for your review.')}>
       <form className="flex flex-col gap-3" onSubmit={async (e) => {
         e.preventDefault()
         setError('')
@@ -42,19 +42,19 @@ export function StoryRequests() {
         }
       }}>
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-          <div className="flex min-w-0 flex-col gap-1 text-xs text-ink-soft">{t('О ком рассказ')}
-            <PersonPopover onPick={setPersonId}><button type="button" className="flex h-9 min-w-0 items-center rounded-lg border border-input bg-white px-3 text-left text-sm text-ink"><span className="truncate">{person ? personName(person) : t('Выбрать карточку')}</span></button></PersonPopover>
+          <div className="flex min-w-0 flex-col gap-1 text-xs text-ink-soft">{t('Who the story is about')}
+            <PersonPopover onPick={setPersonId}><button type="button" className="flex h-9 min-w-0 items-center rounded-lg border border-input bg-white px-3 text-left text-sm text-ink"><span className="truncate">{person ? personName(person) : t('Choose a card')}</span></button></PersonPopover>
           </div>
-          <Field label={t('Кого просите')}><Input maxLength={120} placeholder={t('Например, бабушка Нина')} value={tellerName} onChange={(e) => setTellerName(e.target.value)} /></Field>
+          <Field label={t('Who you are asking')}><Input maxLength={120} placeholder={t('For example, Grandma Nina')} value={tellerName} onChange={(e) => setTellerName(e.target.value)} /></Field>
         </div>
         <QuestionPicker value={question} onChange={setQuestion} />
-        <Button className="self-start" disabled={!personId}><Mic /> {t('Создать ссылку для рассказа')}</Button>
+        <Button className="self-start" disabled={!personId}><Mic /> {t('Create a story link')}</Button>
       </form>
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
       {link && <LinkResult link={link} about={person ? personName(person) : ''} />}
       {rows.length > 0 && (
         <List>
-          {rows.map((r) => <ListRow key={r.id} title={`${r.tellerName || t('Без имени')}: ${r.about}`} meta={`${t('Записей получено')}: ${r.received}`} actions={<Button size="sm" variant="danger" title={`${t('Закрыть ссылку')}: ${r.about}`} onClick={async () => { if (await ask(t('Закрыть ссылку? По ней больше нельзя будет отправить запись.'), t('Закрыть'))) { await api(`story-requests/${r.id}`, { method: 'DELETE' }); refresh() } }}><X /> {t('Закрыть')}</Button>} />)}
+          {rows.map((r) => <ListRow key={r.id} title={`${r.tellerName || t('No name')}: ${r.about}`} meta={`${t('Recordings received')}: ${r.received}`} actions={<Button size="sm" variant="danger" title={`${t('Close the link')}: ${r.about}`} onClick={async () => { if (await ask(t('Close the link? No more recordings can be sent with it.'), t('Close'))) { await api(`story-requests/${r.id}`, { method: 'DELETE' }); refresh() } }}><X /> {t('Close')}</Button>} />)}
         </List>
       )}
     </Section>

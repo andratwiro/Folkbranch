@@ -1,5 +1,6 @@
 // The scrubber under the map, as numbers: how busy each year is (the quiet histogram over the track), where the
 // year labels and decade ticks go, and which year "previous / next event" jumps to. Pure, so it is tested alone.
+import { translate } from './i18n'
 import type { Lang } from './types'
 
 /** An event as the scrubber sees it: its year, and whether it brought someone somewhere new. */
@@ -57,19 +58,7 @@ export function caption<E extends { year: number; what: string; name: string; pl
   return `${withYear ? `${year} · ` : ''}${e.what} · ${e.name} · ${e.place}${here.length > 1 ? ` +${here.length - 1}` : ''}`
 }
 
-/** Russian has three forms for a counted noun (for 1, for 2 to 4, for 5 and up); the same rule as lib/names. */
-const ruForm = (n: number, one: string, few: string, many: string) => {
-  const a = n % 100, b = n % 10
-  return a >= 11 && a <= 14 ? many : b === 1 ? one : b >= 2 && b <= 4 ? few : many
-}
-/** One and many, for the languages with only these two forms (as lib/names does for years and people). */
-const OTHER: Record<Exclude<Lang, 'ru'>, { event: [string, string]; generation: [string, string] }> = {
-  en: { event: ['event', 'events'], generation: ['generation', 'generations'] },
-  es: { event: ['hecho', 'hechos'], generation: ['generación', 'generaciones'] },
-  ca: { event: ['fet', 'fets'], generation: ['generació', 'generacions'] },
-}
-const form = (n: number, [one, many]: [string, string]) => `${n} ${n === 1 ? one : many}`
-/** "1 событие", "3 события" / "1 event", "3 events" / "3 hechos" / "3 fets". */
-export const eventWords = (n: number, lang: Lang) => (lang === 'ru' ? `${n} ${ruForm(n, 'событие', 'события', 'событий')}` : form(n, OTHER[lang].event))
-/** "1 поколение", "6 поколений" / "6 generations" / "6 generaciones" / "6 generacions": the length of a line of descent. */
-export const generationWords = (n: number, lang: Lang) => (lang === 'ru' ? `${n} ${ruForm(n, 'поколение', 'поколения', 'поколений')}` : form(n, OTHER[lang].generation))
+/** "1 событие", "3 события" / "1 event", "3 events" / "3 hechos": the plural forms are each language's own (lib/i18n.ts). */
+export const eventWords = (n: number, lang: Lang) => translate(lang, '{count} events', { count: n })
+/** "1 поколение", "6 поколений" / "6 generations": the length of a line of descent. */
+export const generationWords = (n: number, lang: Lang) => translate(lang, '{count} generations', { count: n })

@@ -37,7 +37,7 @@ describe('one life on a map', () => {
     const stops = lifeStops(ivan, g, places.listPlaces(owner))
     // Birth and service in "Ивановка" are one stop; "Безточкино" has no point; the undated "Тверь" merges with death in "Калинин".
     expect(stops.map((s) => s.place.name)).toEqual(['Ивановка', 'Москва', 'Тверь'])
-    expect(stops[0].what).toBe('Рождение')
+    expect(stops[0].what).toBe('Birth')
     expect(stops.at(-1)!.place.name).toBe('Тверь')
   })
 })

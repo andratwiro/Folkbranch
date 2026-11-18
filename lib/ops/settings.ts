@@ -20,7 +20,7 @@ const isAlive = (personId: string) => {
 }
 
 function assertAlive(personId: string | null | undefined) {
-  if (personId && !isAlive(personId)) throw new OpError(400, tell('Выбрать можно только живого человека'))
+  if (personId && !isAlive(personId)) throw new OpError(400, tell('Only a living person can be chosen'))
 }
 
 /** A card stops being someone's when its person turns out to have died; an undo brings the link back. */
@@ -95,7 +95,7 @@ export function setUserRole(actor: Actor, id: string, role: Role) {
 /** Two owners removing each other at once would leave nobody to run the archive: the last owner stays. */
 function keepAnOwner(id: string) {
   const owners = getDb().select({ id: schema.user.id }).from(schema.user).where(eq(schema.user.role, 'owner')).all()
-  if (owners.length <= 1 && owners.some((o) => o.id === id)) throw new OpError(409, tell('В архиве должен остаться хотя бы один владелец'))
+  if (owners.length <= 1 && owners.some((o) => o.id === id)) throw new OpError(409, tell('The archive must keep at least one owner'))
 }
 
 export function removeUser(actor: Actor, id: string) {
@@ -129,7 +129,7 @@ export function listHistory(actor: Actor, limit = 100, personId?: string): Histo
   // From the graph already in memory: a person this actor may not see has no name here either.
   const graph = getGraph(actor)
   const names = new Map(graph.persons.map((p) => [p.id, personName(p)]))
-  const nameOf = (id: string) => names.get(id) || tell('Без названия')
+  const nameOf = (id: string) => names.get(id) || tell('Untitled')
   const relations = new Map([
     ...graph.parentChild.map((r): [string, string[]] => [r.id, [r.parentId, r.childId]]),
     ...graph.unions.map((r): [string, string[]] => [r.id, [r.aId, r.bId]]),
@@ -153,7 +153,7 @@ export function listHistory(actor: Actor, limit = 100, personId?: string): Histo
       const original = r.undoOf ? originals.get(r.undoOf) : undefined
       const details = reader || r.undoOf ? undefined : changeDetails(changes, nameOf, relationEnds)
       const changed = reader || r.undoOf ? undefined : changedPeople(changes, nameOf)
-      const summary = reader ? r.summary : typeof original === 'object' ? `${tell('Возвращено')}: ${original.redo}` : readableSummary(r.summary, changes, nameOf, original, relationEnds)
+      const summary = reader ? r.summary : typeof original === 'object' ? `${tell('Redone')}: ${original.redo}` : readableSummary(r.summary, changes, nameOf, original, relationEnds)
       // The lines below say which fields changed, so the first line need not list them too.
       const person = details?.length && changes.every((c: { table: string }) => c.table === 'persons') ? summary.split(': ')[0] : summary
       return {
@@ -173,4 +173,4 @@ export function listHistory(actor: Actor, limit = 100, personId?: string): Histo
 }
 
 // What the server writes for a living person's open range follows the archive's language.
-setOpenEnd(() => say('н. в.'))
+setOpenEnd(() => say('now'))

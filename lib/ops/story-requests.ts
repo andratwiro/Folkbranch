@@ -73,11 +73,11 @@ export function requestInfo(token: string) {
 
 export async function submitRecording(token: string, file: { buf: Buffer; name: string }, seconds: number | null, topic: number | null = null) {
   const r = byToken(token)
-  if (!live(r)) throw new OpError(404, tell('Ссылка недействительна'))
-  if (r.received >= MAX_PER_LINK) throw new OpError(429, tell('По этой ссылке уже много записей. Попросите новую.'))
+  if (!live(r)) throw new OpError(404, tell('This link is not valid'))
+  if (r.received >= MAX_PER_LINK) throw new OpError(429, tell('This link has many recordings already. Ask for a new one.'))
   const person = getPersonRow(r.personId)
   // Its own author, so one link's recordings wait together and can be told from anyone else's.
-  const actor: Actor = { userId: `request:${r.id}`, name: r.tellerName || say('Запись по ссылке'), role: 'reader', personId: null }
+  const actor: Actor = { userId: `request:${r.id}`, name: r.tellerName || say('Recording by link'), role: 'reader', personId: null }
   const audio = await media.storeAudio(file.buf, file.name || 'voice', actor.userId)
   try {
     // Only a question the link asks can name the story: anything else from the page is ignored.

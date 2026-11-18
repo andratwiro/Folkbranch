@@ -90,7 +90,7 @@ export function mapTimeline(graph: Graph, places: Place[], t: (k: string) => str
   for (const p of graph.persons) {
     const ownGaps = missing.length
     if (p.hidden) continue
-    const name = personName(p) || t('Без имени')
+    const name = personName(p) || t('No name')
     const born = inYears(p.birthYear) ?? eventYear(p.birthDate)
     const written = inYears(p.deathYear) ?? eventYear(p.deathDate)
     // A death written before the birth is a slip in one of the two: the life stays on the map from its birth, and
@@ -100,7 +100,7 @@ export function mapTimeline(graph: Graph, places: Place[], t: (k: string) => str
     const stops: TimedStop[] = []
     const add = (text: string, placeId: string | null | undefined, date: string, what: string, fallbackYear: number | null = null, kind: EventKind = 'other', union?: string) => {
       const year = eventYear(date) ?? fallbackYear
-      if (!text.trim()) { if (year !== null || what === t('Рождение')) missing.push({ personId: p.id, name, what, date, place: '', gap: 'no-place' }); return }
+      if (!text.trim()) { if (year !== null || what === t('Birth')) missing.push({ personId: p.id, name, what, date, place: '', gap: 'no-place' }); return }
       const place = findPlace(text, places, placeId)
       // A place nobody has made a record for is a different gap from a record without a point: the first is a
       // missing record (or another spelling of its name), the second is a missing coordinate. Two records of one
@@ -111,17 +111,17 @@ export function mapTimeline(graph: Graph, places: Place[], t: (k: string) => str
       const until = periodEnd(date)
       stops.push({ lat: place.lat, lon: place.lon, place: text.trim(), year, date: date || String(year), what, kind, time: year, ...(union ? { union } : {}), ...(until ? { until } : {}) })
     }
-    add(p.birthPlace, p.birthPlaceId, p.birthDate, t('Рождение'), born, 'birth')
+    add(p.birthPlace, p.birthPlaceId, p.birthDate, t('Birth'), born, 'birth')
     for (const u of unionsOf.get(p.id) ?? []) {
       const other = byId.get(u.aId === p.id ? u.bId : u.aId)
       // A partner hidden from this reader hides the marriage too, as the Places list and the life chronology do.
       if (other?.hidden) continue
-      const label = t(u.kind === 'civil' ? 'Союз' : 'Брак')
+      const label = t(u.kind === 'civil' ? 'Partnership' : 'Marriage')
       add(u.place, u.placeId, u.startDate, other ? `${label}: ${personName(other)}` : label, null, 'union', u.id)
     }
     for (const f of p.facts) add(f.place, f.placeId, f.date, t(f.kind), null, factKind(f.kind))
-    if (reversed) missing.push({ personId: p.id, name, what: t('Смерть'), date: p.deathDate || String(written), place: p.deathPlace, gap: 'death-before-birth' })
-    else if (p.deathPlace || died !== null) add(p.deathPlace, p.deathPlaceId, p.deathDate, t('Смерть'), died, 'death')
+    if (reversed) missing.push({ personId: p.id, name, what: t('Death'), date: p.deathDate || String(written), place: p.deathPlace, gap: 'death-before-birth' })
+    else if (p.deathPlace || died !== null) add(p.deathPlace, p.deathPlaceId, p.deathDate, t('Death'), died, 'death')
     // A fact outside this life (more than 90 years before a death with no birth, before a birth, after a death
     // unless it is a burial or a will, or still to come) is a data error: it neither places the person nor stretches
     // the timeline.
@@ -136,7 +136,7 @@ export function mapTimeline(graph: Graph, places: Place[], t: (k: string) => str
       stops.splice(i, 1)
     }
     // Same year: birth first, death last, the rest as written.
-    const rank = (s: TimedStop) => (s.what === t('Рождение') ? -1 : s.what === t('Смерть') ? 1 : 0)
+    const rank = (s: TimedStop) => (s.what === t('Birth') ? -1 : s.what === t('Death') ? 1 : 0)
     stops.sort((a, b) => a.year - b.year || rank(a) - rank(b))
     // Several places in one year share it out, so each is stood at for a while instead of passed in no time.
     for (let i = 0; i < stops.length;) {

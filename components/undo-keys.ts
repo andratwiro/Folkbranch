@@ -40,9 +40,9 @@ export function UndoKeys() {
       try {
         const list = await api<HistoryEntry[]>('history?limit=100')
         const entry = undoTarget(list.filter((h) => h.userId === me.id), redo)
-        if (!entry) { notify(t(redo ? 'Нечего вернуть' : 'Нечего отменить')); return }
+        if (!entry) { notify(t(redo ? 'Nothing to redo' : 'Nothing to undo')); return }
         await api(`history/${entry.id}/undo`, { json: {} })
-        notify(`${t(redo ? 'Возвращено' : 'Отменено')}: ${entry.summary}`)
+        notify(`${t(redo ? 'Redone' : 'Undone')}: ${entry.summary}`)
         await qc.invalidateQueries()
       } catch (err) {
         notify(undoFailure(err, t))

@@ -14,7 +14,7 @@ import { UpdateNotice } from './update-notice'
 interface Status { address: string; addressWrong: string | null; insecure: boolean; dataDir: string; freeBytes: number | null; lowDisk: boolean; people: number; users: number; agents: number; assistant: string | null; assistantOn: boolean; signIn: boolean; mcpUrl: string }
 
 type State = 'done' | 'todo' | 'problem' | 'optional'
-const MARK: Record<State, [LucideIcon, string, string]> = { done: [Check, 'text-[#2f7d4f]', 'Готово'], problem: [AlertTriangle, 'text-destructive', 'Нужно исправить'], todo: [Circle, 'text-ink-faint', 'Ещё не сделано'], optional: [Circle, 'text-ink-faint', ''] }
+const MARK: Record<State, [LucideIcon, string, string]> = { done: [Check, 'text-[#2f7d4f]', 'Done'], problem: [AlertTriangle, 'text-destructive', 'Needs fixing'], todo: [Circle, 'text-ink-faint', 'Not done yet'], optional: [Circle, 'text-ink-faint', ''] }
 
 function Step({ title, state, logos = [], open, onToggle, children }: { title: string; state: State; logos?: BrandName[]; open: boolean; onToggle: () => void; children: React.ReactNode }) {
   const { t } = useApp()
@@ -50,39 +50,39 @@ export function SetupGuide({ onImport, onFirstPerson, onGo }: { onImport?: () =>
   return (
     <div className="flex min-w-0 flex-col gap-2 text-sm">
       <UpdateNotice />
-      <Step title="Ваша семья" state={s.people ? 'done' : 'todo'} open={open === 'family'} onToggle={toggle('family')}>
-        <p className="text-ink-soft">{s.people ? `${t('Людей в архиве')}: ${s.people}.` : t('Добавьте первого человека или загрузите файл GEDCOM, Gramps, Excel, CSV либо обычный текст.')}</p>
+      <Step title={'Your family'} state={s.people ? 'done' : 'todo'} open={open === 'family'} onToggle={toggle('family')}>
+        <p className="text-ink-soft">{s.people ? `${t('People in the archive')}: ${s.people}.` : t('Add the first person, or load a GEDCOM, Gramps, Excel, CSV or plain text file.')}</p>
         <div className="flex flex-wrap gap-2">
-          {onFirstPerson && <button type="button" className="add-btn" onClick={onFirstPerson}><UserPlus size={14} /> {t('Добавить человека')}</button>}
-          {onImport && <button type="button" className="add-btn" onClick={onImport}><Upload size={14} /> {t('Загрузить файл')}</button>}
+          {onFirstPerson && <button type="button" className="add-btn" onClick={onFirstPerson}><UserPlus size={14} /> {t('Add a person')}</button>}
+          {onImport && <button type="button" className="add-btn" onClick={onImport}><Upload size={14} /> {t('Load a file')}</button>}
         </div>
       </Step>
-      <Step title="Позвать родственников" state={s.users > 1 ? 'done' : 'optional'} open={open === 'people'} onToggle={toggle('people')}>
-        {onGo ? <><p className="text-ink-soft">{t('Пригласите родственников по ссылке, чтобы они смотрели архив и дополняли его.')}</p>{go('people', 'Пригласить человека')}</> : <Access />}
+      <Step title={'Invite relatives_relatives'} state={s.users > 1 ? 'done' : 'optional'} open={open === 'people'} onToggle={toggle('people')}>
+        {onGo ? <><p className="text-ink-soft">{t('Invite relatives by link so they can view the archive and add to it.')}</p>{go('people', 'Invite someone')}</> : <Access />}
       </Step>
-      <Step title="Сделать копию" state="optional" open={open === 'copy'} onToggle={toggle('copy')}>
-        <p className="text-ink-soft">{t('Один файл со всем архивом и фотографиями. Из него можно восстановиться на новой установке.')}</p>
-        <Button asChild size="sm" variant="outline" className="self-start"><a href="/api/archive" download><Download /> {t('Скачать полный архив')}</a></Button>
+      <Step title={'Make a copy'} state="optional" open={open === 'copy'} onToggle={toggle('copy')}>
+        <p className="text-ink-soft">{t('One file with the whole archive and its photos. A new install can be restored from it.')}</p>
+        <Button asChild size="sm" variant="outline" className="self-start"><a href="/api/archive" download><Download /> {t('Download the whole archive')}</a></Button>
       </Step>
-      <Step title="Способы входа" state={s.signIn ? 'done' : 'optional'} logos={['yandex', 'vk', 'telegram', 'google']} open={open === 'signin'} onToggle={toggle('signin')}>
-        <p className="text-ink-soft">{t('Без этого родственники входят по ссылке-приглашению. Включите Яндекс ID, VK ID, Telegram, Google или код на почту, и они смогут входить снова сами.')}</p>
-        {onGo ? go('signin', 'Выбрать способы входа') : <p>{t('Они включаются в «Настройки → Способы входа».')}</p>}
+      <Step title={'Ways to sign in'} state={s.signIn ? 'done' : 'optional'} logos={['yandex', 'vk', 'telegram', 'google']} open={open === 'signin'} onToggle={toggle('signin')}>
+        <p className="text-ink-soft">{t('Without this, relatives sign in with an invitation link. Turn on Yandex ID, VK ID, Telegram, Google or a code by email, and they can come back by themselves.')}</p>
+        {onGo ? go('signin', 'Choose ways to sign in') : <p>{t('They are switched on under Settings → Ways to sign in.')}</p>}
       </Step>
-      <Step title="ИИ-ассистент" state={s.assistant ? (s.assistantOn ? 'done' : 'todo') : 'optional'} logos={['openrouter', 'anthropic', 'openai', 'gemini']} open={open === 'assistant'} onToggle={toggle('assistant')}>
-        {onGo ? <><p className="text-ink-soft">{s.assistant ? `${t('Подключён')}: ${s.assistant}.` : t('Отвечает на вопросы об архиве и вносит правки. Нужен ключ одного из сервисов, платите вы сами этому сервису. Что ассистент читает, уходит туда.')}</p>{go('assistant', 'Открыть настройки ассистента')}</> : s.assistant
-          ? <p className="flex flex-wrap items-center gap-2">{t('Подключён')}: {s.assistant}. {!s.assistantOn && <button type="button" className="bar-btn border border-border" onClick={async () => { await api('settings', { method: 'PATCH', json: { assistantEnabled: '1' } }); qc.invalidateQueries({ queryKey: ['setup'] }) }}>{t('Включить')}</button>}</p>
-          : <><p className="text-ink-soft">{t('Отвечает на вопросы об архиве и вносит правки. Нужен ключ одного из сервисов, платите вы сами этому сервису. Что ассистент читает, уходит туда.')}</p><ProviderForm onDone={async () => { await api('settings', { method: 'PATCH', json: { assistantEnabled: '1' } }); qc.invalidateQueries({ queryKey: ['setup'] }) }} /></>}
+      <Step title={'AI assistant'} state={s.assistant ? (s.assistantOn ? 'done' : 'todo') : 'optional'} logos={['openrouter', 'anthropic', 'openai', 'gemini']} open={open === 'assistant'} onToggle={toggle('assistant')}>
+        {onGo ? <><p className="text-ink-soft">{s.assistant ? `${t('Connected_masculine')}: ${s.assistant}.` : t('Answers questions about the archive and makes changes. It needs a key from one of these services, which you pay yourself. What it reads goes there.')}</p>{go('assistant', 'Open assistant settings')}</> : s.assistant
+          ? <p className="flex flex-wrap items-center gap-2">{t('Connected_masculine')}: {s.assistant}. {!s.assistantOn && <button type="button" className="bar-btn border border-border" onClick={async () => { await api('settings', { method: 'PATCH', json: { assistantEnabled: '1' } }); qc.invalidateQueries({ queryKey: ['setup'] }) }}>{t('Turn on')}</button>}</p>
+          : <><p className="text-ink-soft">{t('Answers questions about the archive and makes changes. It needs a key from one of these services, which you pay yourself. What it reads goes there.')}</p><ProviderForm onDone={async () => { await api('settings', { method: 'PATCH', json: { assistantEnabled: '1' } }); qc.invalidateQueries({ queryKey: ['setup'] }) }} /></>}
       </Step>
-      <Step title="Подключить внешнюю программу" state={s.agents ? 'done' : 'optional'} logos={['claudecode', 'codex', 'cursor', 'mcp']} open={open === 'mcp'} onToggle={toggle('mcp')}>
-        <p className="text-ink-soft">{t('Программа сможет читать архив и предлагать правки. Создайте ключ и скопируйте команду для своей программы. На компьютере с установленным приложением хватит одной команды:')} <code>./folkbranch connect</code></p>
-        {onGo ? go('agents', 'Создать ключ') : <><CopyField label={t('Адрес для подключения')} value={s.mcpUrl} /><TokensTab /></>}
+      <Step title={'Connect an outside program'} state={s.agents ? 'done' : 'optional'} logos={['claudecode', 'codex', 'cursor', 'mcp']} open={open === 'mcp'} onToggle={toggle('mcp')}>
+        <p className="text-ink-soft">{t('The program can read the archive and suggest changes. Create a key and copy the command for your program. On the computer running the app one command is enough:')} <code>./folkbranch connect</code></p>
+        {onGo ? go('agents', 'Make a key') : <><CopyField label={t('Address to connect to')} value={s.mcpUrl} /><TokensTab /></>}
       </Step>
-      <Step title="Адрес и хранилище" state={addressState} open={open === 'address' || addressState === 'problem'} onToggle={toggle('address')}>
-        <p><span className="text-ink-soft">{t('Адрес')}:</span> <code className="break-all">{s.address}</code></p>
-        {s.addressWrong && <p role="alert" className="text-destructive break-anywhere">{t('В настройках указан другой адрес, поэтому вход работать не будет')}: <b>{s.addressWrong}</b>. {t('Поменяйте BETTER_AUTH_URL и перезапустите приложение.')}</p>}
-        {s.insecure && <p role="alert" className="text-destructive">{t('Адрес без https: ссылки для входа передаются в открытом виде. На сервере запускайте установку с --domain.')}</p>}
-        <p><span className="text-ink-soft">{t('Данные лежат в')}:</span> <code className="break-all">{s.dataDir}</code>{gb && ` · ${t('свободно')} ${gb} ${t('ГБ')}`}</p>
-        {s.lowDisk && <p role="alert" className="text-destructive">{t('На диске почти не осталось места. Освободите место, иначе новые файлы не сохранятся.')}</p>}
+      <Step title={'Address and storage'} state={addressState} open={open === 'address' || addressState === 'problem'} onToggle={toggle('address')}>
+        <p><span className="text-ink-soft">{t('Address')}:</span> <code className="break-all">{s.address}</code></p>
+        {s.addressWrong && <p role="alert" className="text-destructive break-anywhere">{t('The settings name another address, so sign-in will not work')}: <b>{s.addressWrong}</b>. {t('Change BETTER_AUTH_URL and restart the app.')}</p>}
+        {s.insecure && <p role="alert" className="text-destructive">{t('No https: sign-in links travel in the open. On a server, install with --domain.')}</p>}
+        <p><span className="text-ink-soft">{t('Data is in')}:</span> <code className="break-all">{s.dataDir}</code>{gb && ` · ${t('free_available')} ${gb} ${t('GB')}`}</p>
+        {s.lowDisk && <p role="alert" className="text-destructive">{t('The disk is almost full. Free some room or new files will not be saved.')}</p>}
       </Step>
     </div>
   )

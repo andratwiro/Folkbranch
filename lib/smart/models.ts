@@ -34,15 +34,15 @@ export interface Variant {
 }
 
 export const VARIANTS: Variant[] = [
-  { id: 'yolo8n', feature: 'faces', name: 'Точная', facts: 'Находит 97% лиц, около 0,7 секунды на снимок', files: [RUNTIME, YOLO_N], suits: ['normal', 'strong'] },
-  { id: 'yunet', feature: 'faces', name: 'Лёгкая', facts: 'Находит 91% лиц, около 0,15 секунды на снимок', files: [RUNTIME, YUNET], suits: ['weak'] },
-  { id: 'yolo11m', feature: 'faces', name: 'Максимальная', facts: 'Находит 99% лиц, около 4 секунд на снимок', files: [RUNTIME, YOLO_M], suits: [] },
-  { id: 'sface', feature: 'recognize', name: 'SFace', facts: 'Точность 97%, на снимках одного человека в разном возрасте 92%. Более крупные модели в наших замерах не оказались лучше.', files: [RUNTIME, YUNET, SFACE], suits: ['weak', 'normal', 'strong'] },
-  { id: 'gigaam', feature: 'speech', name: 'GigaAM, для русского', facts: 'Ошибается в 12% слов, расшифровывает в 10 раз быстрее записи, сама ставит знаки препинания', files: [RUNTIME, GIGAAM, GIGAAM_WORDS], languages: ['ru'], suits: ['normal', 'strong'] },
-  { id: 'whisper-small-en', feature: 'speech', name: 'Whisper, средняя, для английского', facts: 'Ошибается в 5% английских слов, лёгкая в 16%. Примерно втрое медленнее лёгкой. Только английский', files: [], whisper: { repo: 'onnx-community/whisper-small.en', mb: 250 }, languages: ['en'], suits: ['normal', 'strong'] },
-  { id: 'whisper-base', feature: 'speech', name: 'Whisper, лёгкая', facts: 'На английском ошибается в 16% слов, на русском в 39%, в 5 раз быстрее записи. Подойдёт для слабого устройства и для других языков', files: [], whisper: { repo: 'onnx-community/whisper-base', mb: 85 }, suits: ['weak'] },
-  { id: 'whisper-small', feature: 'speech', name: 'Whisper, средняя', facts: 'На английском ошибается в 6% слов, на русском в 24%. Любые языки. Примерно втрое медленнее лёгкой', files: [], whisper: { repo: 'onnx-community/whisper-small', mb: 250 }, suits: [] },
-  { id: 'whisper-turbo', feature: 'speech', name: 'Whisper, максимальная', facts: 'На английском ошибается в 5% слов, на русском в 15%, лучше других справляется с акцентом и шумом. Скачивать около 1,1 ГБ, в 5 раз медленнее лёгкой: нужен сильный компьютер', files: [], whisper: { repo: 'onnx-community/whisper-large-v3-turbo', mb: 1090 }, suits: [] },
+  { id: 'yolo8n', feature: 'faces', name: 'Accurate', facts: 'Finds 97% of faces, about 0.7 seconds a photo', files: [RUNTIME, YOLO_N], suits: ['normal', 'strong'] },
+  { id: 'yunet', feature: 'faces', name: 'Light', facts: 'Finds 91% of faces, about 0.15 seconds a photo', files: [RUNTIME, YUNET], suits: ['weak'] },
+  { id: 'yolo11m', feature: 'faces', name: 'Maximum', facts: 'Finds 99% of faces, about 4 seconds a photo', files: [RUNTIME, YOLO_M], suits: [] },
+  { id: 'sface', feature: 'recognize', name: 'SFace', facts: '97% accurate, 92% on photos of one person at different ages. Larger models were no better in our measurements.', files: [RUNTIME, YUNET, SFACE], suits: ['weak', 'normal', 'strong'] },
+  { id: 'gigaam', feature: 'speech', name: 'GigaAM, for Russian', facts: 'Gets 12% of words wrong, ten times faster than the recording, adds punctuation itself', files: [RUNTIME, GIGAAM, GIGAAM_WORDS], languages: ['ru'], suits: ['normal', 'strong'] },
+  { id: 'whisper-small-en', feature: 'speech', name: 'Whisper, medium, for English', facts: 'Gets 5% of English words wrong, the light one 16%. About three times slower than the light one. English only', files: [], whisper: { repo: 'onnx-community/whisper-small.en', mb: 250 }, languages: ['en'], suits: ['normal', 'strong'] },
+  { id: 'whisper-base', feature: 'speech', name: 'Whisper, light', facts: 'Gets 16% of English words wrong and 39% of Russian, 5 times faster than the recording. Suits a weak device and other languages', files: [], whisper: { repo: 'onnx-community/whisper-base', mb: 85 }, suits: ['weak'] },
+  { id: 'whisper-small', feature: 'speech', name: 'Whisper, medium', facts: 'Gets 6% of English words wrong and 24% of Russian. Any language. About three times slower than the light one', files: [], whisper: { repo: 'onnx-community/whisper-small', mb: 250 }, suits: [] },
+  { id: 'whisper-turbo', feature: 'speech', name: 'Whisper, maximum', facts: 'Gets 5% of English words wrong and 15% of Russian, and copes best with accents and noise. A download of about 1.1 GB, 5 times slower than the light one: it needs a strong computer', files: [], whisper: { repo: 'onnx-community/whisper-large-v3-turbo', mb: 1090 }, suits: [] },
 ]
 const byId = (id: string) => VARIANTS.find((v) => v.id === id)!
 const language = () => pageLang()

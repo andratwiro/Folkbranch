@@ -111,34 +111,34 @@ const input = z.object({
 
 async function ask(url: string, init: RequestInit, timeout = 20_000) {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeout) }).catch(() => null)
-  if (!res) throw new OpError(502, tell('Не удалось связаться с сервисом. Проверьте адрес и интернет на сервере'))
+  if (!res) throw new OpError(502, tell('Could not reach the service. Check the address and the server\'s internet'))
   return res
 }
 
 /** Reading the list of models costs nothing, so a check never spends the owner's money. */
 export async function checkKey(style: 'openai' | 'openrouter', base: string, key: string) {
   const res = await ask(style === 'openrouter' ? 'https://openrouter.ai/api/v1/key' : `${base}/models`, { headers: { authorization: `Bearer ${key}` } })
-  if (res.status === 401 || res.status === 403) throw new OpError(400, tell('Сервис не принял этот ключ. Проверьте, что он скопирован целиком'))
-  if (res.status === 429) throw new OpError(429, tell('Сервис просит подождать. Попробуйте через минуту'))
+  if (res.status === 401 || res.status === 403) throw new OpError(400, tell('The service did not accept this key. Check that it was copied whole'))
+  if (res.status === 429) throw new OpError(429, tell('The service asks you to wait. Try again in a minute'))
   // A server of one's own may not list its models; that is no reason to refuse it.
-  if (!res.ok && res.status !== 404) throw new OpError(502, `${tell('Сервис ответил ошибкой')}: ${res.status}`)
+  if (!res.ok && res.status !== 404) throw new OpError(502, `${tell('The service answered with an error')}: ${res.status}`)
 }
 
 export async function saveTranscription(actor: Actor, raw: unknown) {
   requireRole(actor, 'owner')
-  if (fromEnv()) throw new OpError(409, tell('Расшифровка задана в настройках сервера'))
+  if (fromEnv()) throw new OpError(409, tell('Transcription is set in the server\'s settings'))
   const b = input.parse(raw)
   const preset = sttPreset(b.provider)!
   const old = fromApp()
-  if (preset.id === 'custom' && !b.baseUrl) throw new OpError(400, tell('Укажите адрес сервера'))
+  if (preset.id === 'custom' && !b.baseUrl) throw new OpError(400, tell('Enter the server address'))
   // Leaving the key empty uses the one already in the list of keys for this service.
   const own = preset.id === 'custom'
   const shared = own ? null : sharedKey(preset.id)
-  if (b.sameKey && !shared) throw new OpError(400, tell('Сначала добавьте ключ этого сервиса'))
+  if (b.sameKey && !shared) throw new OpError(400, tell('Add this service\'s key first'))
   // A key typed here that differs from the shared one stays with speech, so the assistant's key is never replaced.
   const kept = old?.provider === preset.id ? old.key : undefined
   const key = b.sameKey ? shared : b.key || (own ? kept : kept ?? shared ?? undefined)
-  if (!key) throw new OpError(400, tell('Вставьте ключ сервиса'))
+  if (!key) throw new OpError(400, tell('Paste the service key'))
   const base = (own ? b.baseUrl! : preset.base).replace(/\/+$/, '')
   await checkKey(preset.style, base, key)
   // The first key for a service goes on the list, so the other functions can use it too.
@@ -151,7 +151,7 @@ export async function saveTranscription(actor: Actor, raw: unknown) {
 
 export function removeTranscription(actor: Actor) {
   requireRole(actor, 'owner')
-  if (fromEnv()) throw new OpError(409, tell('Расшифровка задана в настройках сервера'))
+  if (fromEnv()) throw new OpError(409, tell('Transcription is set in the server\'s settings'))
   setSetting('sttConfig', '')
   return transcriptionStatus(actor)
 }
@@ -193,13 +193,13 @@ async function send(c: NonNullable<ReturnType<typeof config>>, audio: { bytes: B
       if (again.ok) { res = again; model = other; chosenModels.set(preset.id, { at: Date.now(), id: other }); break }
     }
   }
-  if (res.status === 401 || res.status === 403) throw new OpError(502, tell('Сервис не принял ключ владельца. Сообщите ему'))
-  if (res.status === 402) throw new OpError(502, tell('На счёте сервиса закончились деньги. Сообщите владельцу'))
-  if (res.status === 413) throw new OpError(413, tell('Запись слишком длинная для сервиса. Разделите её на части'))
-  if (res.status === 429) throw new OpError(429, tell('Сервис просит подождать. Попробуйте через минуту'))
-  if (!res.ok) throw new OpError(502, `${tell('Сервис ответил ошибкой')}: ${res.status}`)
+  if (res.status === 401 || res.status === 403) throw new OpError(502, tell('The service did not accept the owner\'s key. Tell them'))
+  if (res.status === 402) throw new OpError(502, tell('The service account is out of money. Tell the owner'))
+  if (res.status === 413) throw new OpError(413, tell('The recording is too long for the service. Split it into parts'))
+  if (res.status === 429) throw new OpError(429, tell('The service asks you to wait. Try again in a minute'))
+  if (!res.ok) throw new OpError(502, `${tell('The service answered with an error')}: ${res.status}`)
   const body = await res.json().catch(() => null)
-  if (typeof body?.text !== 'string') throw new OpError(502, tell('Сервис ответил непонятно'))
+  if (typeof body?.text !== 'string') throw new OpError(502, tell('The service\'s reply made no sense'))
   return { text: body.text.trim(), cost: typeof body.usage?.cost === 'number' ? (body.usage.cost as number) : null, seconds: typeof body.usage?.seconds === 'number' ? (body.usage.seconds as number) : null, model }
 }
 
@@ -208,20 +208,20 @@ const recent = new Map<string, number[]>()
 function slowDown(userId: string) {
   const now = Date.now()
   const list = (recent.get(userId) ?? []).filter((t) => now - t < 60_000)
-  if (list.length >= 8) throw new OpError(429, tell('Слишком много записей подряд. Подождите минуту'))
+  if (list.length >= 8) throw new OpError(429, tell('Too many recordings in a row. Wait a minute'))
   recent.set(userId, [...list, now])
 }
 
 export async function transcribe(actor: Actor, audio: { bytes: Buffer; name: string; mime: string }, opts: { language?: string | null; seconds: number }) {
   requireRole(actor, 'editor')
   const c = config()
-  if (!c) throw new OpError(409, tell('Расшифровка в облаке не настроена'))
-  if (!audio.bytes.length) throw new OpError(400, tell('Запись пустая'))
-  if (audio.bytes.length > MAX_BYTES) throw new OpError(413, tell('Запись слишком длинная для сервиса: до 25 МБ'))
+  if (!c) throw new OpError(409, tell('Cloud transcription is not set up'))
+  if (!audio.bytes.length) throw new OpError(400, tell('The recording is empty'))
+  if (audio.bytes.length > MAX_BYTES) throw new OpError(413, tell('The recording is too long for the service: up to 25 MB'))
   const seconds = Math.min(Math.max(opts.seconds, 1), 6 * 3600)
   const usage = monthTotal('speech')
   const cap = c.cfg.limitMinutes
-  if (cap > 0 && (usage.seconds + seconds) / 60 > cap) throw new OpError(429, tell('В этом месяце исчерпан предел расшифровки, который поставил владелец'))
+  if (cap > 0 && (usage.seconds + seconds) / 60 > cap) throw new OpError(429, tell('This month\'s transcription limit set by the owner has been used up'))
   slowDown(actor.userId)
   const out = await send(c, audio, opts.language ? opts.language.slice(0, 2).toLowerCase() : null)
   // Money only as the provider states it (OpenRouter does, per request); a free service of one's own costs nothing.
@@ -236,7 +236,7 @@ export async function transcribe(actor: Actor, audio: { bytes: Buffer; name: str
 export async function testTranscription(actor: Actor) {
   requireRole(actor, 'owner')
   const c = config()
-  if (!c) throw new OpError(409, tell('Сначала подключите сервис'))
+  if (!c) throw new OpError(409, tell('Connect a service first'))
   const rate = 16000, n = rate * 2
   const wav = Buffer.alloc(44 + n * 2)
   wav.write('RIFF', 0); wav.writeUInt32LE(36 + n * 2, 4); wav.write('WAVEfmt ', 8); wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22)

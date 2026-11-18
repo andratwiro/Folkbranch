@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 const input = inputClass
 const label = 'flex flex-col gap-1 text-xs text-ink-soft'
 const primary = cn(buttonVariants(), 'self-start')
-const NO_MIC = { insecure: 'Запись голоса работает только по защищённому адресу (https). Можно выбрать файл.', unsupported: 'Этот браузер не умеет записывать звук. Можно выбрать файл.', denied: 'Нет доступа к микрофону. Разрешите его в браузере или выберите файл.' }
+const NO_MIC = { insecure: 'Voice recording works only on a secure address (https). You can choose a file.', unsupported: 'This browser cannot record sound. You can choose a file.', denied: 'No access to the microphone. Allow it in the browser, or choose a file.' }
 
 /** A voice from the microphone or from a file, with the words as far as anyone has written them down. */
 export function StoryDialog({ person, story, onClose, onAsk }: { person: Person; story: Story | null; onClose: () => void; onAsk?: () => void }) {
@@ -50,14 +50,14 @@ export function StoryDialog({ person, story, onClose, onAsk }: { person: Person;
         if (voice) form.set('audio', voice, file?.name ?? 'voice')
         const r = await fetch('/api/v1/stories', { method: 'POST', body: form })
         if (!r.ok) throw Object.assign(new Error((await r.json().catch(() => null))?.error ?? r.statusText), { status: r.status })
-        if (!canEdit) notify(t('Рассказ отправлен. Его посмотрит тот, кто ведёт архив.'))
+        if (!canEdit) notify(t('Story sent. The archive owner will review it.'))
       }
       await qc.invalidateQueries({ queryKey: ['stories'] })
       await qc.invalidateQueries({ queryKey: ['proposals'] })
       onClose()
     } catch (e) {
       const { status, message } = e as Error & { status?: number }
-      setError(status === 409 ? t('Этот рассказ изменил другой человек. Откройте его заново.') : String(message))
+      setError(status === 409 ? t('Someone else changed this story. Open it again.') : String(message))
       setBusy(false)
     }
   }
@@ -73,70 +73,70 @@ export function StoryDialog({ person, story, onClose, onAsk }: { person: Person;
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
       <DialogContent className="max-w-lg max-h-[calc(100dvh-32px)] overflow-auto">
-        <DialogTitle className="font-serif text-lg font-medium">{t(story ? 'Изменить рассказ' : 'Записать рассказ')}</DialogTitle>
+        <DialogTitle className="font-serif text-lg font-medium">{t(story ? 'Edit the story' : 'Add a story')}</DialogTitle>
         <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
-          {!story && onAsk && <button type="button" className="self-start text-xs text-ink-soft underline underline-offset-2 hover:text-ink" onClick={onAsk}>{t('Или попросить рассказать по ссылке')}</button>}
+          {!story && onAsk && <button type="button" className="self-start text-xs text-ink-soft underline underline-offset-2 hover:text-ink" onClick={onAsk}>{t('Or ask someone to tell it by a link')}</button>}
           {!story && (
             <div className="flex flex-col gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
               {!rec.recording && !preview && (
                 <div className="flex flex-wrap items-center gap-3">
-                  <button type="button" className="bar-btn border border-border bg-white" onClick={rec.start}><Circle size={12} className="fill-destructive text-destructive" /> {t('Записать голос')}</button>
-                  <label className="text-xs text-ink-soft underline underline-offset-2 cursor-pointer">{t('Или выберите файл')}
+                  <button type="button" className="bar-btn border border-border bg-white" onClick={rec.start}><Circle size={12} className="fill-destructive text-destructive" /> {t('Record a voice')}</button>
+                  <label className="text-xs text-ink-soft underline underline-offset-2 cursor-pointer">{t('Or choose a file')}
                     <input type="file" accept="audio/*,.m4a,.mp3,.wav,.ogg,.flac,.webm" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
                   </label>
                 </div>
               )}
               {rec.recording && (
                 <div className="flex items-center gap-3" role="status">
-                  <span className="flex items-center gap-1.5"><Circle size={10} className="fill-destructive text-destructive animate-pulse" /> {t('Идёт запись')} {clock(rec.seconds)}</span>
-                  <button type="button" className="bar-btn border border-border bg-white" onClick={rec.stop}><Square size={12} /> {t('Остановить')}</button>
+                  <span className="flex items-center gap-1.5"><Circle size={10} className="fill-destructive text-destructive animate-pulse" /> {t('Recording')} {clock(rec.seconds)}</span>
+                  <button type="button" className="bar-btn border border-border bg-white" onClick={rec.stop}><Square size={12} /> {t('Stop')}</button>
                 </div>
               )}
               {preview && !rec.recording && (
                 <div className="flex items-center gap-2">
                   <audio controls className="h-9 min-w-0 flex-1" src={previewUrl || undefined} />
-                  <button type="button" className="text-ink-soft hover:text-ink" aria-label={t('Удалить запись')} title={t('Удалить запись')} onClick={() => { rec.reset(); setFile(null) }}><X size={15} /></button>
+                  <button type="button" className="text-ink-soft hover:text-ink" aria-label={t('Remove the recording')} title={t('Remove the recording')} onClick={() => { rec.reset(); setFile(null) }}><X size={15} /></button>
                 </div>
               )}
               {rec.problem && <p role="alert" className="text-xs text-destructive">{t(NO_MIC[rec.problem])}</p>}
             </div>
           )}
-          <label className={label}>{t('Название')}
+          <label className={label}>{t('Title_name')}
             <input className={input} maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} />
           </label>
           <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-            <div className={label}>{t('Кто рассказывает')}
+            <div className={label}>{t('Who is telling')}
               <div className="flex items-center gap-1">
                 <PersonPopover onPick={setTellerId} exclude={hidden}>
-                  <button type="button" className={`${input} flex-1 truncate`}>{teller ? personName(teller) : t('Выбрать человека')}</button>
+                  <button type="button" className={`${input} flex-1 truncate`}>{teller ? personName(teller) : t('Choose a person')}</button>
                 </PersonPopover>
-                {teller && <button type="button" className="text-ink-soft hover:text-ink" aria-label={t('Убрать')} title={t('Убрать')} onClick={() => setTellerId(null)}><X size={14} /></button>}
+                {teller && <button type="button" className="text-ink-soft hover:text-ink" aria-label={t('Remove')} title={t('Remove')} onClick={() => setTellerId(null)}><X size={14} /></button>}
               </div>
-              {!teller && <input className={input} aria-label={t('Или просто имя')} placeholder={t('Или просто имя')} maxLength={120} value={tellerName} onChange={(e) => setTellerName(e.target.value)} />}
+              {!teller && <input className={input} aria-label={t('Or just a name')} placeholder={t('Or just a name')} maxLength={120} value={tellerName} onChange={(e) => setTellerName(e.target.value)} />}
             </div>
-            <label className={label}>{t('Когда рассказано')}
+            <label className={label}>{t('When it was told')}
               <input className={input} maxLength={60} value={toldOn} onChange={(e) => setToldOn(e.target.value)} />
             </label>
           </div>
-          <div className={label}>{t('О ком этот рассказ')}
+          <div className={label}>{t('Whom it is about')}
             <div className="flex flex-wrap items-center gap-1.5">
               {about.map((id) => (
                 <span key={id} className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-sm text-ink">
                   {nameOf(id)}
-                  {about.length > 1 && <button type="button" aria-label={`${t('Убрать')}: ${nameOf(id)}`} className="text-ink-soft hover:text-ink" onClick={() => setAbout(about.filter((x) => x !== id))}><X size={12} /></button>}
+                  {about.length > 1 && <button type="button" aria-label={`${t('Remove')}: ${nameOf(id)}`} className="text-ink-soft hover:text-ink" onClick={() => setAbout(about.filter((x) => x !== id))}><X size={12} /></button>}
                 </span>
               ))}
               <PersonPopover onPick={(id) => setAbout(about.includes(id) ? about : [...about, id])} exclude={[...about, ...hidden]}>
-                <button type="button" className="text-xs underline underline-offset-2 hover:text-ink">{t('Добавить человека')}</button>
+                <button type="button" className="text-xs underline underline-offset-2 hover:text-ink">{t('Add a person')}</button>
               </PersonPopover>
             </div>
           </div>
-          <label className={label}>{t('Текст или расшифровка')}
+          <label className={label}>{t('Text or transcript')}
             <textarea className={`${textareaClass} min-h-24`} maxLength={20000} value={body} onChange={(e) => setBody(e.target.value)} />
           </label>
           {(preview || story?.hasAudio) && !rec.recording && <TranscribeButton current={body} onText={setBody} getAudio={async () => { if (preview) return preview; const r = await fetch(`/api/v1/stories/${story!.id}/audio`); if (!r.ok) throw new Error(r.statusText); return r.blob() }} />}
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-          <button className={primary} disabled={busy || rec.recording || (!story && !preview && !body.trim())}>{t('Сохранить')}</button>
+          <button className={primary} disabled={busy || rec.recording || (!story && !preview && !body.trim())}>{t('Save')}</button>
         </form>
       </DialogContent>
     </Dialog>
@@ -153,11 +153,11 @@ export function StoryFactDialog({ story, teller, person, onClose }: { story: Sto
   const [place, setPlace] = useState('')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
-  const source = [`${t('Рассказ')}${story.title ? ` «${story.title}»` : ''}`, teller && `${t('Со слов').toLowerCase()}: ${teller}`, story.toldOn].filter(Boolean).join(', ')
+  const source = [`${t('Story')}${story.title ? ` «${story.title}»` : ''}`, teller && `${t('As told by').toLowerCase()}: ${teller}`, story.toldOn].filter(Boolean).join(', ')
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
       <DialogContent className="max-w-md">
-        <DialogTitle className="font-serif text-lg font-medium">{t('Факт из рассказа')}</DialogTitle>
+        <DialogTitle className="font-serif text-lg font-medium">{t('A fact from a story')}</DialogTitle>
         <form className="flex flex-col gap-3" onSubmit={async (e) => {
           e.preventDefault()
           setBusy(true)
@@ -171,24 +171,24 @@ export function StoryFactDialog({ story, teller, person, onClose }: { story: Sto
             setBusy(false)
           }
         }}>
-          <p className="text-sm text-ink-soft">{t('Источником будет этот рассказ. Факт появится в сведениях со ссылкой на него.')}</p>
+          <p className="text-sm text-ink-soft">{t('This story will be the source. The fact appears in the record with a reference to it.')}</p>
           {story.about.length > 1 && (
-            <label className={label}>{t('О ком этот рассказ')}
-              <Select aria-label={t('О ком этот рассказ')} value={personId} onChange={setPersonId} options={story.about.map((id) => ({ value: id, label: personName(byId.get(id)!) }))} />
+            <label className={label}>{t('Whom it is about')}
+              <Select aria-label={t('Whom it is about')} value={personId} onChange={setPersonId} options={story.about.map((id) => ({ value: id, label: personName(byId.get(id)!) }))} />
             </label>
           )}
-          <label className={label}>{t('Что произошло')}
+          <label className={label}>{t('What happened')}
             <input className={input} required maxLength={80} value={kind} onChange={(e) => setKind(e.target.value)} />
           </label>
           <div className="grid grid-cols-2 gap-2">
-            <label className={label}>{t('Дата')}<input className={input} maxLength={60} value={date} onChange={(e) => setDate(e.target.value)} /></label>
-            <label className={label}>{t('Место')}<input className={input} maxLength={120} value={place} onChange={(e) => setPlace(e.target.value)} /></label>
+            <label className={label}>{t('Date')}<input className={input} maxLength={60} value={date} onChange={(e) => setDate(e.target.value)} /></label>
+            <label className={label}>{t('Place')}<input className={input} maxLength={120} value={place} onChange={(e) => setPlace(e.target.value)} /></label>
           </div>
-          <label className={label}>{t('Подробности')}
+          <label className={label}>{t('Details')}
             <textarea className={`${textareaClass} min-h-16`} maxLength={800} value={note} onChange={(e) => setNote(e.target.value)} />
           </label>
-          <p className="text-xs text-ink-soft">{t('Источник')}: {source}</p>
-          <button className={primary} disabled={busy}>{t('Сохранить')}</button>
+          <p className="text-xs text-ink-soft">{t('Source')}: {source}</p>
+          <button className={primary} disabled={busy}>{t('Save')}</button>
         </form>
       </DialogContent>
     </Dialog>

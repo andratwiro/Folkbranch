@@ -127,10 +127,10 @@ const CHECKS: Record<PresetId, (key: string, folder: string) => { url: string; h
 /** One free request to the provider, and the provider's refusals in words. */
 async function get(url: string, headers: Record<string, string>, timeout = 15_000) {
   const res = await fetch(url, { headers, signal: AbortSignal.timeout(timeout) }).catch(() => null)
-  if (!res) throw new OpError(502, tell('Не удалось связаться с провайдером. Проверьте интернет на сервере и попробуйте ещё раз'))
-  if (res.status === 400 || res.status === 401 || res.status === 403) throw new OpError(400, tell('Провайдер не принял этот ключ. Проверьте, что он скопирован целиком'))
-  if (res.status === 429) throw new OpError(429, tell('Провайдер просит подождать. Попробуйте через минуту'))
-  if (!res.ok) throw new OpError(502, `${tell('Провайдер ответил ошибкой')}: ${res.status}`)
+  if (!res) throw new OpError(502, tell('Could not reach the provider. Check the internet on the server and try again'))
+  if (res.status === 400 || res.status === 401 || res.status === 403) throw new OpError(400, tell('The provider did not accept this key. Check that it was copied whole'))
+  if (res.status === 429) throw new OpError(429, tell('The provider asks to wait. Try again in a minute'))
+  if (!res.ok) throw new OpError(502, `${tell('The provider answered with an error')}: ${res.status}`)
   return res
 }
 
@@ -144,7 +144,7 @@ export async function checkServiceKey(id: PresetId, key: string, folder = '') {
 export async function check(id: PresetId, key: string, model: string, folder = '') {
   const { url, headers, lists } = CHECKS[id](key, folder)
   const res = await get(url, headers)
-  if (lists && !PARSERS[id](await res.json(), folder).some((m) => m.id === model)) throw new OpError(400, `${tell('Этому ключу недоступна модель')} ${model}`)
+  if (lists && !PARSERS[id](await res.json(), folder).some((m) => m.id === model)) throw new OpError(400, `${tell('This key cannot use the model')} ${model}`)
   if (id === 'openrouter') await checkOpenRouterModel(model)
   if (id === 'cloudru') await checkCloudRuKey(key)
 }
@@ -152,8 +152,8 @@ export async function check(id: PresetId, key: string, model: string, folder = '
 /** Cloud.ru lists its models to anyone, so the list proves nothing. An empty request is refused before any model runs, and says whether the key was the reason. */
 async function checkCloudRuKey(key: string) {
   const res = await fetch('https://foundation-models.api.cloud.ru/v1/chat/completions', { method: 'POST', headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' }, body: '{}', signal: AbortSignal.timeout(15_000) }).catch(() => null)
-  if (!res) throw new OpError(502, tell('Не удалось связаться с провайдером. Проверьте интернет на сервере и попробуйте ещё раз'))
-  if (res.status === 401 || res.status === 403 || /api key|unauthori[sz]ed|invalid token|authenticat|credential/i.test(await res.text().catch(() => ''))) throw new OpError(400, tell('Провайдер не принял этот ключ. Проверьте, что он скопирован целиком'))
+  if (!res) throw new OpError(502, tell('Could not reach the provider. Check the internet on the server and try again'))
+  if (res.status === 401 || res.status === 403 || /api key|unauthori[sz]ed|invalid token|authenticat|credential/i.test(await res.text().catch(() => ''))) throw new OpError(400, tell('The provider did not accept this key. Check that it was copied whole'))
 }
 
 /** The public list costs nothing. If it cannot be read, the model's first answer will say. */
@@ -161,8 +161,8 @@ async function checkOpenRouterModel(model: string) {
   const list = await fetch('https://openrouter.ai/api/v1/models', { signal: AbortSignal.timeout(15_000) }).then((r) => r.json()).catch(() => null)
   if (!Array.isArray(list?.data)) return
   const found = list.data.find((m: { id: string }) => m.id === model)
-  if (!found) throw new OpError(400, `${tell('Этому ключу недоступна модель')} ${model}`)
-  if (!found.supported_parameters?.includes('tools')) throw new OpError(400, `${tell('Модель не умеет вызывать инструменты')}: ${model}`)
+  if (!found) throw new OpError(400, `${tell('This key cannot use the model')} ${model}`)
+  if (!found.supported_parameters?.includes('tools')) throw new OpError(400, `${tell('The model cannot call tools')}: ${model}`)
 }
 
 // The provider's list is read again after ten minutes, so a model released today is offered today.
@@ -202,11 +202,11 @@ export async function modelSees(provider?: { id: string; key: string; folder: st
 export async function chooseModel(actor: Actor, raw: unknown) {
   requireRole(actor, 'owner')
   const { model, auto, provider } = z.object({ model: z.string().trim().min(1).max(120).optional(), auto: z.boolean().optional(), provider: z.enum(PRESETS.map((p) => p.id) as [PresetId, ...PresetId[]]).optional() }).parse(raw)
-  if (activeProvider(process.env)) throw new OpError(409, tell('Модель задана в настройках сервера'))
+  if (activeProvider(process.env)) throw new OpError(409, tell('The model is set on the server'))
   // Another service from the list of keys: its tested model, unless one is named.
   if (provider && provider !== getSetting('agentProvider')) {
     const entry = vaultKey(provider)
-    if (!entry) throw new OpError(400, tell('Сначала добавьте ключ этого сервиса'))
+    if (!entry) throw new OpError(400, tell('Add this service\'s key first'))
     if (model) await check(provider, entry.key, model, entry.folder)
     // The previous version's key was for the old service: kept, it would be read as this one's.
     dropOldCopy()
@@ -219,11 +219,11 @@ export async function chooseModel(actor: Actor, raw: unknown) {
     return providerStatus(actor)
   }
   const s = saved()
-  if (!s) throw new OpError(409, tell('Сначала подключите провайдера'))
+  if (!s) throw new OpError(409, tell('Connect a provider first'))
   if (auto) {
     // Back to the tested default of the service; the newest of its line is then found by itself.
     const first = PRESETS.find((p) => p.id === s.id)!.models[0].id
-    if (!LINES[s.id]?.length) throw new OpError(400, tell('Для этого сервиса автоматический выбор не настроен'))
+    if (!LINES[s.id]?.length) throw new OpError(400, tell('Automatic choice is not set up for this service'))
     setSetting('agentModel', lineOf(s.model ?? '', LINES[s.id]!) ? s.model! : first)
     setSetting('agentAuto', '1')
     await refreshAutoModel(true)
@@ -250,7 +250,7 @@ export async function connectProvider(actor: Actor, raw: unknown) {
   const input = connectInput.parse(raw)
   const model = input.model || PRESETS.find((p) => p.id === input.provider)!.models[0].id
   const folder = input.provider === 'yandex' ? input.folder : undefined
-  if (input.provider === 'yandex' && !folder) throw new OpError(400, tell('Укажите идентификатор каталога Яндекса'))
+  if (input.provider === 'yandex' && !folder) throw new OpError(400, tell('Give the Yandex folder ID'))
   await check(input.provider, input.key, model, folder)
   writeKey(input.provider, { key: input.key, folder })
   setSetting('agentProvider', input.provider)
@@ -277,12 +277,12 @@ export function providerFailure(e: unknown): string | null {
   const f = failure as { url?: string; responseBody?: string; message?: string }
   console.error(`assistant: provider answered ${status ?? 'with an error'} ${f.url ?? ''} ${(f.responseBody ?? f.message ?? '').slice(0, 300)}`)
   if (status === 404) void replaceMissingModel(true)
-  if (status === 401 || status === 403) return tell('Провайдер не принял ключ. Замените его в настройках, вкладка «Нейросеть»')
-  if (status === 402) return tell('На счёте провайдера закончились деньги. Пополните его, и ассистент снова заработает')
+  if (status === 401 || status === 403) return tell('The provider did not accept the key. Replace it in Settings → Assistant')
+  if (status === 402) return tell('The provider account is out of money. Add some and the assistant will work again')
   // A model set in the server's environment is the admin's to change: the app replaces only one chosen in the app.
-  if (status === 404) return activeProvider(process.env) ? tell('Провайдер не нашёл модель из настроек сервера. Укажите другую в AGENT_MODEL и перезапустите сервер') : tell('Провайдер не нашёл эту модель. Мы подобрали другую, повторите вопрос')
-  if (status === 400) return tell('Провайдер не принял запрос, возможно, он изменил свой API. Подробности в журнале сервера')
-  if (status === 429) return tell('Провайдер просит подождать: слишком много запросов. Попробуйте через минуту')
-  if (status && status >= 500) return tell('У провайдера сбой. Попробуйте через несколько минут')
+  if (status === 404) return activeProvider(process.env) ? tell('The provider could not find the model set on the server. Set another in AGENT_MODEL and restart the server') : tell('The provider did not find this model. We picked another, ask again')
+  if (status === 400) return tell('The provider refused the request, perhaps it changed its API. Details are in the server log')
+  if (status === 429) return tell('The provider asks to wait: too many requests. Try again in a minute')
+  if (status && status >= 500) return tell('The provider is having trouble. Try again in a few minutes')
   return null
 }

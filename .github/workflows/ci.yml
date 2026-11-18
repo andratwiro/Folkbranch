@@ -37,6 +37,8 @@ jobs:
       - name: Types and ESLint (old findings are listed in eslint-suppressions.json; new ones fail)
         run: pnpm lint
       - run: pnpm test
+      - name: Translations are complete and consistent (missing, unused and duplicate phrases, placeholders, plural forms)
+        run: pnpm i18n:check
       - name: No dependency with a known high or critical vulnerability
         run: pnpm audit --audit-level high
       - name: No circular imports

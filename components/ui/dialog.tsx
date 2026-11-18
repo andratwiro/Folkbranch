@@ -39,7 +39,7 @@ function DialogOverlay({
 }
 
 /** Works on the sign-in screens too, where there is no app context yet. */
-const closeLabel = () => (typeof document === "undefined" ? "Закрыть" : translate(pageLang(), "Закрыть"))
+const closeLabel = () => (typeof document === "undefined" ? 'Close' : translate(pageLang(), 'Close'))
 
 function DialogContent({
   className,

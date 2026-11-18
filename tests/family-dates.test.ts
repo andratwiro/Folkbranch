@@ -36,7 +36,7 @@ describe('coming days', () => {
 describe('a life in order', () => {
   it('reads the card and the family, in years, with the age', () => {
     expect(lifeEvents(graph.persons[0], graph).map((e) => [e.year, e.title, e.age])).toEqual([
-      [1890, 'Рождение', null], [1914, 'Служба', 24], [1915, 'Брак', 25], [1950, 'Рождение ребёнка', 60], [1960, 'Смерть', 70],
+      [1890, 'Birth', null], [1914, 'Служба', 24], [1915, 'Marriage', 25], [1950, 'Birth of a child', 60], [1960, 'Death', 70],
     ])
   })
   it('leaves out a child hidden from this reader', () => {
@@ -72,9 +72,9 @@ describe('the calendar file', () => {
   const ics = familyCalendar(graph, (k) => k, new Date(Date.UTC(2026, 10, 8)))
   it('repeats each day every year, from the day itself', () => {
     expect(ics).toContain('DTSTART;VALUE=DATE:18900312')
-    expect(ics).toContain('SUMMARY:Со дня рождения: дед Лис')
-    expect(ics).toContain('SUMMARY:День рождения: сын Лис')
-    expect(ics).toContain('SUMMARY:Годовщина свадьбы: дед Лис и бабка Лис')
+    expect(ics).toContain('SUMMARY:Years since birth: дед Лис')
+    expect(ics).toContain('SUMMARY:Birthday: сын Лис')
+    expect(ics).toContain('SUMMARY:Wedding anniversary: дед Лис and бабка Лис')
     expect(ics.match(/RRULE:FREQ=YEARLY/g)).toHaveLength(4)
     expect(ics.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true)
   })

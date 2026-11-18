@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { api, useApp } from '@/lib/client'
 import type { SearchMatch, SearchResult } from '@/lib/search/engine'
 import { markParts } from '@/lib/search/mark'
-import { lifeYears, personName, shownTags, type Person } from '@/lib/types'
+import { compareNames, lifeYears, personName, shownTags, type Person } from '@/lib/types'
 import { Mini } from './person-mini'
 
 export interface SearchHit { personId: string; query: string; matches: SearchMatch[]; terms: string[] }
@@ -17,7 +17,7 @@ export { Mini }
 const useVisible = (exclude: string[] = []) => {
   const { graph } = useApp()
   return useMemo(
-    () => graph.persons.filter((p) => !p.hidden && !exclude.includes(p.id)).sort((a, b) => personName(a).localeCompare(personName(b))),
+    () => graph.persons.filter((p) => !p.hidden && !exclude.includes(p.id)).sort((a, b) => compareNames(a, b)),
     [graph, exclude],
   )
 }
@@ -27,13 +27,13 @@ function PeopleList({ onPick, exclude }: { onPick: (id: string) => void; exclude
   const people = useVisible(exclude)
   return (
     <Command>
-      <CommandInput placeholder={t('Поиск по имени…')} aria-label={t('Поиск по имени…')} />
+      <CommandInput placeholder={t('Search by name…')} aria-label={t('Search by name…')} />
       <CommandList>
-        <CommandEmpty>{t('Никого не нашли. Проверьте написание или введите только фамилию')}</CommandEmpty>
+        <CommandEmpty>{t('Nobody found_hint')}</CommandEmpty>
         {people.map((p) => (
           <CommandItem key={p.id} value={`${personName(p)} ${p.maidenName} ${p.birthYear ?? ''} ${shownTags(p.tags).join(' ')} ${p.id}`} onSelect={() => onPick(p.id)}>
             <Mini person={p} />
-            <span className="truncate">{personName(p) || t('Без названия')}</span>
+            <span className="truncate">{personName(p) || t('Untitled')}</span>
             <span className="ml-auto text-xs text-ink-faint whitespace-nowrap">{lifeYears(p)}</span>
           </CommandItem>
         ))}
@@ -74,7 +74,7 @@ function SearchRow({ result, person, onPick }: { result: SearchResult; person: P
       <Mini person={person} size={32} />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">
-          <span className="min-w-0 truncate font-medium"><Marked text={personName(person) || t('Без названия')} terms={result.terms} /></span>
+          <span className="min-w-0 truncate font-medium"><Marked text={personName(person) || t('Untitled')} terms={result.terms} /></span>
           <span className="ml-auto text-xs text-ink-faint whitespace-nowrap">{lifeYears(person)}</span>
         </span>
         {lines.map((m, i) => <span key={i} className="block text-xs leading-snug text-ink-soft"><MatchLine match={m} /></span>)}
@@ -105,20 +105,20 @@ export function SearchDialog({ open, onOpenChange, onPick }: { open: boolean; on
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 overflow-hidden gap-0 max-w-xl sm:max-w-xl max-sm:top-3 max-sm:translate-y-0" showCloseButton={false}>
-        <DialogTitle className="sr-only">{t('Поиск людей')}</DialogTitle>
+        <DialogTitle className="sr-only">{t('Search people')}</DialogTitle>
         <Command shouldFilter={false} value={active} onValueChange={setActive}>
-          <CommandInput value={typed} onValueChange={setTyped} placeholder={t('Имя, дата, место, профессия, «жена Ивана»…')} aria-label={t('Поиск людей')} />
-          {viewInfo && !whole && <p className="flex flex-wrap items-center gap-x-2 border-b border-border px-3 py-1.5 text-xs text-ink-soft"><span className="min-w-0 break-anywhere">{t('Только:')} {viewInfo.label}</span><button className="pick underline hover:text-ink" onClick={() => setWhole(true)}>{t('Искать по всей семье')}</button></p>}
+          <CommandInput value={typed} onValueChange={setTyped} placeholder={t('Name, date, place, job, "Ivan\'s wife"…')} aria-label={t('Search people')} />
+          {viewInfo && !whole && <p className="flex flex-wrap items-center gap-x-2 border-b border-border px-3 py-1.5 text-xs text-ink-soft"><span className="min-w-0 break-anywhere">{t('Only:')} {viewInfo.label}</span><button className="pick underline hover:text-ink" onClick={() => setWhole(true)}>{t('Search the whole family')}</button></p>}
           <CommandList className="max-h-[min(460px,60dvh)]">
             {!query && people.map((p) => (
               <CommandItem key={p.id} value={p.id} onSelect={() => { onOpenChange(false); onPick(p.id) }}>
                 <Mini person={p} />
-                <span className="truncate">{personName(p) || t('Без названия')}</span>
+                <span className="truncate">{personName(p) || t('Untitled')}</span>
                 <span className="ml-auto text-xs text-ink-faint whitespace-nowrap">{lifeYears(p)}</span>
               </CommandItem>
             ))}
-            {query && !isFetching && !results.length && <p className="px-3 py-6 text-center text-sm text-ink-soft">{t('Никого не нашли. Попробуйте одно слово: фамилию, год или место')}</p>}
-            {partial && <p className="px-3 pt-2 pb-1 text-xs text-ink-soft">{t('Всех слов сразу нет ни у кого. Вот у кого есть часть')}</p>}
+            {query && !isFetching && !results.length && <p className="px-3 py-6 text-center text-sm text-ink-soft">{t('Nobody found. Try one word: a surname, a year or a place')}</p>}
+            {partial && <p className="px-3 pt-2 pb-1 text-xs text-ink-soft">{t('Nobody has all the words. Here is who has some')}</p>}
             {results.map((r) => <SearchRow key={r.personId} result={r} person={byId.get(r.personId)!} onPick={() => pick(r)} />)}
           </CommandList>
         </Command>

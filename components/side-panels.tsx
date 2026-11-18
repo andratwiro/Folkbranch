@@ -7,7 +7,7 @@ import { api, undoFailure, useApp, useWrite } from '@/lib/client'
 import { cn } from '@/lib/utils'
 import type { HistoryEntry } from '@/lib/types'
 
-const PERSON_WORD = { added: 'Добавлен человек', updated: 'Изменён', removed: 'Удалён человек' } as const
+const PERSON_WORD = { added: 'Person added', updated: 'Changed', removed: 'Person deleted' } as const
 
 /** Who changed what, newest first, and one press to take it back. */
 export function HistoryList({ rows, onlyOne }: { rows: HistoryEntry[]; onlyOne?: boolean }) {
@@ -23,19 +23,19 @@ export function HistoryList({ rows, onlyOne }: { rows: HistoryEntry[]; onlyOne?:
   const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long', year: 'numeric' })
   const day = (at: number) => {
     const d = new Date(at).toDateString()
-    if (d === new Date().toDateString()) return t('Сегодня')
-    if (d === new Date(Date.now() - 86_400_000).toDateString()) return t('Вчера')
+    if (d === new Date().toDateString()) return t('Today')
+    if (d === new Date(Date.now() - 86_400_000).toDateString()) return t('Yesterday')
     return date.format(at)
   }
   const askRollback = async (r: HistoryEntry, i: number) => {
     // Everything newer plus this entry, in the same order the server takes them back.
     const count = rows.slice(0, i + 1).filter((x) => !x.undoneAt && !x.undoOf).length
-    const ok = await confirm(t('Вернуть архив к состоянию перед этим изменением?'), t('Откатить'), t('Будет отменено изменений: {n}').replace('{n}', String(count)))
+    const ok = await confirm(t('Return the archive to how it was before this change?'), t('Roll back'), t('Changes to roll back: {n}').replace('{n}', String(count)))
     if (ok) rollback.mutate(r.id)
   }
   return (
     <>
-      {!rows.length && <p className="text-sm text-ink-faint">{t('Пока ничего не менялось')}</p>}
+      {!rows.length && <p className="text-sm text-ink-faint">{t('No changes yet')}</p>}
       {rows.map((r, i) => {
         const onePerson = r.personIds.length === 1
         const person = onePerson ? byId.get(r.personIds[0]) : undefined
@@ -56,7 +56,7 @@ export function HistoryList({ rows, onlyOne }: { rows: HistoryEntry[]; onlyOne?:
                       <div key={p.id} className="flex items-center gap-1 text-xs text-ink-soft break-anywhere">
                         <span>{t(PERSON_WORD[p.change])}: {p.name}</span>
                         {canEdit && !r.undoneAt && !r.undoOf && (
-                          <button type="button" className="flex-none text-ink-faint hover:text-ink" aria-label={t('Откатить только этого человека')} title={t('Откатить только этого человека')} disabled={undoPerson.isPending} onClick={() => undoPerson.mutate({ id: r.id, personId: p.id })}><Undo2 size={11} /></button>
+                          <button type="button" className="flex-none text-ink-faint hover:text-ink" aria-label={t('Roll back only this person')} title={t('Roll back only this person')} disabled={undoPerson.isPending} onClick={() => undoPerson.mutate({ id: r.id, personId: p.id })}><Undo2 size={11} /></button>
                         )}
                       </div>
                     ))}
@@ -70,12 +70,12 @@ export function HistoryList({ rows, onlyOne }: { rows: HistoryEntry[]; onlyOne?:
                     {d.after && <span className="text-ink">{d.after}</span>}
                   </div>
                 ))}
-                <div className="mt-1 text-xs text-ink-soft">{r.actorName}{r.byAgent ? ` (${t('агент')})` : ''} · {time.format(r.at)}{r.undoneAt ? ` · ${t('Откачено')}` : ''}</div>
+                <div className="mt-1 text-xs text-ink-soft">{r.actorName}{r.byAgent ? ` (${t('agent')})` : ''} · {time.format(r.at)}{r.undoneAt ? ` · ${t('Rolled back')}` : ''}</div>
               </div>
               {canEdit && !r.undoneAt && !r.undoOf && (
                 <div className="flex flex-none flex-col gap-1">
-                  <Button size="sm" variant="outline" title={t('Откатить это изменение')} data-hint={t('Вернёт всё как было до него. Откат тоже останется в истории.')} disabled={undo.isPending} onClick={() => undo.mutate(r.id)}><Undo2 /> {t('Откатить')}</Button>
-                  <Button size="sm" variant="ghost" title={t('Откатить до этого места')} aria-label={t('Откатить до этого места')} disabled={rollback.isPending} onClick={() => askRollback(r, i)}><RotateCcw /> {t('Откатить до этого места')}</Button>
+                  <Button size="sm" variant="outline" title={t('Roll back this change')} data-hint={t('Puts things back as they were before it. The rollback stays in the history too.')} disabled={undo.isPending} onClick={() => undo.mutate(r.id)}><Undo2 /> {t('Roll back')}</Button>
+                  <Button size="sm" variant="ghost" title={t('Roll back to this point')} aria-label={t('Roll back to this point')} disabled={rollback.isPending} onClick={() => askRollback(r, i)}><RotateCcw /> {t('Roll back to this point')}</Button>
                 </div>
               )}
             </div>
@@ -90,8 +90,8 @@ export function HistoryPanel({ onClose }: { onClose: () => void }) {
   const { t } = useApp()
   const { data: rows = [] } = useQuery({ queryKey: ['history'], queryFn: () => api<HistoryEntry[]>('history') })
   return (
-    <aside aria-label={t('История')} className="float side-sheet fixed left-3 top-[60px] bottom-3 w-96 max-w-[calc(100vw-24px)] flex flex-col z-10">
-      <div className="flex items-center justify-between px-3 pt-3 pb-2"><h3 className="font-serif font-medium text-lg">{t('История')}</h3><button className="text-ink-faint hover:text-ink" aria-label={t('Закрыть')} title={t('Закрыть')} onClick={onClose}><X size={15} /></button></div>
+    <aside aria-label={t('What\'s new')} className="float side-sheet fixed left-3 top-[60px] bottom-3 w-96 max-w-[calc(100vw-24px)] flex flex-col z-10">
+      <div className="flex items-center justify-between px-3 pt-3 pb-2"><h3 className="font-serif font-medium text-lg">{t('What\'s new')}</h3><button className="text-ink-faint hover:text-ink" aria-label={t('Close')} title={t('Close')} onClick={onClose}><X size={15} /></button></div>
       <div className="flex-1 overflow-auto px-3 pb-3"><HistoryList rows={rows} /></div>
     </aside>
   )

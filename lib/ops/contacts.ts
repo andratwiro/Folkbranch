@@ -33,7 +33,7 @@ export function saveContacts(actor: Actor, personId: string, raw: unknown) {
   const v = input.parse(raw)
   const r = getDb().select().from(schema.contacts).where(eq(schema.contacts.personId, personId)).get()
   const empty = !v.phone && !v.email && !v.address && !v.note
-  mutate(actor, { summary: `${say('Контакты')}: ${[p.givenName, p.surname].filter(Boolean).join(' ')}`, personIds: [personId] }, (c) => {
+  mutate(actor, { summary: `${say('Contacts')}: ${[p.givenName, p.surname].filter(Boolean).join(' ')}`, personIds: [personId] }, (c) => {
     if (r && empty) c.remove('contacts', r.id)
     else if (r) c.update('contacts', r.id, v)
     else if (!empty) c.insert('contacts', { id: newId(), personId, ...v })

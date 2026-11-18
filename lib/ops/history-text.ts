@@ -9,9 +9,9 @@ interface Change { table: string; id: string; before: Row | null; after: Row | n
 type NameOf = (id: string) => string
 
 /** Stored as a command; read as what happened. Older entries are in the archive's language of the day, so both are matched. */
-const DONE: [string, string][] = [['Добавить', 'Добавлен человек'], ['Удалить человека', 'Удалён человек'], ['Удалить связь', 'Удалена связь'], ['Удалить', 'Удалено'], ['Изменить сразу', 'Изменено сразу']]
-const KIND: Record<string, string> = { birth: 'родной', adopted: 'приёмный', foster: 'опекун', step: 'отчим или мачеха', marriage: 'брак', civil: 'гражданский' }
-const CERTAIN: Record<string, string> = { documented: 'по документу', family: 'со слов семьи', assumed: 'предположение' }
+const DONE: [string, string][] = [['Add', 'Person added'], ['Delete person', 'Person deleted'], ['Remove relation', 'Relation removed'], ['Delete', 'Deleted'], ['Bulk change', 'Changed at once']]
+const KIND: Record<string, string> = { birth: 'birth_masculine', adopted: 'adopted_masculine', foster: 'foster', step: 'step', marriage: 'marriage', civil: 'civil union' }
+const CERTAIN: Record<string, string> = { documented: 'documented', family: 'family account', assumed: 'assumption' }
 const PLAIN = ['givenName', 'surname', 'maidenName', 'patronymic', 'birthDate', 'birthPlace', 'deathDate', 'deathPlace']
 const LONGEST = 60
 
@@ -28,14 +28,14 @@ const rowName = (row: Row | null) => (row ? [row.givenName, row.surname].filter(
 
 /** The line in the history: what happened, with names, whichever way it was stored. */
 export function readableSummary(summary: string, changes: Change[], nameOf: NameOf, original?: string, relationEnds?: (id: string) => string[]) {
-  if (original !== undefined) return `${tell('Отменено')}: ${original}`
-  if (words('Связь').some((w) => summary.startsWith(`${w}:`))) {
+  if (original !== undefined) return `${tell('Undone')}: ${original}`
+  if (words('Link_relation').some((w) => summary.startsWith(`${w}:`))) {
     const c = changes.find(isRelation)
     // A change keeps only the fields that moved, so the two people may have to be looked up.
     const who = c ? (ends(c.after).some((id) => id !== 'undefined') ? ends(c.after) : (relationEnds?.(c.id) ?? [])) : []
-    return who.length ? `${tell('Изменено родство')}: ${who.map(nameOf).join(' — ')}` : tell('Изменено родство')
+    return who.length ? `${tell('Relation changed')}: ${who.map(nameOf).join(' — ')}` : tell('Relation changed')
   }
-  if (summary.includes(' — ') && changes.length > 0 && changes.every((c) => !c.before)) return `${tell('Новая связь')}: ${summary}`
+  if (summary.includes(' — ') && changes.length > 0 && changes.every((c) => !c.before)) return `${tell('New relation')}: ${summary}`
   for (const [command, result] of DONE) for (const w of words(command)) if (summary.startsWith(`${w}:`)) return `${tell(result)}:${summary.slice(w.length + 1)}`
   return summary
 }
@@ -71,9 +71,9 @@ export function changeDetails(changes: Change[], nameOf: NameOf = () => '', rela
       const was = relationWords(c.before), now = relationWords(c.after)
       const who = [...ends(c.after), ...ends(c.before)].filter((id, i, all) => id !== 'undefined' && all.indexOf(id) === i)
       const names = (who.length ? who : relationEnds?.(c.id) ?? []).map(nameOf).filter(Boolean)
-      if (!c.before) out.push({ label: tell('Добавлена связь'), before: null, after: short(names.join(' — ')) })
-      else if (!c.after) out.push({ label: tell('Удалена связь'), before: short(names.join(' — ')), after: null })
-      else if (was !== now) out.push({ label: names.length ? `${tell('Родство')} (${names.join(' — ')})` : tell('Родство'), before: was || null, after: now || null })
+      if (!c.before) out.push({ label: tell('Relation added'), before: null, after: short(names.join(' — ')) })
+      else if (!c.after) out.push({ label: tell('Relation removed'), before: short(names.join(' — ')), after: null })
+      else if (was !== now) out.push({ label: names.length ? `${tell('Relationship')} (${names.join(' — ')})` : tell('Relationship'), before: was || null, after: now || null })
       continue
     }
     if (c.table !== 'persons' || !c.before || !c.after) continue

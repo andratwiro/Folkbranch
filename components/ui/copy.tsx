@@ -28,7 +28,7 @@ export function CopyButton({ value, primary }: { value: string; primary?: boolea
       setDone(true)
       clearTimeout(timer.current)
       timer.current = setTimeout(() => setDone(false), 2000)
-    }}>{done ? <Check /> : <Copy />}{t(done ? 'Скопировано' : 'Скопировать')}</Button>
+    }}>{done ? <Check /> : <Copy />}{t(done ? 'Copied' : 'Copy')}</Button>
   )
 }
 

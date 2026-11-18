@@ -1,5 +1,6 @@
 // Every tool an agent can use, described once. MCP and the built-in assistant are both built from
 // this list, so what one can do and what the ops layer allows never drift apart.
+import { LANG_ENUM } from '../languages'
 import { z } from 'zod'
 import { blocksToMarkdown } from '../markdown'
 import { Family, RELATIVE_KINDS, type KinKind } from '../kinship'
@@ -271,8 +272,8 @@ const roleInput = z.enum(['owner', 'editor', 'reader'])
 const ASSISTANT_ONLY: Omit<ToolDef, 'output'>[] = [
   { name: 'get_settings', risk: 'read', minRole: 'reader', surfaces: ['assistant'], description: "The archive's name and language.", input: z.object({}),
     run: () => ({ familyName: getSetting('familyName') ?? '', language: archiveLang() }) },
-  { name: 'update_settings', risk: 'admin', minRole: 'owner', surfaces: ['assistant'], description: "Rename the archive or change its language.", input: z.object({ familyName: z.string().min(1).max(120).optional(), language: z.enum(['ru', 'en', 'es', 'ca']).optional() }),
-    describe: (_a, x) => [x.familyName && `${tell('Название')}: ${x.familyName}`, x.language && `${tell('Язык')}: ${x.language}`].filter(Boolean).join(', '),
+  { name: 'update_settings', risk: 'admin', minRole: 'owner', surfaces: ['assistant'], description: "Rename the archive or change its language.", input: z.object({ familyName: z.string().min(1).max(120).optional(), language: z.enum(LANG_ENUM).optional() }),
+    describe: (_a, x) => [x.familyName && `${tell('Title_name')}: ${x.familyName}`, x.language && `${tell('Language')}: ${x.language}`].filter(Boolean).join(', '),
     run: (_a, x) => {
       Object.entries(x).forEach(([k, v]) => setSetting(k, v as string))
       return { ok: true }

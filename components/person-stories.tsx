@@ -42,7 +42,7 @@ export function StoriesTab({ person }: { person: Person }) {
     return (p && personName(p)) || s.tellerName
   }
   const remove = async (s: Story) => {
-    if (!(await confirm(s.title ? t('Удалить рассказ «{name}»?').replace('{name}', () => s.title) : t('Удалить рассказ?'), t('Удалить'), t('Вернуть можно в разделе «История».')))) return
+    if (!(await confirm(s.title ? t('Delete the story «{name}»?').replace('{name}', () => s.title) : t('Delete the story?'), t('Delete'), t('You can bring it back in History.')))) return
     await api(`stories/${s.id}`, { method: 'DELETE' }).catch((e) => notify(String(e.message)))
     qc.invalidateQueries({ queryKey: ['stories'] })
     qc.invalidateQueries({ queryKey: ['history'] })
@@ -57,29 +57,29 @@ export function StoriesTab({ person }: { person: Person }) {
     <div className="px-4 py-4 flex flex-col gap-3">
       {!me.guest && (
         <div className="flex flex-wrap gap-2">
-          <button className="add-btn" onClick={() => setEditing('new')}><Mic size={14} /> {t('Записать рассказ')}</button>
-          {canEdit && <button className="add-btn" onClick={() => setAsking(true)}><Link2 size={14} /> {t('Попросить рассказать по ссылке')}</button>}
+          <button className="add-btn" onClick={() => setEditing('new')}><Mic size={14} /> {t('Add a story')}</button>
+          {canEdit && <button className="add-btn" onClick={() => setAsking(true)}><Link2 size={14} /> {t('Ask to tell by a link')}</button>}
         </div>
       )}
       {canEdit && <PersonRequests person={person} />}
-      {<p className="text-xs text-ink-soft">{t('Рассказы хранятся отдельно от сведений: это чьи-то слова, а не проверенные факты.')}</p>}
-      {!stories.length && <p className="text-sm text-ink-faint">{t('Рассказов пока нет')}</p>}
+      {<p className="text-xs text-ink-soft">{t('Stories are kept apart from the record: they are someone\'s words, not checked facts.')}</p>}
+      {!stories.length && <p className="text-sm text-ink-faint">{t('No stories yet')}</p>}
       {stories.map((s) => {
         const who = teller(s)
-        const line = [who && `${t('Со слов')}: ${who}`, s.toldOn, s.createdBy && `${t('Добавлено')}: ${s.createdBy}`].filter(Boolean).join(' · ')
+        const line = [who && `${t('As told by')}: ${who}`, s.toldOn, s.createdBy && `${t('Added by')}: ${s.createdBy}`].filter(Boolean).join(' · ')
         return (
           <article key={s.id} className="min-w-0 rounded-lg border border-border bg-white/60 px-3 py-2">
             {s.title && <h4 className="font-serif text-base font-medium leading-snug break-anywhere">{s.title}</h4>}
             {line && <p className="text-xs text-ink-soft break-anywhere">{line}</p>}
-            {s.keepPrivate && <p className="flex items-center gap-1 text-xs text-ink-soft"><EyeOff size={12} /> {t('Только для редакторов')}</p>}
+            {s.keepPrivate && <p className="flex items-center gap-1 text-xs text-ink-soft"><EyeOff size={12} /> {t('Editors only')}</p>}
             {s.hasAudio && <Voice id={s.id} />}
             {s.body && <p className="mt-1.5 text-sm leading-relaxed"><ReadText value={s.body} /></p>}
             {canEdit && (
               <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-ink-soft">
-                <button className="flex items-center gap-1 hover:text-ink" onClick={() => setFact(s)}><ScrollText size={12} /> {t('Сделать фактом')}</button>
-                <button className="flex items-center gap-1 hover:text-ink" onClick={() => setPrivate(s, !s.keepPrivate)}><EyeOff size={12} /> {t(s.keepPrivate ? 'Показать читателям' : 'Скрыть от читателей')}</button>
-                <button aria-label={t('Изменить рассказ')} className="flex items-center gap-1 hover:text-ink" onClick={() => setEditing(s)}><Pencil size={12} /> {t('Изменить')}</button>
-                <button aria-label={t('Удалить рассказ')} className="ml-auto flex items-center gap-1 hover:text-destructive" onClick={() => remove(s)}><Trash2 size={12} /> {t('Удалить')}</button>
+                <button className="flex items-center gap-1 hover:text-ink" onClick={() => setFact(s)}><ScrollText size={12} /> {t('Make it a fact')}</button>
+                <button className="flex items-center gap-1 hover:text-ink" onClick={() => setPrivate(s, !s.keepPrivate)}><EyeOff size={12} /> {t(s.keepPrivate ? 'Show to readers' : 'Hide from readers')}</button>
+                <button aria-label={t('Edit the story')} className="flex items-center gap-1 hover:text-ink" onClick={() => setEditing(s)}><Pencil size={12} /> {t('Edit')}</button>
+                <button aria-label={t('Delete the story')} className="ml-auto flex items-center gap-1 hover:text-destructive" onClick={() => remove(s)}><Trash2 size={12} /> {t('Delete')}</button>
               </div>
             )}
           </article>

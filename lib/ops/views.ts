@@ -38,7 +38,7 @@ export function createView(actor: Actor, input: unknown) {
   requireRole(actor, 'editor')
   const v = viewInput.parse(input)
   // A branch with no person to start from would quietly show everyone.
-  if (v.scope !== 'all' && !v.focusId) throw new OpError(400, tell('Для этой части семьи нужно выбрать человека'))
+  if (v.scope !== 'all' && !v.focusId) throw new OpError(400, tell('A branch needs a person to start from'))
   const id = newId()
   getDb().insert(schema.views).values({ id, name: v.name, scope: v.scope, focusId: v.focusId, collapsed: JSON.stringify(v.collapsed), pins: JSON.stringify(v.pins ?? {}), createdBy: actor.userId, updatedAt: Date.now() }).run()
   announceChange()

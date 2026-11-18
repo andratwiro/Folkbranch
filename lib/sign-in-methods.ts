@@ -113,7 +113,7 @@ const INPUT: Record<MethodId, z.ZodType<Values>> = {
 async function telegramBot(token: string) {
   const r = await fetch(`https://api.telegram.org/bot${token}/getMe`, { signal: AbortSignal.timeout(10_000) }).catch(() => null)
   const body = r ? await r.json().catch(() => null) : null
-  if (!body?.ok) throw new OpError(400, tell('Telegram не узнал этот токен. Скопируйте его из @BotFather ещё раз'))
+  if (!body?.ok) throw new OpError(400, tell('Telegram did not recognise this token. Copy it from @BotFather again'))
   return String(body.result.username)
 }
 
@@ -127,16 +127,16 @@ async function checkMail(v: Values) {
     await mailer(v).verify()
   } catch (e) {
     const { responseCode, code } = e as { responseCode?: number; code?: string }
-    if (responseCode === 535 || responseCode === 534) throw new OpError(400, tell('Почтовый сервер не принял логин или пароль. Нужен пароль приложения, а не пароль от почты'))
-    if (code && ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'EDNS'].includes(code)) throw new OpError(400, tell('Почтовый сервер не отвечает. Проверьте адрес сервера и порт'))
-    throw new OpError(400, `${tell('Не получилось подключиться к почтовому серверу')}: ${(e as Error).message}`)
+    if (responseCode === 535 || responseCode === 534) throw new OpError(400, tell('The mail server did not accept the login or password. It needs an app password, not the mailbox password'))
+    if (code && ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'EDNS'].includes(code)) throw new OpError(400, tell('The mail server does not answer. Check the server address and port'))
+    throw new OpError(400, `${tell('Could not connect to the mail server')}: ${(e as Error).message}`)
   }
 }
 
 /** Nothing is stored until it is checked where it can be: Telegram and the mail server are asked first. */
 export async function saveMethod(actor: Actor, id: MethodId, raw: unknown) {
   requireRole(actor, 'owner')
-  if (fromEnv(id)) throw new OpError(409, tell('Этот способ входа задан в настройках сервера'))
+  if (fromEnv(id)) throw new OpError(409, tell('This way of signing in is set in the server\'s settings'))
   const parsed = INPUT[id].safeParse(raw)
   if (!parsed.success) throw new OpError(400, parsed.error.issues.map((i) => i.message).join('; '))
   const values: Values = { ...parsed.data }
@@ -152,7 +152,7 @@ export async function saveMethod(actor: Actor, id: MethodId, raw: unknown) {
 
 export function removeMethod(actor: Actor, id: MethodId) {
   requireRole(actor, 'owner')
-  if (fromEnv(id)) throw new OpError(409, tell('Этот способ входа задан в настройках сервера'))
+  if (fromEnv(id)) throw new OpError(409, tell('This way of signing in is set in the server\'s settings'))
   getDb().delete(schema.settings).where(eq(schema.settings.key, settingKey(id))).run()
   changed()
   return methodsStatus(actor)
@@ -161,12 +161,12 @@ export function removeMethod(actor: Actor, id: MethodId) {
 /** A code by mail, in the archive's language: to sign in, or to confirm an address someone adds to their account. */
 export async function sendCode(to: string, code: string, purpose: 'sign-in' | 'confirm' = 'sign-in') {
   const v = methodConfig('email')
-  if (!v) throw new OpError(409, tell('Вход по почте не настроен'))
-  const family = getSetting('familyName') || tell('Семейный архив')
+  if (!v) throw new OpError(409, tell('Sign-in by email is not set up'))
+  const family = getSetting('familyName') || tell('Family archive')
   await mailer(v).sendMail({
     from: v.from || v.user,
     to,
-    subject: purpose === 'sign-in' ? `${tell('Код для входа')}: ${code}` : `${tell('Код подтверждения адреса')}: ${code}`,
-    text: `${purpose === 'sign-in' ? tell('Код для входа в архив') : tell('Код, чтобы подтвердить этот адрес в архиве')} «${family}»: ${code}\n\n${tell('Он действует 10 минут. Если вы не просили код, ничего делать не нужно.')}`,
+    subject: purpose === 'sign-in' ? `${tell('Sign-in code')}: ${code}` : `${tell('Code to confirm your address')}: ${code}`,
+    text: `${purpose === 'sign-in' ? tell('Code to sign in to the archive') : tell('Code to confirm this address in the archive')} «${family}»: ${code}\n\n${tell('It works for 10 minutes. If you did not ask for a code, there is nothing to do.')}`,
   })
 }

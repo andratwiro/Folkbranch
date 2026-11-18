@@ -29,12 +29,13 @@ if (!args.includes('--no-build') && !existsSync(path.join(root, '.next/BUILD_ID'
 const checks = [
   { file: 'tests/ui/layout.mjs', port: 3590 },
   { file: 'tests/ui/map-layers.mjs', port: 3591 },
+  { file: 'tests/ui/languages.mjs', port: 3696 },
   { file: 'tests/ui/chart-drag.mjs', port: 3694 },
   { file: 'tests/ui/chart-marks.mjs', port: 3695 },
   { file: 'tests/ui/settings-ai.mjs', port: 3594 },
   { file: 'tests/ui/assistant-panel.mjs', port: 3595, stub: true },
   { file: 'tests/e2e/map.mjs', port: 3592 },
-  { file: 'tests/ui/story-ask.mjs', port: 3594 },
+  { file: 'tests/ui/story-ask.mjs', port: 3597 },
   { file: 'tests/ui/map-reload.mjs', port: 3593, people: 2000, perf: true },
 ].filter((c) => (perf || !c.perf) && (!only.length || only.some((o) => c.file.includes(o))))
 

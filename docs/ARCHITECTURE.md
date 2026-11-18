@@ -137,14 +137,14 @@ Quality is measured on the finished geometry in `tests/layout-quality.ts`: cross
 - `lib/ops/core.ts`, `REFERENCES`: who refers to whom. A new table that refers to a person or photo is added here, or a test fails.
 - `lib/storage.ts`: files on the volume, written only by renaming.
 - `lib/graph/metrics.ts`: sizes on the chart, `lib/graph/select.ts`: who belongs to a part of the family.
-- `lib/i18n.ts`: the interface's words. The Russian text is the key and English is the lookup.
+- `lib/languages.ts`: the one list of languages (code, name, direction, plural rules, name order, status); `lib/i18n.ts`: the interface's words, looked up by i18next. The English text is the key; every language is `locales/<code>.json`, loaded on demand (`lib/i18n-load.ts` in the browser, a file read on the server). See [TRANSLATING.md](TRANSLATING.md).
 - `components/settings/*`: settings sections.
 
 ## Checks
 
 `pnpm check`: types, tests, import cycles. `pnpm check:full`: browser scenarios, text metrics, speed budgets and crash scenarios in throwaway containers with an invented family; no paid models are called. `SOAK=10 pnpm check:full` adds a 10-minute load.
 
-A new word in the interface needs English in `lib/i18n.ts`: `tests/i18n-coverage.test.ts` fails without it. `tests/e2e/english-everywhere.mjs` presses everything as each role and looks for Russian on screens, in system dialogs and in answers. `BUDGET_S=600` makes it a full pass of about half an hour.
+A new word in the interface is wrapped in `t()` with its English text as the key: `pnpm i18n:check` (part of `pnpm check` and CI) fails when a language lacks it. `tests/e2e/english-everywhere.mjs` presses everything as each role and looks for Russian on screens, in system dialogs and in answers. `BUDGET_S=600` makes it a full pass of about half an hour.
 
 ## Views
 

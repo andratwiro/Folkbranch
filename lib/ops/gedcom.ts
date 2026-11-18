@@ -60,7 +60,7 @@ export function importGedcom(actor: Actor, text: string, mode: ImportMode = 'add
   const g = readTree(text, archiveLang())
   const gramps = isGrampsXml(text)
   // A truncated download or the wrong file has no INDI at all: replacing with it would empty the archive.
-  if (mode === 'replace' && !g.persons.length) throw new OpError(400, tell('В файле нет ни одного человека: замена опустошила бы архив'))
+  if (mode === 'replace' && !g.persons.length) throw new OpError(400, tell('The file names nobody: replacing with it would empty the archive'))
   // Two records with one id would make every link point at whichever came last, with no warning.
   const xrefs = new Set<string>()
   const repeated = new Set<string>()
@@ -69,21 +69,21 @@ export function importGedcom(actor: Actor, text: string, mode: ImportMode = 'add
     if (xrefs.has(p.xref)) repeated.add(p.xref)
     xrefs.add(p.xref)
   }
-  if (repeated.size) throw new OpError(400, `${tell('В файле повторяются номера записей')}: ${[...repeated].join(', ')}`)
+  if (repeated.size) throw new OpError(400, `${tell('Record numbers repeat in the file')}: ${[...repeated].join(', ')}`)
   const db = getDb()
-  const verb = mode === 'replace' ? 'Заменить дерево файлом' : mode === 'merge' ? 'Объединить с файлом' : gramps ? 'Импорт Gramps' : 'Импорт GEDCOM'
+  const verb = mode === 'replace' ? 'Replace the tree with a file' : mode === 'merge' ? 'Merge with a file' : gramps ? 'Import Gramps' : 'Import GEDCOM_noun'
   const found = mode === 'merge' ? matchPeople(g) : new Map()
   // A family without parents gains a card "?" so its children stay siblings; it is new like the rest.
   const total = g.persons.length + placeholders(g)
   const oldCount = mode === 'replace' ? db.select({ id: schema.persons.id }).from(schema.persons).all().length : 0
   // Whether the cards came in new, merged into existing ones or replaced the whole tree, and how many of each.
   const counts = mode === 'replace'
-    ? ` · ${say('Удалено')}: ${oldCount} · ${say('новых')}: ${total}`
+    ? ` · ${say('Deleted')}: ${oldCount} · ${say('new')}: ${total}`
     : mode === 'merge'
-      ? ` · ${say('новых')}: ${total - found.size} · ${say('обновлено')}: ${found.size}`
-      : ` · ${say('новых')}: ${total}`
+      ? ` · ${say('new')}: ${total - found.size} · ${say('updated')}: ${found.size}`
+      : ` · ${say('new')}: ${total}`
   const personIds: string[] = []
-  const points = pointCount(g) ? ` · ${say('точек мест из файла')}: ${pointCount(g)}` : ''
+  const points = pointCount(g) ? ` · ${say('place points from the file')}: ${pointCount(g)}` : ''
   return mutate(actor, { summary: `${say(verb)}: ${peopleWords(total, archiveLang())}${counts}${points}`, personIds }, (c) => {
     const ids = new Map<string, string>()
     if (mode === 'replace') {
@@ -116,7 +116,7 @@ export function importGedcom(actor: Actor, text: string, mode: ImportMode = 'add
         personIds.push(row.id)
         const blocks = p.notes.flatMap((n) => n.split('\n').filter(Boolean).map(paragraph))
         const hasBio = db.select({ id: schema.pages.id }).from(schema.pages).where(eq(schema.pages.personId, row.id)).all().length > 0
-        if (blocks.length && !hasBio) insertPage(c, { personId: row.id, title: say('Биография'), content: blocks })
+        if (blocks.length && !hasBio) insertPage(c, { personId: row.id, title: say('Biography'), content: blocks })
         continue
       }
       const living = !p.dead && !p.deathDate && !((yearOf(p.birthDate) ?? 9999) < new Date().getFullYear() - 110)
@@ -131,7 +131,7 @@ export function importGedcom(actor: Actor, text: string, mode: ImportMode = 'add
       const blocks = [
         ...p.notes.flatMap((n) => n.split('\n').filter(Boolean).map(paragraph)),
       ]
-      if (blocks.length) insertPage(c, { personId: id, title: say('Биография'), content: blocks })
+      if (blocks.length) insertPage(c, { personId: id, title: say('Biography'), content: blocks })
     }
     // Godparents and witnesses named by their place in the file now point at their cards.
     const mapId = (x: string | null | undefined) => (x ? ids.get(x) ?? (xrefs.has(x) ? null : x) : null)
@@ -157,7 +157,7 @@ export function importGedcom(actor: Actor, text: string, mode: ImportMode = 'add
         if (b) safe(() => addParent(c, b, cid, ch.adopted ? 'adopted' : ch.foster ? 'foster' : 'birth', 'family'))
       }
     }
-    const placed = filePoints(c, g.places, say(gramps ? 'Точка из файла Gramps' : 'Точка из файла GEDCOM'))
+    const placed = filePoints(c, g.places, say(gramps ? 'Point from the Gramps file' : 'Point from the GEDCOM file'))
     return { persons: total, families: g.families.length, merged: found.size, ids: Object.fromEntries(ids), places: placed }
   })
 }
@@ -213,5 +213,5 @@ export function exportGedcom(actor: Actor, hideLiving: boolean) {
   const graph = getGraph(actor)
   // Readers never get living relatives, whatever the checkbox says.
   // Points go out with the places they belong to, as GEDCOM's MAP, so Gramps, webtrees or RootsMagic draw them too.
-  return writeGedcom(graph, { hideLiving: hideLiving || seesOnlyPublic(actor), source: 'Folkbranch', pageWord: say('л.'), lang: archiveLang(), places: listPlaces(actor) })
+  return writeGedcom(graph, { hideLiving: hideLiving || seesOnlyPublic(actor), source: 'Folkbranch', pageWord: say('p.'), lang: archiveLang(), places: listPlaces(actor) })
 }

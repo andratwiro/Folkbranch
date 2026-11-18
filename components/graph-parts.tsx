@@ -98,17 +98,17 @@ export const PersonCard = memo(function PersonCard({ p, left, top, wait, classNa
       }}
       onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false) }}
     >
-      <div className="card-main" role="button" tabIndex={0} aria-label={p.hidden ? t('Живой родственник') : [personName(p), lifeYears(p), label, mine].filter(Boolean).join(', ')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open() } }}>
+      <div className="card-main" role="button" tabIndex={0} aria-label={p.hidden ? t('Living relative') : [personName(p), lifeYears(p), label, mine].filter(Boolean).join(', ')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open() } }}>
       <div className={cn('ava', canEdit && !p.hidden && 'link-start')} onPointerDown={canEdit && !p.hidden ? (e) => acts.current.drag(e, p.id) : undefined}><img src={avatarUrl(p)} alt="" decoding="async" draggable={false} /></div>
       {/* Opaque, so a line coming from below stops at the text however tall it wraps. */}
       <div className={cn('cap', canEdit && 'movable')} onPointerDown={canEdit ? (e) => acts.current.move(e, p.id) : undefined}>
-        <div className="nm" title={p.hidden ? undefined : personName(p) || undefined}>{p.hidden ? t('Живой родственник') : personName(p) || t('Без названия')}</div>
+        <div className="nm" title={p.hidden ? undefined : personName(p) || undefined}>{p.hidden ? t('Living relative') : personName(p) || t('Untitled')}</div>
         {!p.hidden && <div className="yr">{lifeYears(p)}</div>}
         {label && <div className="rel kin" title={label}>{label}</div>}
         {mine && <div className="rel me" title={mine}>{mine}</div>}
       </div>
       </div>
-      {folded !== undefined && <button className="folded" onClick={(e) => { e.stopPropagation(); acts.current.unfold(p.id) }}>{t('Показать потомков')}: {folded}</button>}
+      {folded !== undefined && <button className="folded" onClick={(e) => { e.stopPropagation(); acts.current.unfold(p.id) }}>{t('Show descendants')}: {folded}</button>}
       {canEdit && !p.hidden && (hovered || focused || selected) && <CardTools id={p.id} rootsBelow={rootsBelow} lang={lang} acts={acts} />}
     </div>
   )
@@ -200,14 +200,14 @@ export const FamilyDots = memo(function FamilyDots({ unions, active, canEdit, ac
 function CardTools({ id, rootsBelow, lang, acts }: { id: string; rootsBelow: boolean; lang: Lang; acts: Acts }) {
   const stop = (e: React.SyntheticEvent) => e.stopPropagation()
   const add = (type: QuickType, label: string, side: string, key = side) => (
-    <button key={key} className={`tool add ${side}`} title={`${translate(lang, label)}. ${translate(lang, 'Протяните к человеку, чтобы связать')}`} aria-label={translate(lang, label)} onPointerDown={(e) => acts.current.drag(e, id)} onClick={() => acts.current.add(type, id)}><Plus strokeWidth={2.5} /></button>
+    <button key={key} className={`tool add ${side}`} title={`${translate(lang, label)}. ${translate(lang, 'Drag to a person to link')}`} aria-label={translate(lang, label)} onPointerDown={(e) => acts.current.drag(e, id)} onClick={() => acts.current.add(type, id)}><Plus strokeWidth={2.5} /></button>
   )
   return (
     <div className="tools" onClick={stop} onPointerDown={stop} onMouseDown={stop} onDoubleClick={stop} onKeyDown={stop}>
-      {add('parent', 'Добавить родителя', rootsBelow ? 'bottom' : 'top')}
-      {add('spouse', 'Добавить супруга', 'left')}
-      {add('spouse', 'Добавить супруга', 'right')}
-      {add('child', 'Добавить ребёнка', rootsBelow ? 'top' : 'bottom')}
+      {add('parent', 'Add parent', rootsBelow ? 'bottom' : 'top')}
+      {add('spouse', 'Add spouse', 'left')}
+      {add('spouse', 'Add spouse', 'right')}
+      {add('child', 'Add child', rootsBelow ? 'top' : 'bottom')}
     </div>
   )
 }
@@ -223,32 +223,32 @@ export function Legend() {
   const fine = typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches
   return (
     <div>
-      <h3 className="text-base font-medium mb-1">{t('Как читать схему')}</h3>
-      {row(ring('sex-M'), 'Мужчина')}
-      {row(ring('sex-F'), 'Женщина')}
-      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot" /></svg>, 'Брак. От точки идут линии к детям')}
-      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union civil" /><circle cx="20" cy="6" r="5" className="dot open" /></svg>, 'Без регистрации брака: пунктирная линия')}
-      {row(line('line'), 'Родной ребёнок')}
-      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><path d={endMarks(26, 6)} className="union-end" /></svg>, 'Развод: две косые черты на линии')}
-      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><path d={endMarks(26, 6, 1)} className="union-end" /></svg>, 'Разлука без развода: одна косая черта')}
-      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot" /></svg>, 'Овдовели: линия не перечёркнута, смерть видна на карточке')}
-      {row(line('line adopted'), 'Приёмный ребёнок')}
-      {row(line('line foster'), 'Ребёнок под опекой')}
-      {row(line('line step'), 'Пасынок или падчерица')}
-      {row(line('line assumed'), 'Связь под вопросом')}
-      {row(ring('assumed'), 'Человек под вопросом')}
+      <h3 className="text-base font-medium mb-1">{t('Legend')}</h3>
+      {row(ring('sex-M'), 'Man')}
+      {row(ring('sex-F'), 'Woman')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot" /></svg>, 'Marriage; children come from the dot')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union civil" /><circle cx="20" cy="6" r="5" className="dot open" /></svg>, 'Unmarried partners: dashed line')}
+      {row(line('line'), 'Birth child')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><path d={endMarks(26, 6)} className="union-end" /></svg>, 'Divorce: two slashes on the line')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><path d={endMarks(26, 6, 1)} className="union-end" /></svg>, 'Separation: one slash')}
+      {row(<svg width="40" height="12" className="legend-svg"><path d="M2 6H38" className="union" /><circle cx="20" cy="6" r="5" className="dot" /></svg>, 'Widowed: the line is not crossed out; the death shows on the card')}
+      {row(line('line adopted'), 'Adopted child')}
+      {row(line('line foster'), 'Foster child')}
+      {row(line('line step'), 'Stepchild')}
+      {row(line('line assumed'), 'Uncertain link')}
+      {row(ring('assumed'), 'Uncertain person')}
       <ul className="mt-2 pt-2 border-t border-border text-sm flex flex-col gap-2">
-        <li>{t('Нажмите на человека, чтобы открыть карточку.')}</li>
-        <li>{t('Кнопка + рядом с человеком добавляет родственника.')}</li>
-        {fine && <li>{t('Перетащите + на другого человека, чтобы связать их.')}</li>}
-        {fine && <li>{t('Перетащите подпись человека, чтобы сдвинуть его карточку.')}</li>}
-        {fine && <li>{t('Чтобы удалить связь, нажмите на линию и клавишу Delete.')}</li>}
-        {fine && <li>{(/Mac/.test(navigator.platform) ? (k: string) => k : (k: string) => k.replaceAll('⌘', 'Ctrl+'))(t('Клавиши: ⌘K поиск, ⌘J ассистент, ⌘Z отмена.'))}</li>}
+        <li>{t('Click a person to open their card.')}</li>
+        <li>{t('The + next to a person adds a relative.')}</li>
+        {fine && <li>{t('Drag the + to another person to link them.')}</li>}
+        {fine && <li>{t('Drag a person\'s caption to move their card.')}</li>}
+        {fine && <li>{t('To remove a link, click the line and press Delete.')}</li>}
+        {fine && <li>{(/Mac/.test(navigator.platform) ? (k: string) => k : (k: string) => k.replaceAll('⌘', 'Ctrl+'))(t('Keys: ⌘K search, ⌘J assistant, ⌘Z undo.'))}</li>}
       </ul>
       {fine && <>
-      <h3 className="text-base font-medium mt-3 mb-1">{t('С клавиатуры')}</h3>
+      <h3 className="text-base font-medium mt-3 mb-1">{t('From the keyboard')}</h3>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-        {([['Tab', 'к следующему человеку'], ['← ↑ → ↓', 'по родне: родители, дети, супруг, братья и сёстры'], ['Enter', 'открыть карточку'], ['+ − 0', 'крупнее, мельче, вся схема'], ['⌘K', 'поиск'], ['⌘J', 'ассистент'], ['⌘Z', 'отменить последнее изменение']] as const).map(([k, what]) => <div key={k} className="contents"><dt><kbd>{k}</kbd></dt><dd className="text-ink-soft">{t(what)}</dd></div>)}
+        {([['Tab', 'to the next person'], ['← ↑ → ↓', 'through the family: parents, children, spouse, siblings'], ['Enter', 'open the card'], ['+ − 0', 'larger, smaller, whole chart'], ['⌘K', 'search'], ['⌘J', 'assistant'], ['⌘Z', 'undo the last change']] as const).map(([k, what]) => <div key={k} className="contents"><dt><kbd>{k}</kbd></dt><dd className="text-ink-soft">{t(what)}</dd></div>)}
       </dl>
       </>}
     </div>

@@ -20,7 +20,7 @@ import { certainty, personInput, claimField, sourceInput, relationType, agentCre
 /** What a place change says to the person accepting it. */
 const placeDetails = (p: { kind?: string; otherNames?: { name: string; years?: string }[]; lat?: number | null; lon?: number | null; note?: string }) => [
   p.kind,
-  p.otherNames?.length ? `${tell('Другие и старые названия')}: ${p.otherNames.map((n) => (n.years ? `${n.name} (${n.years})` : n.name)).join(', ')}` : '',
+  p.otherNames?.length ? `${tell('Other and older names')}: ${p.otherNames.map((n) => (n.years ? `${n.name} (${n.years})` : n.name)).join(', ')}` : '',
   p.lat != null && p.lon != null ? `${p.lat}, ${p.lon}` : '',
   p.note,
 ].filter((x): x is string => !!x)
@@ -35,8 +35,8 @@ export const OPS: Record<string, Def> = {
     prepare: checkNewPerson,
     apply: (a, x) => people.createPerson(a, x.person, x.relation),
     describe: (x, c) => ({
-      text: `${tell('Добавить')}: ${[x.person.givenName, x.person.surname].filter(Boolean).join(' ')}`,
-      details: [x.person.birthDate && `${tell('дата рождения')}: ${x.person.birthDate}`, x.person.deathDate && `${tell('дата смерти')}: ${x.person.deathDate}`, x.relation && `${tell(REL[x.relation.type])} — ${c.name(x.relation.to)}`].filter(Boolean),
+      text: `${tell('Add')}: ${[x.person.givenName, x.person.surname].filter(Boolean).join(' ')}`,
+      details: [x.person.birthDate && `${tell('Date of birth')}: ${x.person.birthDate}`, x.person.deathDate && `${tell('Date of death')}: ${x.person.deathDate}`, x.relation && `${tell(REL[x.relation.type])} — ${c.name(x.relation.to)}`].filter(Boolean),
     }),
   }),
   update_person: def({
@@ -87,7 +87,7 @@ export const OPS: Record<string, Def> = {
       }
       return x.changes.map((c: { id: string; patch: unknown }) => ({ op: 'update_person', args: c }) as PlannedOp)
     },
-    summary: (x) => `${say('Изменить сразу')}: ${x.changes.length}`,
+    summary: (x) => `${say('Bulk change')}: ${x.changes.length}`,
     apply: () => { throw new OpError(500, 'update_people is expanded before applying') },
     describe: () => ({ text: '' }),
   }),
@@ -107,7 +107,7 @@ export const OPS: Record<string, Def> = {
       for (const id of x.personIds) if (!isTemp(id)) personFor(a, id)
       return x.personIds.map((personId: string) => ({ op: 'add_fact', args: { personId, fact: x.fact } }) as PlannedOp)
     },
-    summary: (x) => `${say('Добавить факт')}: ${x.fact.kind} × ${x.personIds.length}`,
+    summary: (x) => `${say('Add a fact')}: ${x.fact.kind} × ${x.personIds.length}`,
     apply: () => { throw new OpError(500, 'add_fact_to_people is expanded before applying') },
     describe: () => ({ text: '' }),
   }),
@@ -117,7 +117,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({ id: z.string() }),
     refs: { id: 'persons' },
     apply: (a, x) => people.deletePerson(a, x.id),
-    describe: (x, c) => ({ text: `${tell('Удалить человека')}: ${c.name(x.id)}` }),
+    describe: (x, c) => ({ text: `${tell('Delete person')}: ${c.name(x.id)}` }),
   }),
   add_relation: def({
     risk: 'write',
@@ -139,7 +139,7 @@ export const OPS: Record<string, Def> = {
       return x
     },
     apply: (a, x) => people.linkPeople(a, x.type, x.to, x.other, x.otherParentId, { kind: x.kind as ParentKind, certainty: x.certainty as Certainty, unionKind: x.unionKind as UnionKind, startDate: x.startDate, endDate: x.endDate }),
-    describe: (x, c) => ({ text: `${c.name(x.other)} — ${tell(REL[x.type])}: ${c.name(x.to)}`, details: [x.startDate, x.kind && x.kind !== 'birth' && x.kind, x.certainty === 'assumed' && tell('предположение')].filter(Boolean) }),
+    describe: (x, c) => ({ text: `${c.name(x.other)} — ${tell(REL[x.type])}: ${c.name(x.to)}`, details: [x.startDate, x.kind && x.kind !== 'birth' && x.kind, x.certainty === 'assumed' && tell('assumption')].filter(Boolean) }),
   }),
   update_relation: def({
     risk: 'write',
@@ -155,7 +155,7 @@ export const OPS: Record<string, Def> = {
       return x
     },
     apply: (a, { type, id, ...patch }) => people.updateRelation(a, type, id, patch),
-    describe: (x) => ({ text: `${tell('Связь')}: ${[x.kind, x.certainty, x.startDate, x.endDate, x.endKind, x.place].filter(Boolean).join(', ')}` }),
+    describe: (x) => ({ text: `${tell('Link_relation')}: ${[x.kind, x.certainty, x.startDate, x.endDate, x.endKind, x.place].filter(Boolean).join(', ')}` }),
   }),
   move_relation: def({
     risk: 'write',
@@ -163,7 +163,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({ type: z.enum(['parent', 'union']), id: z.string(), end: z.enum(['parent', 'child', 'a', 'b']), to: z.string(), also: z.array(z.string()).max(6).optional() }),
     refs: { to: 'persons' },
     apply: (a, x) => people.moveRelation(a, x.type, x.id, x.end, x.to, x.also),
-    describe: (x, c) => ({ text: `${tell('Связь')}: → ${c.name(x.to)}` }),
+    describe: (x, c) => ({ text: `${tell('Link_relation')}: → ${c.name(x.to)}` }),
   }),
   remove_relation: def({
     risk: 'danger',
@@ -174,7 +174,7 @@ export const OPS: Record<string, Def> = {
       const db = getDb()
       const r = x.type === 'parent' ? db.select().from(schema.parentChild).where(eq(schema.parentChild.id, x.id)).get() : db.select().from(schema.unions).where(eq(schema.unions.id, x.id)).get()
       const ids = !r ? [] : 'parentId' in r ? [r.parentId, r.childId] : [r.aId, r.bId]
-      return { text: `${tell('Удалить связь')}: ${ids.map(nameOfReal).join(' — ')}` }
+      return { text: `${tell('Remove relation')}: ${ids.map(nameOfReal).join(' — ')}` }
     },
   }),
   remove_parent_links: def({
@@ -182,7 +182,7 @@ export const OPS: Record<string, Def> = {
     description: 'Take a child off several parents at once, as one change. Link ids come from get_person.',
     input: z.object({ ids: z.array(z.string()).min(1) }),
     apply: (a, x) => people.removeParentLinks(a, x.ids),
-    describe: (x) => ({ text: `${tell('Удалить связь')}: ${x.ids.length}` }),
+    describe: (x) => ({ text: `${tell('Remove relation')}: ${x.ids.length}` }),
   }),
   create_page: def({
     risk: 'write',
@@ -192,7 +192,7 @@ export const OPS: Record<string, Def> = {
     creates: true,
     prepare: pageContent,
     apply: (a, x) => pages.createPage(a, { personId: x.personId, title: x.title, parentPageId: x.parentPageId, icon: x.icon, content: x.content }),
-    describe: (x, c) => ({ text: `${c.name(x.personId)}: ${tell('Новая страница')} «${x.title ?? ''}»` }),
+    describe: (x, c) => ({ text: `${c.name(x.personId)}: ${tell('New page')} «${x.title ?? ''}»` }),
   }),
   update_page: def({
     risk: 'write',
@@ -201,7 +201,7 @@ export const OPS: Record<string, Def> = {
     refs: { id: 'pages' },
     prepare: pageContent,
     apply: (a, { id, ...patch }) => pages.updatePage(a, id, patch),
-    describe: (x, c) => ({ text: `${tell('Страница')}: ${pageName(x.id, c)}`, details: [x.title !== undefined && `${tell('Название')}: ${x.title}`, x.content && `${x.content.length} ${tell('блоков')}`].filter(Boolean) as string[] }),
+    describe: (x, c) => ({ text: `${tell('Page')}: ${pageName(x.id, c)}`, details: [x.title !== undefined && `${tell('Title_name')}: ${x.title}`, x.content && `${x.content.length} ${tell('blocks')}`].filter(Boolean) as string[] }),
   }),
   move_page: def({
     risk: 'write',
@@ -209,7 +209,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({ id: z.string(), parentPageId: z.string().nullable().optional(), position: z.number().optional() }),
     refs: { id: 'pages', parentPageId: 'pages' },
     apply: (a, { id, ...patch }) => pages.updatePage(a, id, patch),
-    describe: (x, c) => ({ text: `${tell('Страница')}: ${pageName(x.id, c)}` }),
+    describe: (x, c) => ({ text: `${tell('Page')}: ${pageName(x.id, c)}` }),
   }),
   delete_page: def({
     risk: 'danger',
@@ -220,7 +220,7 @@ export const OPS: Record<string, Def> = {
     // under it meanwhile nor deletes a page that was changed since.
     prepare: (_a, x) => (x.id.startsWith('tmp_') ? x : { ...x, ...pages.snapshot(x.id) }),
     apply: (a, x) => pages.deletePage(a, x.id, x.pageIds, x.pageUpdatedAt),
-    describe: (x, c) => ({ text: `${tell('Удалить')}: ${pageName(x.id, c)}` }),
+    describe: (x, c) => ({ text: `${tell('Delete')}: ${pageName(x.id, c)}` }),
   }),
   upload_photo: def({
     risk: 'write',
@@ -233,7 +233,7 @@ export const OPS: Record<string, Def> = {
       return { row: await media.storeUpload(got.buf, x.filename ?? got.name, a.userId), personId: x.personId ?? null }
     },
     apply: (a, x) => media.commitUpload(a, x.row, x.personId),
-    describe: (x, c) => ({ text: `${tell('Загрузить фото')}: ${x.row.originalName}`, details: x.personId ? [c.name(x.personId)] : [] }),
+    describe: (x, c) => ({ text: `${tell('Upload photo')}: ${x.row.originalName}`, details: x.personId ? [c.name(x.personId)] : [] }),
   }),
   create_story: def({
     internal: true,
@@ -243,8 +243,8 @@ export const OPS: Record<string, Def> = {
     creates: true,
     apply: (a, x) => stories.createStory(a, x),
     describe: (x, c) => ({
-      text: `${x.about.map((id: string) => c.name(id)).join(', ')}: ${tell('Рассказ')}${x.title ? ` «${x.title}»` : ''}`,
-      details: [x.tellerId ? `${tell('Со слов')}: ${c.name(x.tellerId)}` : x.tellerName && `${tell('Со слов')}: ${x.tellerName}`, x.toldOn, x.audio && tell('С записью голоса'), x.body].filter(Boolean),
+      text: `${x.about.map((id: string) => c.name(id)).join(', ')}: ${tell('Story')}${x.title ? ` «${x.title}»` : ''}`,
+      details: [x.tellerId ? `${tell('As told by')}: ${c.name(x.tellerId)}` : x.tellerName && `${tell('As told by')}: ${x.tellerName}`, x.toldOn, x.audio && tell('With a voice recording'), x.body].filter(Boolean),
     }),
   }),
   update_photo: def({
@@ -253,7 +253,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({ id: z.string(), caption: z.string().optional(), date: z.string().optional(), place: z.string().optional() }),
     refs: { id: 'media' },
     apply: (a, { id, ...patch }) => media.updateMedia(a, id, patch),
-    describe: (x) => ({ text: `${tell('Подпись')}: ${x.caption ?? ''}`, details: [x.date, x.place].filter(Boolean) }),
+    describe: (x) => ({ text: `${tell('Caption')}: ${x.caption ?? ''}`, details: [x.date, x.place].filter(Boolean) }),
   }),
   delete_photo: def({
     risk: 'danger',
@@ -261,7 +261,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({ id: z.string() }),
     refs: { id: 'media' },
     apply: (a, x) => media.deleteMedia(a, x.id),
-    describe: (x) => ({ text: `${tell('Удалить')}: ${tell('Фото')} ${x.id}` }),
+    describe: (x) => ({ text: `${tell('Delete')}: ${tell('Photos_short')} ${x.id}` }),
   }),
   tag_photo: def({
     risk: 'write',
@@ -269,7 +269,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({ mediaId: z.string(), personId: z.string().nullish(), label: z.string().max(200).nullish(), box: box.nullish() }).refine((x) => x.personId || x.label?.trim(), 'personId or label is required'),
     refs: { mediaId: 'media', personId: 'persons' },
     apply: (a, x) => media.addTag(a, x.mediaId, x, x.box ?? null),
-    describe: (x, c) => ({ text: `${tell('Фото')}: ${x.personId ? c.name(x.personId) : x.label}` }),
+    describe: (x, c) => ({ text: `${tell('Photos_short')}: ${x.personId ? c.name(x.personId) : x.label}` }),
   }),
   untag_photo: def({
     risk: 'danger',
@@ -277,7 +277,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({ id: z.string() }),
     refs: { id: 'mediaTags' },
     apply: (a, x) => media.removeTag(a, x.id),
-    describe: () => ({ text: `${tell('Удалить')}: ${tell('Фото')}` }),
+    describe: () => ({ text: `${tell('Delete')}: ${tell('Photos_short')}` }),
   }),
   set_avatar: def({
     risk: 'write',
@@ -289,7 +289,7 @@ export const OPS: Record<string, Def> = {
       return x
     },
     apply: (a, x) => people.setAvatar(a, x.personId, x.mediaId, x.crop),
-    describe: (x, c) => ({ text: `${c.name(x.personId)}: ${tell('Сделать аватаркой')}` }),
+    describe: (x, c) => ({ text: `${c.name(x.personId)}: ${tell('Set as avatar')}` }),
   }),
   create_place: def({
     risk: 'write',
@@ -298,7 +298,7 @@ export const OPS: Record<string, Def> = {
     creates: true,
     prepare: (_a, x) => { if (x.parentId && !isTemp(x.parentId)) places.getPlace(x.parentId); return x },
     apply: (a, x) => places.savePlace(a, null, x),
-    describe: (x) => ({ text: `${tell('Место')}: ${x.name}`, details: placeDetails(x) }),
+    describe: (x) => ({ text: `${tell('Place')}: ${x.name}`, details: placeDetails(x) }),
   }),
   update_place: def({
     risk: 'write',
@@ -306,7 +306,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({ id: z.string(), patch: places.placePatch }),
     prepare: (_a, x) => { if (!isTemp(x.id)) places.getPlace(x.id); return x },
     apply: (a, x) => places.savePlace(a, x.id, { ...places.getPlace(x.id), ...x.patch }),
-    describe: (x) => ({ text: `${tell('Место')}: ${isTemp(x.id) ? x.patch.name ?? x.id : places.getPlace(x.id).name}`, details: placeDetails(x.patch) }),
+    describe: (x) => ({ text: `${tell('Place')}: ${isTemp(x.id) ? x.patch.name ?? x.id : places.getPlace(x.id).name}`, details: placeDetails(x.patch) }),
   }),
   add_version: def({
     risk: 'write',
@@ -353,7 +353,7 @@ export const OPS: Record<string, Def> = {
       if (user) throw new OpError(409, `the version ${user.value} of ${user.field} relies on this source`)
       people.updatePerson(a, x.personId, { sources: p.sources.filter((s) => s.id !== x.sourceId) })
     },
-    describe: (x, c) => ({ text: `${c.name(x.personId)}: ${tell('Удалить')} ${x.sourceId}` }),
+    describe: (x, c) => ({ text: `${c.name(x.personId)}: ${tell('Delete')} ${x.sourceId}` }),
   }),
   restore_version: def({
     risk: 'write',
@@ -376,7 +376,7 @@ export const OPS: Record<string, Def> = {
       const p = personFor(a, x.personId)
       assertVersion(p, x.field, x.versionId)
       const rejected = claims.versions(p, x.field).find((c) => c.id === x.versionId)?.status === 'rejected'
-      if (rejected) throw new OpError(409, tell('Отклонённую версию нельзя выбрать. Сначала восстановите её.'))
+      if (rejected) throw new OpError(409, tell('A rejected version cannot be chosen. Restore it first.'))
       return people.updatePerson(a, x.personId, claims.accept(p, x.field, x.versionId))
     },
     describe: (x, c) => ({ text: `${c.name(x.personId)}: ${x.field} → ${x.versionId}` }),
@@ -423,10 +423,10 @@ The answer lists each new person's id.`,
       // A replace deletes the tree: whoever accepts it must read that, not just a count of people.
       if (x.mode === 'replace') {
         const removed = getDb().select({ id: schema.persons.id }).from(schema.persons).all().length
-        return { text: `${tell('Заменить дерево файлом')}: ${n} ${tell('людей')} · ${tell('Удалено')}: ${removed}` }
+        return { text: `${tell('Replace the tree with a file')}: ${n} ${tell('people_count')} · ${tell('Deleted')}: ${removed}` }
       }
       const verb = x.mode === 'merge' ? 'Объединить с файлом' : 'Импорт GEDCOM'
-      return { text: `${tell(verb)}: ${n} ${tell('людей')}` }
+      return { text: `${tell(verb)}: ${n} ${tell('people_count')}` }
     },
   }),
   import_kinship_case: def({
@@ -435,15 +435,15 @@ The answer lists each new person's id.`,
     input: caseFiles,
     bulk: true,
     apply: (a, x) => importCase(a, x),
-    describe: () => ({ text: tell('Импорт дела') }),
+    describe: () => ({ text: tell('Case import') }),
   }),
   undo: def({
     risk: 'danger',
     description: 'Roll back a change from the history. A token can undo only its own changes.',
     input: z.object({ historyId: z.string() }),
     direct: true,
-    apply: (a, x) => undo(a, x.historyId, say('Отменено')),
-    describe: () => ({ text: tell('Отменено') }),
+    apply: (a, x) => undo(a, x.historyId, say('Undone')),
+    describe: () => ({ text: tell('Undone') }),
   }),
   rollback_to: def({
     risk: 'danger',
@@ -451,8 +451,8 @@ The answer lists each new person's id.`,
     input: z.object({ historyId: z.string() }),
     direct: true,
     internal: true,
-    apply: (a, x) => rollbackTo(a, x.historyId, say('Отменено')),
-    describe: () => ({ text: tell('Отменено') }),
+    apply: (a, x) => rollbackTo(a, x.historyId, say('Undone')),
+    describe: () => ({ text: tell('Undone') }),
   }),
   undo_person: def({
     risk: 'danger',
@@ -460,7 +460,7 @@ The answer lists each new person's id.`,
     input: z.object({ historyId: z.string(), personId: z.string() }),
     direct: true,
     internal: true,
-    apply: (a, x) => undoPart(a, x.historyId, x.personId, say('Отменено')),
-    describe: () => ({ text: tell('Отменено') }),
+    apply: (a, x) => undoPart(a, x.historyId, x.personId, say('Undone')),
+    describe: () => ({ text: tell('Undone') }),
   }),
 }

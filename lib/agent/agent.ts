@@ -51,7 +51,7 @@ const FILES = `Files are attached, each with its id. Pictures and PDFs you can s
 
 /** Fixed per archive: living relatives stay away from the model unless the owner decided otherwise. */
 export function assistantActor(actor: Actor, since?: number): Actor {
-  return { ...actor, name: `${say('Ассистент')} → ${actor.name}`, assistant: true, since }
+  return { ...actor, name: `${say('Assistant')} → ${actor.name}`, assistant: true, since }
 }
 
 export const externalLinks = (input: unknown) => [...new Set(JSON.stringify(input ?? '').match(/(?:https?:|(?<![\w:/.-]))\/\/[^\s"')\\]+/gi) ?? [])]
@@ -70,9 +70,9 @@ export function assistantState(actor: Actor): AssistantState {
 
 /** Why this person cannot use the assistant, or null when they can. */
 export function assistantRefusal(actor: Actor) {
-  if (getSetting('assistantEnabled') !== '1') return tell('Ассистент выключен владельцем архива.')
-  if (!currentProvider()) return tell('Ассистент не настроен: на сервере нет ключа API или модели.')
-  if (actor.role === 'reader' && getSetting('assistantForReaders') !== '1') return tell('Ассистент недоступен читателям.')
+  if (getSetting('assistantEnabled') !== '1') return tell('The assistant is turned off by the archive owner.')
+  if (!currentProvider()) return tell('The assistant is not set up: the server has no API key or model.')
+  if (actor.role === 'reader' && getSetting('assistantForReaders') !== '1') return tell('The assistant is not available to readers.')
   return null
 }
 
@@ -217,7 +217,7 @@ export function buildAgent(person: Actor, opts: { model?: LanguageModel; provide
       let status = approvalFor(def?.risk, !!opts.trustWrites)
       // A link written into the archive or fetched by the server can carry data out, so a person always sees it.
       const outward = status === 'not-applicable' && def?.risk === 'read' ? [] : externalLinks(toolCall.input)
-      if (outward.length) return { type: 'user-approval' as const, reason: [def?.describe?.(actor, toolCall.input), `${tell('Внешние ссылки')}: ${outward.join(', ')}`].filter(Boolean).join('\n') }
+      if (outward.length) return { type: 'user-approval' as const, reason: [def?.describe?.(actor, toolCall.input), `${tell('External links')}: ${outward.join(', ')}`].filter(Boolean).join('\n') }
       if (status === 'not-applicable' && def?.risk === 'write' && ((toolCall.toolName.startsWith('update_') && changesWhoIsLiving(toolCall.input)) || ++unasked > MAX_UNASKED_WRITES)) status = 'user-approval'
       // The reason reaches the person's confirmation card, not the model.
       return status === 'user-approval' ? { type: status, reason: def?.describe?.(actor, toolCall.input) ?? '' } : status

@@ -56,9 +56,9 @@ export async function assistantResponse(person: Actor, body: unknown, opts: { mo
   const input = chatInput.parse(body)
   const messages = await validateUIMessages<UIMessage>({ messages: input.messages, tools: assistantTools(assistantActor(person)) as never })
   // Only the owner sends the archive to another of their services: a key added for speech is not a consent for chat.
-  if (input.choice && person.role !== 'owner') throw new OpError(403, tell('Другую модель для ответа выбирает только владелец'))
+  if (input.choice && person.role !== 'owner') throw new OpError(403, tell('Only the owner picks another model for an answer'))
   const picked = input.choice && !opts.model ? providerFor(input.choice.provider, input.choice.model) : null
-  if (input.choice && !opts.model && !picked) throw new OpError(400, tell('Эта модель больше недоступна. Выберите другую в списке «Кто отвечает»'))
+  if (input.choice && !opts.model && !picked) throw new OpError(400, tell('This model is no longer available. Choose another under “Who answers”'))
   if (!opts.model && !picked) await replaceMissingModel()
   const sees = opts.model ? null : await modelSees(picked ?? undefined)
   return createAgentUIStreamResponse({

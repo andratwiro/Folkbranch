@@ -51,7 +51,7 @@ export function RestoreForm({ t, warning, code }: { t: (key: string) => string; 
   return (
     <div className="flex flex-col gap-2">
       {stage.name === 'idle' && (
-        <button type="button" className="bar-btn self-start border border-border" onClick={() => input.current?.click()}><Upload size={14} /> {t('Выбрать файл копии')}</button>
+        <button type="button" className="bar-btn self-start border border-border" onClick={() => input.current?.click()}><Upload size={14} /> {t('Choose a copy file')}</button>
       )}
       <input ref={input} hidden type="file" accept=".zip,application/zip" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) setStage({ name: 'chosen', file }) }} />
       {stage.name === 'chosen' && (
@@ -59,17 +59,17 @@ export function RestoreForm({ t, warning, code }: { t: (key: string) => string; 
           <p className="text-sm">{stage.file.name}</p>
           <p className="text-sm">{warning}</p>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className="bar-btn on !bg-destructive" onClick={() => start(stage.file)}>{t('Восстановить из этого файла')}</button>
-            <button type="button" className="bar-btn border border-border" onClick={() => setStage({ name: 'idle' })}>{t('Отмена')}</button>
+            <button type="button" className="bar-btn on !bg-destructive" onClick={() => start(stage.file)}>{t('Restore from this file')}</button>
+            <button type="button" className="bar-btn border border-border" onClick={() => setStage({ name: 'idle' })}>{t('Cancel')}</button>
           </div>
         </div>
       )}
-      {stage.name === 'sending' && <p role="status" className="text-sm">{stage.percent < 100 ? `${t('Отправляем файл')}: ${stage.percent}%` : t('Проверяем копию')}</p>}
-      {stage.name === 'waiting' && <p role="status" className="text-sm">{t('Копия проверена. Сервер перезапускается, это займёт около минуты')}</p>}
+      {stage.name === 'sending' && <p role="status" className="text-sm">{stage.percent < 100 ? `${t('Sending the file')}: ${stage.percent}%` : t('Checking the copy')}</p>}
+      {stage.name === 'waiting' && <p role="status" className="text-sm">{t('The copy is fine. The server is restarting, this takes about a minute')}</p>}
       {stage.name === 'ready' && (
         <div role="status" className="flex flex-col gap-2 text-sm">
-          <p>{t('Архив восстановлен.')}</p>
-          {stage.login ? <a className="bar-btn on self-start" href={stage.login}>{t('Войти в архив')}</a> : <a className="bar-btn on self-start" href="/">{t('Открыть архив')}</a>}
+          <p>{t('The archive is restored.')}</p>
+          {stage.login ? <a className="bar-btn on self-start" href={stage.login}>{t('Sign in to the archive')}</a> : <a className="bar-btn on self-start" href="/">{t('Open the archive')}</a>}
         </div>
       )}
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}

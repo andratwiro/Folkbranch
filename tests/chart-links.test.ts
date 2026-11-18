@@ -16,7 +16,7 @@ const couple = { parents: ['pavel', 'elena'] as [string, string] }
 
 describe('dragging a couple\'s dot onto a person', () => {
   it('gives a child with one parent of the couple the other parent', () => {
-    expect(relationFor(w, couple, 'ilya')).toMatchObject({ type: 'mother', to: 'ilya', other: 'elena', otherParentId: null, label: 'сын' })
+    expect(relationFor(w, couple, 'ilya')).toMatchObject({ type: 'mother', to: 'ilya', other: 'elena', otherParentId: null, label: 'son' })
     expect(relationFor(w, { parents: ['elena', 'pavel'] }, 'ilya')).toMatchObject({ type: 'mother', other: 'elena' })
     // With the mother present, the missing one is the father.
     const rev = world({ ilya: ['elena'] })

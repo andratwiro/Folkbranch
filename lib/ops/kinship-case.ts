@@ -76,7 +76,7 @@ export function importCase(actor: Actor, files: CaseFiles) {
   const { fresh, updates, parents, unions, ids, provedParents, provedUnions } = compare(actor, files)
   const result = { persons: fresh.length, updated: updates.length, parents: parents.length, unions: unions.length }
   if (!fresh.length && !updates.length && !parents.length && !unions.length && !provedParents.length && !provedUnions.length) return result
-  return mutate(actor, { summary: `${say('Импорт дела')}: ${fresh.length}` }, (c) => {
+  return mutate(actor, { summary: `${say('Case import')}: ${fresh.length}` }, (c) => {
     const idOf = (caseId: string) => ids.get(caseTag(files.caseId, caseId))!
     for (const p of fresh) {
       const tag = caseTag(files.caseId, p.caseId)

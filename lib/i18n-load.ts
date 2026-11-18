@@ -1,13 +1,8 @@
-// Spanish and Catalan come as chunks of their own, fetched only by a page that reads in them: a Russian or English
-// reader never downloads them. Until a table is here, translate() shows English.
+// A language comes as a chunk of its own, fetched only by a page that reads in it: a reader never downloads the other languages.
+// Until the table is here, translate() shows English. Importing `locales/<code>.json` by a template lets the bundler cut one chunk per file.
 import { use } from 'react'
-import { addTable, hasTable } from './i18n'
-import type { Lang } from './types'
-
-const TABLES: Partial<Record<Lang, () => Promise<{ default: Record<string, string> }>>> = {
-  es: () => import('./i18n-es'),
-  ca: () => import('./i18n-ca'),
-}
+import { addTable, hasTable, type Table } from './i18n'
+import { SOURCE_LANG, type Lang } from './languages'
 
 /** A promise React reads at once, without waiting, when it is marked as done. */
 type Tracked = Promise<void> & { status?: 'fulfilled'; value?: void }
@@ -18,8 +13,9 @@ const loading = new Map<Lang, Tracked>()
 export function loadTable(lang: Lang): Promise<void> {
   let p = loading.get(lang)
   if (!p) {
-    const get = TABLES[lang]
-    p = hasTable(lang) || !get ? done() : get().then((m) => { addTable(lang, m.default); Object.assign(p!, { status: 'fulfilled', value: undefined }) })
+    p = hasTable(lang) || lang === SOURCE_LANG
+      ? done()
+      : import(`../locales/${lang}.json`).then((m: { default: Table }) => { addTable(lang, m.default); Object.assign(p!, { status: 'fulfilled', value: undefined }) })
     loading.set(lang, p)
   }
   return p

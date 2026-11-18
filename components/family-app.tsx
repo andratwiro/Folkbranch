@@ -1,4 +1,5 @@
 'use client'
+import { setPageLang, collator } from '@/lib/languages'
 import { UndoKeys } from './undo-keys'
 import type { SignInMethods } from '@/lib/sign-in-methods'
 import dynamic from 'next/dynamic'
@@ -101,7 +102,7 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
     setSide((s) => (s === 'assistant' ? null : 'assistant'))
   }, [])
   useEffect(() => {
-    document.documentElement.lang = lang
+    setPageLang(lang)
     document.documentElement.dataset.archiveLang = archiveLang
     // The offline page has no server to ask: it reads the archive's language from here when the browser names none.
     try { localStorage.setItem('folkbranch-archive-lang', archiveLang) } catch {}
@@ -263,14 +264,14 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
   const undoLast = useCallback(async () => {
     const rows = await api<HistoryEntry[]>('history?limit=20')
     const last = rows.find((r) => !r.undoneAt && !r.undoOf)
-    if (!last) return notify(t('Пока ничего не менялось'))
+    if (!last) return notify(t('No changes yet'))
     try {
       await api(`history/${last.id}/undo`, { json: {} })
     } catch (e) {
       return notify(undoFailure(e, t))
     }
     await qc.invalidateQueries()
-    notify(`${t('Отменено')}: ${last.summary}`)
+    notify(`${t('Undone')}: ${last.summary}`)
   }, [notify, qc]) // eslint-disable-line react-hooks/exhaustive-deps
   const undoRef = useRef(undoLast)
   undoRef.current = undoLast
@@ -282,7 +283,7 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
   // What the other screens list: the part of the family the chart is showing, so a relative of one side is not buried in the other's.
   const viewGraph = scope.shown ?? graph
   const inView = useMemo(() => (graph && viewGraph && viewGraph !== graph ? new Set(viewGraph.persons.map((p) => p.id)) : null), [graph, viewGraph])
-  const viewLabel = scope.scope === 'all' ? t('Часть ветвей свёрнута') : `${t(({ ancestors: 'Предки', descendants: 'Потомки', near: 'Ближайшая семья' } as Record<string, string>)[scope.scope])}${scope.rootId && lookups?.byId.get(scope.rootId) ? `: ${personName(lookups.byId.get(scope.rootId)!) || t('Без названия')}` : ''}`
+  const viewLabel = scope.scope === 'all' ? t('Some branches are collapsed') : `${t(({ ancestors: 'Ancestors', descendants: 'Descendants', near: 'Closest family' } as Record<string, string>)[scope.scope])}${scope.rootId && lookups?.byId.get(scope.rootId) ? `: ${personName(lookups.byId.get(scope.rootId)!) || t('Untitled')}` : ''}`
   const ctx = useMemo<AppCtx | null>(() => {
     if (!graph || !lookups) return null
     return {
@@ -306,12 +307,12 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
   const onDeleteRef = useRef<(id: string) => Promise<void>>(async () => {})
   const deleteAsked = (id: string) => onDeleteRef.current(id)
   const clearAsked = async () => {
-    if (!(await ctx?.confirm(t('Удалить всю схему?'), t('Удалить всё'), t('Все карточки и связи будут удалены. Фотографии останутся. Вернуть можно в разделе «История».')))) return
+    if (!(await ctx?.confirm(t('Delete the whole chart?'), t('Delete everything'), t('All cards and links will be deleted. Photos stay. You can bring it back in History.')))) return
     try {
       await api('gedcom/import?mode=replace', { method: 'POST', body: '0 HEAD\n0 TRLR' })
       await qc.invalidateQueries()
       focus(null)
-      notify(t('Схема очищена'), [{ label: t('Отменить'), run: () => void undoLast() }])
+      notify(t('The chart is cleared'), [{ label: t('Undo'), run: () => void undoLast() }])
     } catch (e) { notify((e as Error).message, [], true) }
   }
 
@@ -319,8 +320,8 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
   const allGroups = useMemo(() => {
     const counts = new Map<string, number>()
     for (const p of graph?.persons ?? []) for (const tag of shownTags(p.tags)) counts.set(tag, (counts.get(tag) ?? 0) + 1)
-    return [...counts].sort((a, b) => a[0].localeCompare(b[0]))
-  }, [graph])
+    return [...counts].sort((a, b) => collator(lang).compare(a[0], b[0]))
+  }, [graph, lang])
   const groupIds = useMemo(() => {
     const on = groups.filter((g) => allGroups.some(([name]) => name === g))
     return on.length ? new Set((graph?.persons ?? []).filter((p) => p.tags.some((tag) => on.includes(tag))).map((p) => p.id)) : null
@@ -355,7 +356,7 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
 
   const onDelete = async (id: string) => {
     const p = ctx.byId.get(id)
-    if (await ctx.confirm(t('Удалить человека «{name}»?').replace('{name}', () => personName(p!) || t('Без названия')), t('Удалить'), t('Вернуть можно в разделе «История».'))) {
+    if (await ctx.confirm(t('Delete person «{name}»?').replace('{name}', () => personName(p!) || t('Untitled')), t('Delete'), t('You can bring it back in History.'))) {
       await delPerson.mutateAsync(id)
       if (focusId === id) focus(null)
     }
@@ -368,9 +369,9 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
       <ConnectionNotice t={t} />
       <PendingWrites t={t} />
       <UndoKeys />
-      <a href="#chart" className="skip-link bar-btn float" onClick={(e) => { e.preventDefault(); document.querySelector<HTMLElement>('.card-main')?.focus() }}>{t('Перейти к схеме')}</a>
+      <a href="#chart" className="skip-link bar-btn float" onClick={(e) => { e.preventDefault(); document.querySelector<HTMLElement>('.card-main')?.focus() }}>{t('Skip to the chart')}</a>
       <MainBar folded={barsHidden} onHide={() => hideBars(true)} onShow={() => hideBars(false)} guest={!!me.guest} familyName={familyName} present={present} mode={barMode} navRef={nav} side={side} draftOps={draftOps} onSearch={() => setSearch(true)} onSide={(next) => { setSide(next); setPath(null) }} onAssistant={toggleAssistant} onSettings={() => openSettings()} />
-      <main id="chart" aria-label={t('Схема семьи')}>
+      <main id="chart" aria-label={t('Family chart')}>
       {mapOn ? <MapView card={panelOpen} onCard={setMapCard} root={scope.scope === 'all' ? null : scope.rootId} /> : <>
       <GraphCanvas ref={canvas} scope={scope} pathIds={path} groupIds={groupIds} panelOpen={panelOpen} leftInset={side === 'assistant' ? assistantWidth + 12 : 0}/>
 
@@ -384,9 +385,9 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
       {!ctx.graph.persons.length && ctx.canEdit && (
         <div className="fixed inset-0 grid place-items-center pointer-events-none">
           <div className="flex flex-col items-stretch gap-2.5">
-            <button className="float pointer-events-auto px-5 h-12 flex items-center gap-2 font-serif text-base hover:bg-muted" onClick={() => setQuick({ type: null, to: null })}><UserPlus size={17} /> {t('Первый человек в архиве')}</button>
-            <button className="float pointer-events-auto px-5 h-12 flex items-center gap-2 font-serif text-base hover:bg-muted" onClick={() => { setDropped(null); setImporting(true) }}><FileUp size={17} /> {t('Загрузить файл с деревом')}</button>
-            <p className="text-center text-xs text-ink-faint">{t('GEDCOM, Gramps, Excel, CSV или текст. Файл можно и перетащить сюда.')}</p>
+            <button className="float pointer-events-auto px-5 h-12 flex items-center gap-2 font-serif text-base hover:bg-muted" onClick={() => setQuick({ type: null, to: null })}><UserPlus size={17} /> {t('First person in the archive')}</button>
+            <button className="float pointer-events-auto px-5 h-12 flex items-center gap-2 font-serif text-base hover:bg-muted" onClick={() => { setDropped(null); setImporting(true) }}><FileUp size={17} /> {t('Load a family tree file')}</button>
+            <p className="text-center text-xs text-ink-faint">{t('GEDCOM, Gramps, Excel, CSV or text. You can also drop a file here.')}</p>
           </div>
         </div>
       )}
@@ -411,7 +412,7 @@ export function FamilyApp({ me, lang, archiveLang, familyName, providers, assist
         <div role={toast.stay ? 'alert' : 'status'} onMouseEnter={() => clearTimeout(toastTimer.current)} onFocus={() => clearTimeout(toastTimer.current)} onMouseLeave={() => { if (!toast.stay) toastTimer.current = setTimeout(() => setToast(null), TOAST_MS) }} className="float fixed left-1/2 -translate-x-1/2 bottom-3 max-lg:bottom-[68px] z-30 flex items-center gap-1 pl-3 pr-1 py-1 text-sm max-w-[calc(100vw-24px)]">
           <span className="min-w-0 mr-1 break-anywhere">{toast.text}</span>
           {toast.actions.map((a) => <button key={a.label} className="bar-btn !h-7 whitespace-nowrap" onClick={() => { setToast(null); a.run() }}>{a.label}</button>)}
-          <button className="bar-btn !h-7 !min-w-7 !p-0" aria-label={t('Закрыть')} title={t('Закрыть')} onClick={() => setToast(null)}><X size={13} /></button>
+          <button className="bar-btn !h-7 !min-w-7 !p-0" aria-label={t('Close')} title={t('Close')} onClick={() => setToast(null)}><X size={13} /></button>
         </div>
       )}
       {overview && <FamilyOverview onClose={() => setOverview(false)} />}

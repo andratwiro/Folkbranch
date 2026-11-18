@@ -23,7 +23,7 @@ export function PlaceHint({ text, placeId, onPick }: { text: string; placeId?: s
     const choices = placeMatches(text, places)
     return (
       <span className="text-xs text-ink-soft break-anywhere">
-        {t('несколько мест с таким названием, какое из них?')}
+        {t('several places have this name; which one?')}
         {choices.map((p) => (
           <button key={p.id} type="button" disabled={!onPick} className="ml-1.5 underline underline-offset-2 hover:text-ink disabled:no-underline" onClick={() => onPick?.(p.id)}>
             {placeChain(p, places).map((x) => x.name).join(' → ')}
@@ -37,12 +37,12 @@ export function PlaceHint({ text, placeId, onPick }: { text: string; placeId?: s
       try {
         await api('places', { method: 'POST', json: { name: text.split(',')[0].trim() } })
         await qc.invalidateQueries({ queryKey: ['places'] })
-      } catch { notify(t('Не сохранилось. Написанное осталось на этом экране. Проверьте интернет и повторите.'), [], true) }
+      } catch { notify(t('Not saved. What you wrote is still on this screen. Check the connection and try again.'), [], true) }
     }
     return (
       <span className="text-xs text-ink-soft break-anywhere">
-        {t(problem === 'unknown' ? 'нет в списке мест' : 'у места нет координат')} · {t('событие не попадёт на карту')}
-        {problem === 'unknown' && canEdit && onPick && <> · <button type="button" className="underline underline-offset-2 hover:text-ink" onClick={add}>{t('добавить место')}</button></>}
+        {t(problem === 'unknown' ? 'not among the places' : 'place has no coordinates')} · {t('the event will not reach the map')}
+        {problem === 'unknown' && canEdit && onPick && <> · <button type="button" className="underline underline-offset-2 hover:text-ink" onClick={add}>{t('add the place')}</button></>}
       </span>
     )
   }
@@ -53,7 +53,7 @@ export function PlaceHint({ text, placeId, onPick }: { text: string; placeId?: s
   if (!up.length && !also.length) return null
   return (
     <span className="text-xs text-ink-soft break-anywhere">
-      {up.join(' → ')}{up.length && also.length ? ' · ' : ''}{also.length ? `${t('также')} ${also.join(', ')}` : ''}
+      {up.join(' → ')}{up.length && also.length ? ' · ' : ''}{also.length ? `${t('also')} ${also.join(', ')}` : ''}
     </span>
   )
 }
@@ -70,12 +70,12 @@ export function DateHint({ date, field, person, what, onFix }: { date: string; f
   return (
     <span role="status" className="text-xs text-rust break-anywhere">
       {t(DATE_PROBLEM_TEXT[problem.kind])}
-      {problem.fix && onFix && <> · <button type="button" className="underline underline-offset-2 hover:text-ink" onClick={() => onFix(problem.fix!)}>{t('исправить на')} {problem.fix}</button></>}
+      {problem.fix && onFix && <> · <button type="button" className="underline underline-offset-2 hover:text-ink" onClick={() => onFix(problem.fix!)}>{t('change to')} {problem.fix}</button></>}
     </span>
   )
 }
 
-const FIELDS: [keyof Contacts, string, string][] = [['phone', 'Телефон', '+7 …'], ['email', 'Почта', 'name@example.org'], ['address', 'Адрес', 'город, улица, дом'], ['note', 'Заметка', 'например, звонить вечером']]
+const FIELDS: [keyof Contacts, string, string][] = [['phone', 'Phone', '+7 …'], ['email', 'Email', 'name@example.org'], ['address', 'Address', 'town, street, house'], ['note', 'Note', 'for example, call in the evening']]
 
 /** How to reach a living relative. Asked for only by editors, and kept away from everything that leaves the archive. */
 export function ContactsBlock({ personId }: { personId: string }) {
@@ -91,13 +91,13 @@ export function ContactsBlock({ personId }: { personId: string }) {
     try {
       qc.setQueryData(key, await api<Contacts>(`persons/${personId}/contacts`, { method: 'PUT', json: c }))
     } catch {
-      notify(t('Не сохранилось. Написанное осталось на этом экране. Проверьте интернет и повторите.'), [], true)
+      notify(t('Not saved. What you wrote is still on this screen. Check the connection and try again.'), [], true)
     }
   }
   return (
     <section className="flex flex-col gap-1.5">
-      <h4 className="text-base font-medium">{t('Как связаться')}</h4>
-      <p className="text-xs text-ink-soft">{t('Видят только редакторы. В файлы, выгрузки и ответы ассистенту не попадает.')}</p>
+      <h4 className="text-base font-medium">{t('How to reach')}</h4>
+      <p className="text-xs text-ink-soft">{t('Editors only. Never in files, exports or the assistant\'s answers.')}</p>
       <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-x-2 gap-y-1 items-baseline">
         {FIELDS.map(([k, label, hint]) => (
           <label key={k} className="contents">

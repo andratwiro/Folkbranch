@@ -3,7 +3,6 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDb, schema } from '../lib/db'
 import { translate } from '../lib/i18n'
-import '../lib/i18n-server'
 import { langOfRequest, setSetting, withViewerLang } from '../lib/ops/app-config'
 import { openShare } from '../lib/ops/share'
 import { readableSummary } from '../lib/ops/history-text'
@@ -42,19 +41,19 @@ describe('the viewer language on the server', () => {
     setSetting('language', 'en')
     expect(sayError(null, 'es-ES,es;q=0.9')).toBe('Este enlace no es válido')
     expect(sayError('folkbranch-lang=ru', 'es-ES,es;q=0.9')).toBe('Ссылка недействительна')
-    expect(sayError(null, 'de-DE')).toBe('This link is not valid')
+    expect(sayError(null, 'ja-JP')).toBe('This link is not valid')
     expect(historyLine(null, 'es-ES,es;q=0.9')).toBe('Persona eliminada: Ana')
     expect(historyLine('folkbranch-lang=ru', 'es-ES,es;q=0.9')).toBe('Удалён человек: Ana')
   })
 })
 
 const pages: { name: string; word: string; render: () => Promise<string> }[] = [
-  { name: 'login', word: 'Вход только по приглашению', render: async () => renderToStaticMarkup(await Login({ searchParams: Promise.resolve({}) })) },
-  { name: 'invite', word: 'Приглашение больше не работает', render: async () => renderToStaticMarkup(await Invite({ params: Promise.resolve({ token: 'none' }), searchParams: Promise.resolve({}) })) },
-  { name: 'setup', word: 'Вы станете владельцем архива.', render: async () => renderToStaticMarkup(await Setup({ searchParams: Promise.resolve({}) })) },
-  { name: 'share', word: 'Ссылка больше не работает', render: async () => renderToStaticMarkup(await Share({ params: Promise.resolve({ token: 'none' }) })) },
-  { name: 'tell', word: 'Ссылка недействительна', render: async () => renderToStaticMarkup(await Tell({ params: Promise.resolve({ token: 'none' }) })) },
-  { name: 'not-found', word: 'Такой страницы нет', render: async () => renderToStaticMarkup(await NotFound()) },
+  { name: 'login', word: 'Sign-in by invitation only', render: async () => renderToStaticMarkup(await Login({ searchParams: Promise.resolve({}) })) },
+  { name: 'invite', word: 'This invitation no longer works', render: async () => renderToStaticMarkup(await Invite({ params: Promise.resolve({ token: 'none' }), searchParams: Promise.resolve({}) })) },
+  { name: 'setup', word: 'You will become the owner of this archive.', render: async () => renderToStaticMarkup(await Setup({ searchParams: Promise.resolve({}) })) },
+  { name: 'share', word: 'This link no longer works', render: async () => renderToStaticMarkup(await Share({ params: Promise.resolve({ token: 'none' }) })) },
+  { name: 'tell', word: 'This link is not valid', render: async () => renderToStaticMarkup(await Tell({ params: Promise.resolve({ token: 'none' }) })) },
+  { name: 'not-found', word: 'There is no such page', render: async () => renderToStaticMarkup(await NotFound()) },
 ]
 
 const shows = (html: string, lang: Lang, word: string) => html.includes(translate(lang, word))

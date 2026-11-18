@@ -125,8 +125,8 @@ export function TimelineBar({ min, max, year, playing, speed, show, counts, even
   }
 
   const count = show === 'events'
-    ? `${eventWords(counts.events, lang)} ${t('на карте сейчас')}`
-    : `${peopleWords(counts.people, lang)} ${t('на карте сейчас')}`
+    ? `${eventWords(counts.events, lang)} ${t('on the map now')}`
+    : `${peopleWords(counts.people, lang)} ${t('on the map now')}`
   const atRest = !playing && !drag
   // Who is followed is in the chip over the track, so a quiet year says nothing.
   const told = atRest ? lineOf(whole) : ''
@@ -137,7 +137,7 @@ export function TimelineBar({ min, max, year, playing, speed, show, counts, even
   return (
     <div className="map-bar float fixed z-10 flex w-[960px] -translate-x-1/2 flex-col px-3 pb-1.5 pt-1" onKeyDown={barKeys}>
       {chip}
-      <div ref={track} role="slider" tabIndex={0} aria-label={t('Год')} aria-valuemin={min} aria-valuemax={max} aria-valuenow={whole} aria-valuetext={valueText(whole)}
+      <div ref={track} role="slider" tabIndex={0} aria-label={t('Year')} aria-valuemin={min} aria-valuemax={max} aria-valuenow={whole} aria-valuetext={valueText(whole)}
         className={`map-track${drag ? ' dragging' : ''}`} onKeyDown={keys} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onPointerLeave={() => setHover(null)}>
         <svg className="map-hist" viewBox={`0 0 ${n} 1`} preserveAspectRatio="none" aria-hidden>
           {focus && !focus.bands && <rect className="map-band" x={Math.max(0, focus.from - min)} width={Math.max(0.5, Math.min(max + 1, focus.to + 1) - Math.max(min, focus.from))} y="0" height="1" />}
@@ -161,12 +161,12 @@ export function TimelineBar({ min, max, year, playing, speed, show, counts, even
         {bubble !== null && <span className="map-bubble" style={drag ? undefined : { left: pct(bubble + 0.5) }} aria-hidden>{bubble}</span>}
       </div>
       <div className="map-controls flex min-w-0 items-center gap-x-1">
-        <button type="button" className="bar-btn !px-0" aria-label={t('Предыдущее событие')} title={t('Предыдущее событие')} disabled={prev === null} onClick={() => step(-1)}><SkipBack size={15} /></button>
-        <button type="button" className="bar-btn !px-0" aria-label={t(playing ? 'Пауза' : 'Воспроизвести')} title={t(playing ? 'Пауза' : 'Воспроизвести')} onClick={onPlay}>
+        <button type="button" className="bar-btn !px-0" aria-label={t('Previous event')} title={t('Previous event')} disabled={prev === null} onClick={() => step(-1)}><SkipBack size={15} /></button>
+        <button type="button" className="bar-btn !px-0" aria-label={t(playing ? 'Pause' : 'Play')} title={t(playing ? 'Pause' : 'Play')} onClick={onPlay}>
           {playing ? <Pause size={15} /> : <Play size={15} />}
         </button>
-        <button type="button" className="bar-btn !px-0" aria-label={t('Следующее событие')} title={t('Следующее событие')} disabled={next === null} onClick={() => step(1)}><SkipForward size={15} /></button>
-        <button type="button" className="bar-btn map-speed !px-1 font-serif tabular-nums" aria-label={`${t('Скорость')}: ${speedText(speed)}`} title={t('Скорость')} onClick={onSpeed}>{speedText(speed)}</button>
+        <button type="button" className="bar-btn !px-0" aria-label={t('Next event')} title={t('Next event')} disabled={next === null} onClick={() => step(1)}><SkipForward size={15} /></button>
+        <button type="button" className="bar-btn map-speed !px-1 font-serif tabular-nums" aria-label={`${t('Speed')}: ${speedText(speed)}`} title={t('Speed')} onClick={onSpeed}>{speedText(speed)}</button>
         <span className="map-now ml-1 w-14 flex-none font-serif text-xl tabular-nums" aria-hidden>{whole}</span>
         {/* On a phone the year leads the caption line, so the buttons and the choice fit one row. */}
         <span className="map-caption min-w-0 flex-1 truncate font-serif text-sm italic text-ink-soft" title={told || undefined}><span className="map-now-inline not-italic text-ink" aria-hidden>{whole}{told && ' · '}</span>{told}</span>

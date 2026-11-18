@@ -2,7 +2,7 @@
 import type { Graph, Lang, Sex } from './types'
 import { CA } from './kinship-ca'
 import { ES } from './kinship-es'
-import type { KinWords } from './kinship-words'
+import type { KinWords, Side } from './kinship-words'
 
 export interface Kin {
   /** Term for `to` as seen from `from`, e.g. "дед" (grandfather). */
@@ -81,6 +81,13 @@ export class Family {
     return best
   }
 
+  /** Through my father or my mother: the sex of my parent the path starts with; none for a descendant. */
+  private sideOf(b: { up: number; path: string[] }): Side | undefined {
+    if (b.up < 1) return undefined
+    const first = this.sex.get(b.path[1])
+    return first === 'M' ? 'paternal' : first === 'F' ? 'maternal' : undefined
+  }
+
   /**
    * Siblings are half-siblings only when they share one parent and each has another parent on record who is not
    * the other's. With the second parent of one of them not recorded, that parent may well be the shared one.
@@ -100,7 +107,9 @@ export class Family {
     const s = this.sex.get(to) ?? 'U'
     const b = this.blood(from, to)
     if (b) {
-      let label = T.blood(b.up, b.down, s, b.up === 1 && b.down === 1 && this.isHalf(from, to))
+      const half = b.up === 1 && b.down === 1 && this.isHalf(from, to), side = this.sideOf(b)
+      // A language answers '' for a relative it has no single word for; its `fallback` (or the English phrase) names them then.
+      let label = T.blood(b.up, b.down, s, half, side) || (T.fallback ? T.fallback(b.up, b.down, s, side, half) : EN.blood(b.up, b.down, s, half, side))
       let kind: KinKind = 'blood'
       if (this.pathIsAdopted(b.path)) { label = T.adopted(label, s); kind = 'adopted' }
       else if (this.step.has(`${to}|${from}`)) { label = T.stepParent(s); kind = 'step' }
@@ -253,8 +262,12 @@ const EN: KinWords = {
   your: (label: string) => `your ${label}`,
 }
 
-/** Spanish and Catalan name relatives in English until their own words are filled in. */
-const WORDS: Partial<Record<Lang, KinWords | null>> = { ru: RU, en: EN, es: ES, ca: CA }
+/**
+ * The words each language has for relatives. A language not listed names relatives in English until its own table is added here:
+ * fill in a `KinWords` (lib/kinship-words.ts), with the side-specific uncle and aunt where the language has them.
+ */
+export const KINSHIP_WORDS: Partial<Record<Lang, KinWords | null>> = { ru: RU, en: EN, es: ES, ca: CA }
+const WORDS = KINSHIP_WORDS
 
 /** "ваш прадед" / "ваша бабушка" / "your great-grandfather". */
 export const yourTerm = (label: string, sex: Sex, lang: Lang) => (WORDS[lang] ?? EN).your(label, sex)

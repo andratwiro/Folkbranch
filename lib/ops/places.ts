@@ -1,5 +1,7 @@
 // Places and repositories: what the words on the cards mean. Not personal, so anyone who reads the archive reads them,
 // and only editors change them. Every change goes to the history and can be undone.
+import { archiveLang } from './app-config'
+import { collator } from '../languages'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDb, schema } from '../db'
@@ -48,7 +50,7 @@ export const repositoryInput = z.object({
 export const toPlace = (r: typeof schema.places.$inferSelect): Place => ({ id: r.id, name: r.name, kind: r.kind, parentId: r.parentId, otherNames: JSON.parse(r.otherNames), lat: r.lat, lon: r.lon, note: r.note })
 
 export function listPlaces(actor: Actor): Place[] {
-  const all = getDb().select().from(schema.places).all().map(toPlace).sort((a, b) => a.name.localeCompare(b.name))
+  const all = getDb().select().from(schema.places).all().map(toPlace).sort((a, b) => collator(archiveLang()).compare(a.name, b.name))
   if (!seesOnlyPublic(actor)) return all
   // A place can be all that is left of a hidden relative, such as the town a living cousin was born in:
   // a reader or a link sees only the places of people shown to them, and what those places were part of.
@@ -151,7 +153,7 @@ export function mergePlaces(actor: Actor, keepId: string, dropId: string) {
   }
   const after = [...before.filter((p) => p.id !== keepId && p.id !== dropId), merged]
   const db = getDb()
-  return mutate(actor, { summary: `${say('Объединить места')}: ${keep.name} ← ${drop.name}` }, (c) => {
+  return mutate(actor, { summary: `${say('Merge places')}: ${keep.name} ← ${drop.name}` }, (c) => {
     // Where a card meant the dropped record, by link or by its text alone, it now means the kept one.
     const to = (text: string, id: string | null | undefined) => (text && (id === dropId || findPlace(text, before, id)?.id === dropId) ? keepId : id === dropId ? null : undefined)
     for (const r of db.select().from(schema.persons).all()) {
@@ -202,7 +204,7 @@ export function savePlace(actor: Actor, id: string | null, raw: unknown, summary
   checkParent(id, v.parentId)
   const row = { ...v, otherNames: JSON.stringify(v.otherNames), updatedAt: Date.now() }
   const before = getDb().select().from(schema.places).all().map(toPlace)
-  return mutate(actor, { summary: summary ?? `${say('Место')}: ${v.name}` }, (c) => {
+  return mutate(actor, { summary: summary ?? `${say('Place')}: ${v.name}` }, (c) => {
     const keepLinks = (savedId: string, otherNames: string) => {
       const after = [...before.filter((p) => p.id !== savedId), toPlace({ id: savedId, ...row, otherNames, kind: v.kind, parentId: v.parentId, lat: v.lat, lon: v.lon, note: v.note, updatedAt: row.updatedAt })]
       pinLinks(c, before, after)
@@ -232,7 +234,7 @@ export function deletePlace(actor: Actor, id: string) {
   const db = getDb()
   const p = db.select().from(schema.places).where(eq(schema.places.id, id)).get()
   if (!p) throw new OpError(404, 'not found')
-  mutate(actor, { summary: `${say('Удалить')}: ${say('Место')} ${p.name}` }, (c) => {
+  mutate(actor, { summary: `${say('Delete')}: ${say('Place')} ${p.name}` }, (c) => {
     // What was inside moves up a level rather than vanishing with it.
     for (const child of db.select().from(schema.places).where(eq(schema.places.parentId, id)).all()) c.update('places', child.id, { parentId: p.parentId })
     c.remove('places', id)
@@ -241,13 +243,13 @@ export function deletePlace(actor: Actor, id: string) {
 
 export function listRepositories(actor: Actor): Repository[] {
   void actor
-  return getDb().select().from(schema.repositories).all().map(({ updatedAt: _, ...r }) => r).sort((a, b) => a.name.localeCompare(b.name))
+  return getDb().select().from(schema.repositories).all().map(({ updatedAt: _, ...r }) => r).sort((a, b) => collator(archiveLang()).compare(a.name, b.name))
 }
 
 export function saveRepository(actor: Actor, id: string | null, raw: unknown) {
   requireRole(actor, 'editor')
   const v = repositoryInput.parse(raw)
-  return mutate(actor, { summary: `${say('Архив')}: ${v.name}` }, (c) => {
+  return mutate(actor, { summary: `${say('Archive')}: ${v.name}` }, (c) => {
     if (id) { if (!getDb().select().from(schema.repositories).where(eq(schema.repositories.id, id)).get()) throw new OpError(404, 'not found'); c.update('repositories', id, { ...v, updatedAt: Date.now() }); return { id } }
     const created = newId()
     c.insert('repositories', { id: created, ...v, updatedAt: Date.now() })
@@ -259,5 +261,5 @@ export function deleteRepository(actor: Actor, id: string) {
   requireRole(actor, 'editor')
   const r = getDb().select().from(schema.repositories).where(eq(schema.repositories.id, id)).get()
   if (!r) throw new OpError(404, 'not found')
-  mutate(actor, { summary: `${say('Удалить')}: ${say('Архив')} ${r.name}` }, (c) => c.remove('repositories', id))
+  mutate(actor, { summary: `${say('Delete')}: ${say('Archive')} ${r.name}` }, (c) => c.remove('repositories', id))
 }

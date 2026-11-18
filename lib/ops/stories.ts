@@ -45,7 +45,7 @@ export function createStory(actor: Actor, x: z.infer<typeof newStory> & { audio?
   if (x.tellerId) getPersonRow(x.tellerId)
   const id = newId()
   const now = Date.now()
-  mutate(actor, { summary: `${personName(about[0])}: ${say('Рассказ')}${x.title ? ` «${x.title}»` : ''}`, personIds: about.map((p) => p.id) }, (c) => {
+  mutate(actor, { summary: `${personName(about[0])}: ${say('Story')}${x.title ? ` «${x.title}»` : ''}`, personIds: about.map((p) => p.id) }, (c) => {
     if (x.audio) c.insert('media', x.audio as never)
     c.insert('stories', { id, keepPrivate: x.keepPrivate ?? false, title: x.title, body: x.body, tellerName: x.tellerName, toldOn: x.toldOn, mediaId: x.audio?.id ?? null, durationSec: x.durationSec ?? null, createdBy: x.createdBy ?? actor.name, createdAt: now, updatedAt: now })
     linkPeople(c, id, x.about, x.tellerId)
@@ -65,7 +65,7 @@ export function updateStory(actor: Actor, id: string, raw: unknown) {
   const links = linksOf([id]).get(id) ?? []
   const teller = tellerId !== undefined ? tellerId : links.find((l) => l.role === 'teller')?.personId ?? null
   const updatedAt = Math.max(Date.now(), story.updatedAt + 1)
-  mutate(actor, { summary: `${personName(people[0])}: ${say('Рассказ')}${patch.title ? ` «${patch.title}»` : ''}`, personIds: people.map((p) => p.id) }, (c) => {
+  mutate(actor, { summary: `${personName(people[0])}: ${say('Story')}${patch.title ? ` «${patch.title}»` : ''}`, personIds: people.map((p) => p.id) }, (c) => {
     c.update('stories', id, { ...patch, updatedAt })
     for (const r of db.select({ id: schema.storyPeople.id }).from(schema.storyPeople).where(eq(schema.storyPeople.storyId, id)).all()) c.remove('storyPeople', r.id)
     linkPeople(c, id, about, teller)
@@ -79,7 +79,7 @@ export function deleteStory(actor: Actor, id: string) {
   const db = getDb()
   const story = row(id)
   const links = db.select().from(schema.storyPeople).where(eq(schema.storyPeople.storyId, id)).all()
-  mutate(actor, { summary: `${say('Удалить')}: ${say('Рассказ')}${story.title ? ` «${story.title}»` : ''}`, personIds: links.map((l) => l.personId) }, (c) => {
+  mutate(actor, { summary: `${say('Delete')}: ${say('Story')}${story.title ? ` «${story.title}»` : ''}`, personIds: links.map((l) => l.personId) }, (c) => {
     links.forEach((l) => c.remove('storyPeople', l.id))
     if (story.mediaId) c.remove('media', story.mediaId)
     c.remove('stories', id)

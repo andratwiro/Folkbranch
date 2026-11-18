@@ -59,21 +59,21 @@ export function MainBar({ folded, onHide, onShow, guest, familyName, present, mo
   useFoldWidth(navRef, folded)
   return (
     <>
-      <nav aria-label={t('Главное меню')} ref={navRef} className={cn('float main-bar fixed left-3 top-3 z-10 flex items-center p-1', mode !== 'full' && mode, folded && 'folded')}>
+      <nav aria-label={t('Main menu')} ref={navRef} className={cn('float main-bar fixed left-3 top-3 z-10 flex items-center p-1', mode !== 'full' && mode, folded && 'folded')}>
         <Logo size={22} className="bar-logo flex-none" />
         <ChevronRight size={14} className="bar-open" aria-hidden="true" />
-        <button className="show-bars" inert={!folded} title={t('Показать панели')} data-hint={t('Вернуть панели управления.')} aria-label={t('Показать панели')} onClick={onShow} />
+        <button className="show-bars" inert={!folded} title={t('Show panels')} data-hint={t('Bring the control panels back.')} aria-label={t('Show panels')} onClick={onShow} />
         <div className="bar-rest flex items-center gap-0.5" inert={folded}>
         <span className="family-name font-serif font-medium text-base px-2.5 max-w-[220px] truncate">{familyName}</span>
-        {present.length > 0 && <span className="presence" title={`${t('Сейчас в архиве')}: ${present.map((o) => o.name).join(', ')}`} aria-label={`${t('Сейчас в архиве')}: ${present.map((o) => o.name).join(', ')}`} role="img">{present.slice(0, 3).map((o) => <span key={o.id}>{o.name.slice(0, 1).toUpperCase()}</span>)}{present.length > 3 && <span>+{present.length - 3}</span>}</span>}
+        {present.length > 0 && <span className="presence" title={`${t('In the archive now_now')}: ${present.map((o) => o.name).join(', ')}`} aria-label={`${t('In the archive now_now')}: ${present.map((o) => o.name).join(', ')}`} role="img">{present.slice(0, 3).map((o) => <span key={o.id}>{o.name.slice(0, 1).toUpperCase()}</span>)}{present.length > 3 && <span>+{present.length - 3}</span>}</span>}
         <span className="sep w-px h-5 bg-border mx-0.5" />
-        {!guest && <button className={side === 'assistant' ? 'bar-btn on' : 'bar-btn'} title={t('ИИ-ассистент')} data-hint={t('Спросите о семье или попросите внести правки. Откроется чат.')} aria-label={t('ИИ-ассистент')} onClick={onAssistant}><AssistantIcon /> <span className="nav-label"><span className="max-sm:hidden">{t('ИИ-ассистент')}</span><span className="sm:hidden">{t('ИИ')}</span></span></button>}
-        <button className="bar-btn" title={t('Поиск людей')} data-hint={t('Найти человека по имени и показать на схеме.')} aria-label={t('Поиск людей')} onClick={onSearch}><Search size={16} /> <span className="nav-label">{t('Поиск')}</span></button>
-        {!guest && canEdit && <button className={side === 'review' ? 'bar-btn on relative' : 'bar-btn relative'} title={t('Правки на подтверждение, незаполненные карточки и похожие люди.')} data-hint={t('Правки на подтверждение, незаполненные карточки и похожие люди.')} aria-label={t('Проверка')} onClick={() => onSide(side === 'review' ? null : 'review')}><ClipboardCheck size={16} /> <span className="nav-label">{t('Проверка')}</span>{draftOps > 0 && <span className="absolute right-1 top-1 min-w-4 rounded-full bg-rust px-1 text-center text-xs leading-4 text-white">{draftOps}</span>}</button>}
-        {!guest && <button className={side === 'history' ? 'bar-btn on' : 'bar-btn'} title={t('Кто и что менял. Любое изменение можно откатить.')} data-hint={t('Кто и что менял. Любое изменение можно откатить.')} aria-label={t('История')} onClick={() => onSide(side === 'history' ? null : 'history')}><Clock size={16} /> <span className="nav-label">{t('История')}</span></button>}
-        {!guest && <button className="bar-btn relative" title={t('Аккаунт, люди и доступ, файлы, подключения.')} data-hint={t('Аккаунт, люди и доступ, файлы, подключения.')} aria-label={newer ? `${t('Настройки')}. ${t('Вышла новая версия')}` : t('Настройки')} onClick={onSettings}><Settings size={16} /> <span className="nav-label">{t('Настройки')}</span>{newer && <span aria-hidden className="absolute right-1 top-1 size-2 rounded-full bg-[var(--accent)]" />}</button>}
-        <button className="bar-btn hide-bars" title={t('Скрыть панели')} data-hint={t('Останется одна кнопка, а схема займёт весь экран.')} aria-label={t('Скрыть панели')} onClick={onHide}><EyeOff size={16} /></button>
-        {guest && <span className="nav-label px-2 text-xs text-ink-soft whitespace-nowrap">{t('Просмотр по ссылке')}</span>}
+        {!guest && <button className={side === 'assistant' ? 'bar-btn on' : 'bar-btn'} title={t('AI assistant')} data-hint={t('Ask about the family or ask for edits. Opens a chat.')} aria-label={t('AI assistant')} onClick={onAssistant}><AssistantIcon /> <span className="nav-label"><span className="max-sm:hidden">{t('AI assistant')}</span><span className="sm:hidden">{t('AI')}</span></span></button>}
+        <button className="bar-btn" title={t('Search people')} data-hint={t('Find someone by name and show them on the chart.')} aria-label={t('Search people')} onClick={onSearch}><Search size={16} /> <span className="nav-label">{t('Search')}</span></button>
+        {!guest && canEdit && <button className={side === 'review' ? 'bar-btn on relative' : 'bar-btn relative'} title={t('Edits to approve, unfinished cards and similar people.')} data-hint={t('Edits to approve, unfinished cards and similar people.')} aria-label={t('Review')} onClick={() => onSide(side === 'review' ? null : 'review')}><ClipboardCheck size={16} /> <span className="nav-label">{t('Review')}</span>{draftOps > 0 && <span className="absolute right-1 top-1 min-w-4 rounded-full bg-rust px-1 text-center text-xs leading-4 text-white">{draftOps}</span>}</button>}
+        {!guest && <button className={side === 'history' ? 'bar-btn on' : 'bar-btn'} title={t('Who changed what. Any change can be rolled back.')} data-hint={t('Who changed what. Any change can be rolled back.')} aria-label={t('What\'s new')} onClick={() => onSide(side === 'history' ? null : 'history')}><Clock size={16} /> <span className="nav-label">{t('What\'s new')}</span></button>}
+        {!guest && <button className="bar-btn relative" title={t('Account, people and access, files, connections.')} data-hint={t('Account, people and access, files, connections.')} aria-label={newer ? `${t('Settings')}. ${t('A new version is out')}` : t('Settings')} onClick={onSettings}><Settings size={16} /> <span className="nav-label">{t('Settings')}</span>{newer && <span aria-hidden className="absolute right-1 top-1 size-2 rounded-full bg-[var(--accent)]" />}</button>}
+        <button className="bar-btn hide-bars" title={t('Hide panels')} data-hint={t('One button stays and the chart fills the screen.')} aria-label={t('Hide panels')} onClick={onHide}><EyeOff size={16} /></button>
+        {guest && <span className="nav-label px-2 text-xs text-ink-soft whitespace-nowrap">{t('Viewing by link')}</span>}
         </div>
       </nav>
     </>
@@ -84,12 +84,12 @@ export function MainBar({ folded, onHide, onShow, guest, familyName, present, mo
 export function ViewBar({ folded, onHide, onOverview, onPrint, scope, rootsBelow, onFlip, groups, onGroups, allGroups, crowded }: { folded: boolean; onHide: () => void; onOverview: () => void; onPrint: () => void; scope: ChartScope; rootsBelow: boolean; onFlip: () => void; groups: string[]; onGroups: (next: string[]) => void; allGroups: [string, number][]; crowded: boolean }) {
   const { t } = useApp()
   return (
-      <div aria-label={t('Вид схемы')} role="toolbar" inert={folded} className={cn('float view-bar flex items-center gap-0.5 p-1', crowded && 'crowded', folded && 'folded')}>
-        <button className="bar-btn" title={t(rootsBelow ? 'Сейчас старшие снизу. Показать старших сверху' : 'Сейчас старшие сверху. Показать старших снизу')} aria-label={t('Перевернуть схему')} onClick={onFlip}><ArrowUpDown size={15} /></button>
+      <div aria-label={t('Chart view')} role="toolbar" inert={folded} className={cn('float view-bar flex items-center gap-0.5 p-1', crowded && 'crowded', folded && 'folded')}>
+        <button className="bar-btn" title={t(rootsBelow ? 'Elders at the bottom now. Show elders on top' : 'Elders on top now. Show elders at the bottom')} aria-label={t('Flip the chart')} onClick={onFlip}><ArrowUpDown size={15} /></button>
         <ViewMenu scope={scope} />
         {allGroups.length > 0 && (
           <Popover>
-            <PopoverTrigger asChild><button className={groups.length ? 'bar-btn on' : 'bar-btn'} title={t('Группы')} data-hint={t('Выделить на схеме людей с выбранными метками.')} aria-label={t('Группы')}><Tags size={15} />{groups.length > 0 && ` ${groups.length}`}</button></PopoverTrigger>
+            <PopoverTrigger asChild><button className={groups.length ? 'bar-btn on' : 'bar-btn'} title={t('Groups')} data-hint={t('Highlight people with the chosen tags.')} aria-label={t('Groups')}><Tags size={15} />{groups.length > 0 && ` ${groups.length}`}</button></PopoverTrigger>
             <PopoverContent side="top" align="start" className="w-56 text-sm flex flex-col gap-0.5 p-2 max-h-72 overflow-auto">
               {allGroups.map(([name, count]) => (
                 <label key={name} className="flex items-center gap-2 min-h-7 px-1 rounded hover:bg-muted cursor-pointer">
@@ -98,17 +98,17 @@ export function ViewBar({ folded, onHide, onOverview, onPrint, scope, rootsBelow
                   <span className="text-ink-faint">{count}</span>
                 </label>
               ))}
-              {groups.length > 0 && <button className="bar-btn self-start mt-1" onClick={() => onGroups([])}>{t('Показать всех')}</button>}
+              {groups.length > 0 && <button className="bar-btn self-start mt-1" onClick={() => onGroups([])}>{t('Show everyone')}</button>}
             </PopoverContent>
           </Popover>
         )}
-        <button className="bar-btn" title={t('Даты, места и архивы')} data-hint={t('Ближайшие памятные дни, семья в цифрах, места и архивы.')} aria-label={t('Даты, места и архивы')} onClick={onOverview}><CalendarDays size={15} /></button>
-        <button className="bar-btn" title={t('Печать и картинка')} data-hint={t('На одном листе, из нескольких листов или картинкой, чтобы отправить.')} aria-label={t('Печать и картинка')} onClick={onPrint}><Printer size={15} /></button>
+        <button className="bar-btn" title={t('Dates, places and archives')} data-hint={t('Coming days, the family in numbers, places and archives.')} aria-label={t('Dates, places and archives')} onClick={onOverview}><CalendarDays size={15} /></button>
+        <button className="bar-btn" title={t('Print or picture')} data-hint={t('On one sheet, on several sheets, or as a picture to send.')} aria-label={t('Print or picture')} onClick={onPrint}><Printer size={15} /></button>
         <Popover>
-          <PopoverTrigger asChild><button className="bar-btn" title={t('Как читать схему')} data-hint={t('Что значат линии, рамки и цвета.')} aria-label={t('Как читать схему')}><CircleHelp size={15} /></button></PopoverTrigger>
+          <PopoverTrigger asChild><button className="bar-btn" title={t('Legend')} data-hint={t('What the lines, rings and colors mean.')} aria-label={t('Legend')}><CircleHelp size={15} /></button></PopoverTrigger>
           <PopoverContent side="top" align="start" collisionPadding={8} className="w-80 max-w-[calc(100vw-16px)] max-h-[min(70dvh,560px)] overflow-y-auto text-sm"><Legend /></PopoverContent>
         </Popover>
-        <button className="bar-btn hide-here" title={t('Скрыть панели')} aria-label={t('Скрыть панели')} onClick={onHide}><EyeOff size={15} /></button>
+        <button className="bar-btn hide-here" title={t('Hide panels')} aria-label={t('Hide panels')} onClick={onHide}><EyeOff size={15} /></button>
       </div>
   )
 }
@@ -129,7 +129,7 @@ export function PendingWrites({ t }: { t: (key: string) => string }) {
     return () => { clearTimeout(timer); setLong(false); window.removeEventListener('beforeunload', warn) }
   }, [waiting])
   if (!waiting || !long) return null
-  return <div role="status" className="float fixed left-1/2 -translate-x-1/2 bottom-16 z-50 px-3 py-1.5 text-xs text-rust">{t('Не сохранено')}: {waiting}. {t('Не закрывайте страницу, правки отправятся, когда появится связь')}</div>
+  return <div role="status" className="float fixed left-1/2 -translate-x-1/2 bottom-16 z-50 px-3 py-1.5 text-xs text-rust">{t('Not saved')}: {waiting}. {t('Keep this page open: the edits will be sent when the connection returns')}</div>
 }
 
 /** The bottom left row: the tree's own tools. */
@@ -179,7 +179,7 @@ export function ViewTools({ map, onChange, onZoom, folded, card }: { map: boolea
     addEventListener('resize', set)
     return () => { ro.disconnect(); removeEventListener('resize', set); root.style.removeProperty('--view-tools-w'); root.style.removeProperty('--view-tools-h') }
   }, [folded])
-  const options = [[false, t('Схема'), t('Вернуться к схеме семьи.')], [true, t('Карта'), t('Кто где жил, год за годом.')]] as const
+  const options = [[false, t('Tree'), t('Back to the family tree.')], [true, t('Map'), t('Who lived where, year by year.')]] as const
   const keys = (e: React.KeyboardEvent) => {
     const next = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? true : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? false : null
     if (next === null) return
@@ -190,10 +190,10 @@ export function ViewTools({ map, onChange, onZoom, folded, card }: { map: boolea
   return (
     <div ref={box} inert={folded} className={cn('float view-tools fixed bottom-3 z-10 flex flex-col p-1', folded && 'folded')} style={{ right }}>
       {map && <><MapLayers /><span className="mx-1 my-1 h-px bg-border" aria-hidden /></>}
-      <button className="bar-btn view-zoom" title={t('Приблизить')} data-hint={t('Показать людей крупнее.')} aria-label={t('Приблизить')} onClick={() => onZoom(true)}><Plus size={16} /></button>
-      <button className="bar-btn view-zoom" title={t('Отдалить')} data-hint={t('Показать больше людей на экране.')} aria-label={t('Отдалить')} onClick={() => onZoom(false)}><Minus size={16} /></button>
+      <button className="bar-btn view-zoom" title={t('Zoom in_near')} data-hint={t('Show people larger.')} aria-label={t('Zoom in_near')} onClick={() => onZoom(true)}><Plus size={16} /></button>
+      <button className="bar-btn view-zoom" title={t('Zoom out_far')} data-hint={t('Fit more people on screen.')} aria-label={t('Zoom out_far')} onClick={() => onZoom(false)}><Minus size={16} /></button>
       <span className="view-zoom mx-1 my-1 h-px bg-border" aria-hidden />
-      <div ref={pick} role="radiogroup" aria-label={t('Как показать')} onKeyDown={keys} className="flex flex-col gap-0.5">
+      <div ref={pick} role="radiogroup" aria-label={t('How to show')} onKeyDown={keys} className="flex flex-col gap-0.5">
         {options.map(([on, label, hint]) => (
           <button key={label} type="button" role="radio" aria-label={label} aria-checked={map === on} tabIndex={map === on ? 0 : -1} title={hint} data-hint={hint} onClick={() => { if (map !== on) onChange(on) }} className={cn('bar-btn', map === on && 'on')}>
             {on ? <MapIcon size={16} /> : <GitFork size={16} className="rotate-180" />}
@@ -221,5 +221,5 @@ export function ConnectionNotice({ t }: { t: (key: string) => string }) {
     }
   }, [live])
   if (!down || live) return null
-  return <div role="alert" className="float fixed left-1/2 -translate-x-1/2 top-3 z-50 px-3 py-1.5 text-xs text-destructive">{t('Нет связи с сервером. Схема показана как при последней загрузке, новые правки могут не сохраниться')}</div>
+  return <div role="alert" className="float fixed left-1/2 -translate-x-1/2 top-3 z-50 px-3 py-1.5 text-xs text-destructive">{t('Cannot reach the server. The chart is as last loaded, and new edits may not save')}</div>
 }

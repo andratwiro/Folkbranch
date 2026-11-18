@@ -43,7 +43,7 @@ export function describeOp(actor: Actor, name: string, raw: unknown): string {
     if (d.expand) {
       const ops = d.expand(actor, args)
       const lines = ops.slice(0, 8).map((o) => line(OPS[o.op].describe(o.args, { name: (id) => String((o.args as any)?.person?.givenName ?? nameInDraft(String(id), [])) })))
-      return [`${tell('Операций')}: ${ops.length}`, ...lines, ...(ops.length > 8 ? ['…'] : [])].join('\n')
+      return [`${tell('Operations')}: ${ops.length}`, ...lines, ...(ops.length > 8 ? ['…'] : [])].join('\n')
     }
     return line(d.describe(args, ctx()))
   } catch {
@@ -62,7 +62,7 @@ export async function dispatch(actor: Actor, name: string, raw: unknown) {
   if (d.expand) {
     const ops = d.expand(actor, parsed)
     if (queue) return withPlaces(parsed, enqueue(actor, ops.map((o) => ({ ...o, args: OPS[o.op].input.parse(o.args) as PlannedOp['args'] }))))
-    const { result, historyId, map } = applyOps(actor, ops, {}, d.summary?.(parsed) ?? say('Загрузка и скачивание'))
+    const { result, historyId, map } = applyOps(actor, ops, {}, d.summary?.(parsed) ?? say('Import and export_transfer'))
     return withPlaces(parsed, { ...result, ...readback(actor, ops, map), historyId })
   }
   // Ids a model got earlier may be temporary ones from a draft that has since been accepted.
@@ -259,7 +259,7 @@ export function acceptProposal(actor: Actor, id: string) {
   // A reader's correction goes in like a model's edit: a changed value keeps its versions and sources.
   const author: Actor = { ...actor, name: `${r.authorName} → ${actor.name}`, ...(r.authorKind === 'token' ? { tokenId: r.authorId } : { assistant: true }) }
   try {
-    const { historyId, map } = applyOps(author, ops, {}, `${r.authorName}: ${ops.length} ${say('правок')}`)
+    const { historyId, map } = applyOps(author, ops, {}, `${r.authorName}: ${ops.length} ${say('changes')}`)
     db.update(schema.proposals).set({ status: 'applied', idMap: JSON.stringify(map), resolvedAt: Date.now(), resolvedBy: actor.name, historyId, error: null }).where(eq(schema.proposals.id, id)).run()
     return { applied: ops.length, historyId }
   } catch (e) {

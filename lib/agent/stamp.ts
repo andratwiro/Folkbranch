@@ -28,7 +28,7 @@ export function stampOf(meta: unknown): Stamp | null {
 /** "12 s", "1 min 5 s". */
 export const duration = (ms: number, t: (k: string) => string) => {
   const s = Math.max(1, Math.round(ms / 1000))
-  return s < 60 ? `${s} ${t('сек')}` : `${Math.floor(s / 60)} ${t('мин')}${s % 60 ? ` ${s % 60} ${t('сек')}` : ''}`
+  return s < 60 ? `${s} ${t('s')}` : `${Math.floor(s / 60)} ${t('min')}${s % 60 ? ` ${s % 60} ${t('s')}` : ''}`
 }
 
 /** The line under an answer, in the viewer's own way of writing the time: "14:32 · 12 s". */
@@ -37,4 +37,4 @@ export const stampLine = (s: Stamp, lang: string, t: (k: string) => string) =>
 
 /** What opens under a long answer: how many steps it took and how many tokens it cost. Nothing for a short one. */
 export const stampDetail = (s: Stamp, lang: string, t: (k: string) => string) =>
-  s.steps && s.steps > 1 ? [`${t('шагов')}: ${s.steps}`, s.tokens ? `${t('токенов')}: ${s.tokens.toLocaleString(lang)}` : ''].filter(Boolean).join(' · ') : ''
+  s.steps && s.steps > 1 ? [`${t('steps')}: ${s.steps}`, s.tokens ? `${t('tokens')}: ${s.tokens.toLocaleString(lang)}` : ''].filter(Boolean).join(' · ') : ''

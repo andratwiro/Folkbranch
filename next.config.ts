@@ -14,6 +14,8 @@ const config: NextConfig = {
   poweredByHeader: false,
   output: 'standalone',
   devIndicators: false,
+  // The server reads a language's file the first time it writes in it (lib/i18n.ts); the files must travel with the build.
+  outputFileTracingIncludes: { '/**': ['./locales/*.json'] },
   serverExternalPackages: ['better-sqlite3', 'sharp'],
   transpilePackages: ['@blocknote/core', '@blocknote/react', '@blocknote/mantine'],
   async headers() {

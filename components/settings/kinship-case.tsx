@@ -32,7 +32,7 @@ export function KinshipCase() {
       const key = NAMES[f.name]
       if (key && !read[key]) read[key] = await f.text()
     }
-    if (!read.persons) return setError(t('В этой папке нет файла person-register.csv. Выберите папку дела.'))
+    if (!read.persons) return setError(t('This folder has no person-register.csv. Choose a case folder.'))
     const intake = near.find((f) => f.name === 'case-intake.yaml')
     const named = intake && /^case_id:\s*["']?([^"'\n#]*)/m.exec(await intake.text())?.[1].trim()
     read.caseId = named || near[0].webkitRelativePath.split('/')[0] || near[0].name
@@ -48,7 +48,7 @@ export function KinshipCase() {
     try {
       await api('case/import', { json: files })
       await qc.invalidateQueries()
-      notify(t('Дело добавлено'), [{ label: t('Отменить'), run: () => void undoLast() }])
+      notify(t('Case added'), [{ label: t('Undo'), run: () => void undoLast() }])
       setFiles(null)
       setPreview(null)
     } catch (x) {
@@ -58,20 +58,20 @@ export function KinshipCase() {
     }
   }
   return (
-    <Section title={t('Добавить дело из исследования')} description={t('Папка с результатами исследования родословной, подготовленная ex-ussr-kinship-research. Возможные родственники останутся отдельными карточками, а неподтверждённые связи не попадут на схему и останутся заметками.')}>
+    <Section title={t('Add a research case')} description={t('A folder of family research made with ex-ussr-kinship-research. Possible relatives stay separate cards, and unproved relations stay notes, off the chart.')}>
       {/* @ts-expect-error the browser's folder picker has no type in React */}
-      <input ref={input} type="file" webkitdirectory="" multiple hidden aria-label={t('Выбрать папку дела')} onChange={(e) => { const list = Array.from(e.target.files ?? []); e.target.value = ''; void pick(list) }} />
-      <Button variant="outline" className="self-start" onClick={() => input.current?.click()}><FolderOpen /> {t('Выбрать папку дела')}</Button>
+      <input ref={input} type="file" webkitdirectory="" multiple hidden aria-label={t('Choose the case folder')} onChange={(e) => { const list = Array.from(e.target.files ?? []); e.target.value = ''; void pick(list) }} />
+      <Button variant="outline" className="self-start" onClick={() => input.current?.click()}><FolderOpen /> {t('Choose the case folder')}</Button>
       {preview && (
         <div role="status" className="flex flex-col gap-1 rounded-lg bg-muted p-3 text-xs leading-snug">
-          <p>{t('Новых карточек')}: <b>{preview.people}</b>. {t('Из них живых или неизвестно')}: {preview.living}. {t('Кандидатов')}: {preview.candidates}.</p>
-          {preview.already > 0 && <p>{t('Уже в архиве')}: {preview.already}. {t('Дополнятся новыми сведениями')}: {preview.updated}. {t('Написанное вами не заменится')}.</p>}
-          <p>{t('На схему попадут родителей и детей')}: {preview.parents}, {t('пар')}: {preview.unions}.{preview.proved > 0 ? ` ${t('Связей станут подтверждёнными')}: ${preview.proved}.` : ''}</p>
-          <p>{t('Связей, оставшихся заметками')}: {preview.openRelations}. {t('Отклонённых в деле не добавляем')}: {preview.leftOut}.</p>
-          {preview.disputed > 0 && <p className="text-rust">⚠ {t('Дело опровергает связи, которые уже на схеме. Они останутся, проверьте их сами')}: {preview.disputed}</p>}
-          {preview.broken > 0 && <p className="text-rust">⚠ {t('Связи с людьми, которых нет в списке дела, не перенесутся')}: {preview.broken}</p>}
-          {preview.trimmed > 0 && <p className="text-rust">⚠ {t('Карточки, которые не поместились целиком, сокращены')}: {preview.trimmed}</p>}
-          <Button size="sm" className="mt-1 self-start" disabled={busy || !(preview.people || preview.updated || preview.parents || preview.unions || preview.proved)} onClick={run}><Upload /> {t('Добавить в архив')}</Button>
+          <p>{t('New cards')}: <b>{preview.people}</b>. {t('Living or unknown among them')}: {preview.living}. {t('Candidates')}: {preview.candidates}.</p>
+          {preview.already > 0 && <p>{t('Already in the archive')}: {preview.already}. {t('Will gain new details')}: {preview.updated}. {t('What you wrote will not be replaced')}.</p>}
+          <p>{t('Parent and child lines on the chart')}: {preview.parents}, {t('couples')}: {preview.unions}.{preview.proved > 0 ? ` ${t('Relations that become confirmed')}: ${preview.proved}.` : ''}</p>
+          <p>{t('Relations kept as notes')}: {preview.openRelations}. {t('Rejected in the case, left out')}: {preview.leftOut}.</p>
+          {preview.disputed > 0 && <p className="text-rust">⚠ {t('The case contradicts relations already on the chart. They stay, so check them yourself')}: {preview.disputed}</p>}
+          {preview.broken > 0 && <p className="text-rust">⚠ {t('Relations with people missing from the case list will not come over')}: {preview.broken}</p>}
+          {preview.trimmed > 0 && <p className="text-rust">⚠ {t('Cards that did not fit whole were shortened')}: {preview.trimmed}</p>}
+          <Button size="sm" className="mt-1 self-start" disabled={busy || !(preview.people || preview.updated || preview.parents || preview.unions || preview.proved)} onClick={run}><Upload /> {t('Add to the archive')}</Button>
         </div>
       )}
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
