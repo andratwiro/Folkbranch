@@ -66,8 +66,12 @@ beforeEach(() => {
   for (const k of ['agentProvider', 'agentKey', 'agentModel', 'agentFolder', 'agentAuto', 'customProviders']) clear(k)
   setSetting('aiKeys', seal('{}', 'ai-keys'))
   setSetting('assistantEnabled', '0')
+  // Messages are asserted in English.
+  keepLanguage = getSetting('language')
+  setSetting('language', 'en')
 })
-afterEach(() => { vi.restoreAllMocks(); for (const k of ENV) { if (keep[k] === undefined) delete process.env[k]; else process.env[k] = keep[k] } })
+let keepLanguage: string | null = null
+afterEach(() => { if (keepLanguage) setSetting('language', keepLanguage); vi.restoreAllMocks(); for (const k of ENV) { if (keep[k] === undefined) delete process.env[k]; else process.env[k] = keep[k] } })
 
 const add = (extra: Record<string, unknown> = {}) => saveCustom(owner, { name: 'My model', baseUrl: base, key: KEY, model: 'm-one', ...extra })
 
