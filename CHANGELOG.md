@@ -9,12 +9,14 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 Chart editing and assistant work: links can be moved and marked as in a genogram, tidier chart lines, a faster and more visible assistant, and a link to ask a relative for a story.
 
 ### Fixed
+- On the map a person's faint line no longer runs on to an empty place after their life ends: it leaves with them.
 - On the chart, dropping a couple's dot on a child who had only one of them now adds the other parent (as mother or father by sex). Before, it did nothing and said the people were already linked. A child who has a parent outside the couple, or two parents already, is refused with a reason.
 - The "Thinking" line under your first message no longer drops a few pixels a moment after it appears, and the answer starts in its place instead of jumping up.
 - A brother or sister is no longer called a half-brother or half-sister when only one of them has a second parent on record: the missing parent may be the shared one.
 - Settings > AI: the units on the usage cards ("this month", "tokens today") are no longer cut off by the card's edge, and the assistant's tokens for the day are said once.
 
 ### Added
+- **People who have died** is a switch in the map's layers: on, a person stays on the map, faded, where they were last placed, with every move they made, so the dead are seen with where they lived. The **Follow** button says who it follows ("Follow Anna", or "Follow the family") and what it does when pointed at.
 - **An existing link can be moved.** Click a line on the chart and a handle appears on each end; drag one onto another person to move that end there: the wrong parent becomes the right one, the wrong child the right one, a partner is replaced. It is one entry in History and one Undo. A child with two parents replaces the one of the same sex as the new person. The assistant and the API have `move_relation` for the same.
 - **Unions as in a genogram.** Unmarried partners have a dashed line (a marriage a solid one). A divorce is two slashes across the line, a separation one slash; a union ended by a death is not crossed out, since the death shows on the card. The state is set from the line's bar or the couple's card (**together, separated, divorced, widowed**); an older end date with no reason reads as a divorce. GEDCOM writes a divorce as `DIV` and a separation as an event of type Separation, and reads both.
 - **Foster children** are a kind of link next to birth, adopted and step. Adopted, foster and step each have their own line style, and the legend, in all four languages, explains every mark. GEDCOM and Gramps files carry foster children both ways (`PEDI foster`).
