@@ -359,6 +359,36 @@ export function moveRelation(actor: Actor, type: 'parent' | 'union', id: string,
   })
 }
 
+/**
+ * Makes `parentIds` (one or two people) the parents of a child, as one change: the missing links are added and any other
+ * parent link is removed, whatever its kind. A link that stays keeps its kind, so an adopted or step parent is not turned
+ * into a birth parent by being kept. Unions are not touched.
+ */
+export function setParents(actor: Actor, childId: string, parentIds: string[]) {
+  requireRole(actor, 'editor')
+  const db = getDb()
+  const child = getPersonRow(childId)
+  const wanted = [...new Set(parentIds)]
+  if (wanted.length < 1 || wanted.length > 2) throw new OpError(400, 'a child has one or two parents')
+  if (wanted.includes(childId)) throw new OpError(400, 'same person')
+  const parents = wanted.map((id) => getPersonRow(id))
+  const have = db.select().from(schema.parentChild).where(eq(schema.parentChild.childId, childId)).all()
+  const drop = have.filter((l) => !wanted.includes(l.parentId))
+  const add = wanted.filter((id) => !have.some((l) => l.parentId === id))
+  if (!drop.length && !add.length) throw new OpError(400, 'nothing to change')
+  for (const id of add) {
+    const up = db.$client.prepare(`
+      with recursive up(id) as (select ? union select p.parent_id from parent_child p join up on p.child_id = up.id)
+      select 1 from up where id = ? limit 1`).get(id, childId)
+    if (up) throw new OpError(400, 'a person cannot be their own ancestor')
+  }
+  const names = parents.map(label).join(wanted.length === 2 ? ' + ' : '')
+  mutate(actor, { summary: `${say('Link_relation')}: ${label(child)} ← ${names}`, personIds: [childId, ...wanted, ...drop.map((l) => l.parentId)] }, (c) => {
+    for (const l of drop) c.remove('parentChild', l.id)
+    for (const id of add) c.insert('parentChild', { id: newId(), parentId: id, childId, kind: 'birth', certainty: 'family' })
+  })
+}
+
 export function removeRelation(actor: Actor, type: 'parent' | 'union', id: string) {
   requireRole(actor, 'editor')
   const db = getDb()

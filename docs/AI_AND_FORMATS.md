@@ -20,7 +20,9 @@ Clients that need OAuth, such as claude.ai connectors, are not supported yet: th
 
 Reading: `search_people`, `get_person`, `get_people`, `get_relatives`, `count_relatives`, `how_related`, `list_pages`, `get_page`, `list_photos`, `list_places`, `export_text`, `preview_text`, `export_gedcom`, `preview_gedcom`, `get_history`, `my_proposals`.
 
-Writing (not listed for a read-only token): `create_person`, `update_person`, `delete_person`, `add_relation`, `update_relation`, `move_relation`, `remove_relation`, `remove_parent_links`, `create_page`, `update_page`, `move_page`, `delete_page`, `upload_photo`, `update_photo`, `delete_photo`, `tag_photo`, `untag_photo`, `set_avatar`, `create_place`, `update_place`, `import_text`, `import_gedcom`, `undo`, `update_people` and `add_fact_to_people` (whole sets as one change, always queued for review).
+Writing (not listed for a read-only token): `create_person`, `update_person`, `delete_person`, `add_relation`, `update_relation`, `move_relation`, `set_parents`, `remove_relation`, `remove_parent_links`, `create_page`, `update_page`, `move_page`, `delete_page`, `upload_photo`, `update_photo`, `delete_photo`, `tag_photo`, `untag_photo`, `set_avatar`, `create_place`, `update_place`, `import_text`, `import_gedcom`, `undo`, `update_people` and `add_fact_to_people` (whole sets as one change, always queued for review).
+
+`set_parents` `{childId, parentIds}` makes one or two people the parents of a child as one change: `[a]` leaves the child with that parent only, `[a, b]` with both. Missing links are added, any other parent link is removed whatever its kind, and a link that stays keeps its kind (an adopted or step parent is not turned into a birth parent). Unions are not touched. It is the same operation as dragging a child's handle onto a parent or onto a couple's dot on the chart; one undo takes it back. API: `POST /api/v1/relations/set-parents`.
 
 Agents read and write pages in Markdown: a mention is `[@Name](person:ID)`, a photo is `![caption](/api/v1/media/ID/file?size=medium)`. Blocks Markdown cannot express, such as tables, are visible only with `raw: true`, and new text replaces the whole page.
 

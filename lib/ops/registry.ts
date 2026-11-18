@@ -165,6 +165,14 @@ export const OPS: Record<string, Def> = {
     apply: (a, x) => people.moveRelation(a, x.type, x.id, x.end, x.to, x.also),
     describe: (x, c) => ({ text: `${tell('Link_relation')}: → ${c.name(x.to)}` }),
   }),
+  set_parents: def({
+    risk: 'write',
+    description: 'Make one or two people the parents of a child, as one change: missing links are added and any other parent link is removed, whatever its kind. [a] makes the child a child of that parent only; [a, b] of both. Links that stay keep their kind. One undo takes it all back.',
+    input: z.object({ childId: z.string(), parentIds: z.array(z.string()).min(1).max(2) }),
+    refs: { childId: 'persons', parentIds: 'persons' },
+    apply: (a, x) => people.setParents(a, x.childId, x.parentIds),
+    describe: (x, c) => ({ text: `${c.name(x.childId)} ← ${x.parentIds.map((i: string) => c.name(i)).join(', ')}` }),
+  }),
   remove_relation: def({
     risk: 'danger',
     description: 'Remove a link. Link ids come from get_person.',
