@@ -106,14 +106,16 @@ export function agePulses(pulses: Pulse[], now: number) {
 
 /** Every journey's arrival year, sorted, for the lives drawn in the ghost: built once per family and choice. */
 const arrivals = new WeakMap<Track[], { who: string; years: Float64Array }>()
+const departures = new WeakMap<Track[], { who: string; years: Float64Array }>()
 /** How many journeys of the ghost have finished by a year, by binary search instead of walking every life each frame. */
-function finishedBy(tracks: Track[], who: string, apart: (id: string) => boolean, year: number) {
-  let a = arrivals.get(tracks)
+function finishedBy(tracks: Track[], who: string, apart: (id: string) => boolean, year: number, field: 'arrive' | 'leave' = 'arrive') {
+  const cache = field === 'arrive' ? arrivals : departures
+  let a = cache.get(tracks)
   if (!a || a.who !== who) {
     const ys: number[] = []
-    for (const tr of tracks) if (!apart(tr.personId)) for (const leg of trackLegs(tr)) ys.push(leg.arrive)
+    for (const tr of tracks) if (!apart(tr.personId)) for (const leg of trackLegs(tr)) ys.push(leg[field])
     a = { who, years: Float64Array.from(ys.sort((x, y) => x - y)) }
-    arrivals.set(tracks, a)
+    cache.set(tracks, a)
   }
   let lo = 0, hi = a.years.length
   while (lo < hi) { const m = (lo + hi) >> 1; if (a.years[m] <= year) lo = m + 1; else hi = m }
@@ -190,7 +192,10 @@ export function drawGhost(v: View, st: TrailState) {
     // journey so far, the family's routes building up as the years play.
     let last: Leg | null = null
     const done: Leg[] = []
-    for (const leg of trackLegs(tr)) { if (leg.arrive > year) break; last = leg; done.push(leg) }
+    let under = false
+    for (const leg of trackLegs(tr)) { if (leg.leave < year && leg.arrive > year) under = true; if (leg.arrive > year) break; last = leg; done.push(leg) }
+    // One line for a traveller: while a journey is under way it is theirs, drawn live, and the one before it is let go.
+    if (under && st.routes !== 'all' && !gone) continue
     for (const leg of st.routes === 'all' || gone ? done : last && year - last.arrive <= GHOST_YEARS ? [last] : []) {
       const box = legBox(leg)
       if (!leg.path.wraps && (!onCanvas(box, v) || legTooFar(box, v))) continue
@@ -416,5 +421,5 @@ export function ghostKey(st: TrailState) {
   const apart = (id: string) => id === focusId || !!line?.ids.has(id)
   const who = `${focusId}|${line?.key}`
   // A journey enters the ghost when it ends and leaves it a generation later: either way the canvas changes.
-  return `${st.routes ?? 'recent'}|${st.departed ? 'dead' : ''}|${st.trails === false ? 'off' : 'on'}|${finishedBy(st.tracks, who, apart, st.year)}-${finishedBy(st.tracks, who, apart, st.year - GHOST_YEARS - 1e-9)}|${endedBy(st.tracks, who, apart, st.year)}|${focusId}|${line?.key}|${st.ink}`
+  return `${st.routes ?? 'recent'}|${st.departed ? 'dead' : ''}|${st.trails === false ? 'off' : 'on'}|${finishedBy(st.tracks, who, apart, st.year)}-${finishedBy(st.tracks, who, apart, st.year - GHOST_YEARS - 1e-9)}-${st.routes === 'all' ? '' : finishedBy(st.tracks, who, apart, st.year - 1e-9, 'leave')}|${endedBy(st.tracks, who, apart, st.year)}|${focusId}|${line?.key}|${st.ink}`
 }

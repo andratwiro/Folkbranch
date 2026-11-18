@@ -87,3 +87,24 @@ describe('the ghost canvas is a pure function of its cache key', () => {
     expect(new Set(drawn).size).toBeGreaterThan(1)
   })
 })
+
+describe('one line for a traveller, and none for the gone', () => {
+  const only = (id: string): Track[] => tracks.filter((t) => t.personId === id)
+  const segs = (id: string, year: number) => { const { ctx, log } = logger(); drawGhost(view(ctx, 2), state(year, { tracks: only(id) })); return log.filter((c) => (c as unknown[])[0] === 'lineTo').length }
+  it('lets the earlier journey go while a new one is under way, and brings it back when the clock turns back', () => {
+    // Ant arrives at Corbiny in 1905 and sets out for Tessaly in 1919.5.
+    const before = segs('ant', 1915), under = segs('ant', 1920), after = segs('ant', 1922)
+    expect(before).toBeGreaterThan(0)
+    expect(under).toBe(0)
+    expect(after).toBeGreaterThan(0)
+    expect(segs('ant', 1915)).toBe(before)
+  })
+  it('draws nothing of a life that has ended, forward or back, and the same again on the way back', () => {
+    const years = [1925, 1930.9, 1931, 1940, 1931, 1930.9, 1925]
+    const got = years.map((y) => segs('ant', y))
+    expect(got[2]).toBe(0)
+    expect(got[3]).toBe(0)
+    expect(got[0]).toBeGreaterThan(0)
+    expect(got.slice(4)).toEqual([got[2], got[1], got[0]].map((_, i) => [0, got[1], got[0]][i]))
+  })
+})
