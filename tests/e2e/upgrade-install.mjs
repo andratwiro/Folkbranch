@@ -43,7 +43,12 @@ try {
   await api('PATCH', `persons/${g0.persons[0].id}`, { birthPlace: 'Тверь' })
   await api('POST', 'persons', { person: { givenName: 'Ёжик', surname: 'Проверочный', sex: 'M', birthDate: '1900' } })
   // An ended civil union, as the old version writes it: it has an end date and no reason for it.
-  const [first, second] = (await api('GET', 'graph')).persons
+  // Two people the old version may marry: not a parent and child, not siblings, not a couple already.
+  const gg = await api('GET', 'graph')
+  const parents = (id) => gg.parentChild.filter((l) => l.childId === id).map((l) => l.parentId)
+  const kin = (a, b) => parents(a).includes(b) || parents(b).includes(a) || parents(a).some((p) => parents(b).includes(p)) || gg.unions.some((u) => (u.aId === a && u.bId === b) || (u.aId === b && u.bId === a))
+  const first = gg.persons.find((p) => gg.persons.some((q) => q.id !== p.id && !kin(p.id, q.id)))
+  const second = gg.persons.find((q) => q.id !== first?.id && !kin(first?.id, q.id))
   await api('POST', 'relations', { type: 'spouse', to: first.id, other: second.id, unionKind: 'civil', startDate: '1900', endDate: '1910' })
   const before = await api('GET', 'graph')
   const env0 = fs.readFileSync(path.join(dir, '.env'), 'utf8')
