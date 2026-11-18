@@ -45,7 +45,7 @@ out.farOut = await snap()
 await run('panFar', async () => { await page.mouse.move(C.x, C.y); await page.mouse.down(); for (let i = 0; i < 60; i++) { await page.mouse.move(C.x + i * 4, C.y + i); await page.waitForTimeout(16) } await page.mouse.up() })
 // The whole family on paper, in both modes: the largest thing the browser is asked to make.
 for (const [name, mode] of [['printOne', 'На одном листе'], ['printSheets', 'Склеить из листов']]) {
-  await page.getByRole('button', { name: 'Печать схемы' }).click()
+  await page.getByRole('button', { name: 'Печать и картинка' }).click()
   await page.getByRole('dialog').waitFor()
   await page.getByText(mode).click()
   const t = Date.now()

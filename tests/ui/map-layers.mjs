@@ -14,7 +14,7 @@ const toggle = (name) => page.getByRole('switch', { name, exact: true })
 
 await button().click(); await sleep(400)
 ok('the layers button opens a panel', await panel().isVisible())
-for (const s of ['People', 'Events', 'Routes', 'All past moves']) ok(`a switch for ${s}`, (await toggle(s).count()) === 1)
+for (const s of ['People', 'Events', 'Routes', 'People who have died', 'All past moves']) ok(`a switch for ${s}`, (await toggle(s).count()) === 1)
 for (const k of KINDS) ok(`a check box for ${k}`, (await checkbox(k).count()) === 1 && (await checkbox(k).getAttribute('aria-checked')) === 'true')
 ok('nothing is switched off at first: no Reset, no dot', (await page.getByRole('button', { name: 'Reset', exact: true }).count()) === 0 && (await button().getAttribute('title')) === 'Map layers')
 ok('the old All / People / Events choice is not on the timeline any more', (await page.getByRole('radiogroup', { name: 'What to show' }).count()) === 0)
@@ -35,7 +35,7 @@ ok('the choice survives a reload', (await checkbox('Births').getAttribute('aria-
 // Reset puts everything back.
 await page.getByRole('button', { name: 'Reset', exact: true }).click(); await sleep(500)
 ok('Reset checks every kind again', (await Promise.all(KINDS.map((k) => checkbox(k).getAttribute('aria-checked')))).every((v) => v === 'true'))
-ok('and the saved choice is the default', JSON.stringify(await saved()) === JSON.stringify({ people: true, events: true, trails: true, routes: 'recent', hidden: [] }))
+ok('and the saved choice is the default', JSON.stringify(await saved()) === JSON.stringify({ people: true, events: true, trails: true, routes: 'recent', departed: false, hidden: [] }))
 
 // The last kind cannot go: a map of nothing is not a choice anyone means.
 for (const k of KINDS.slice(0, -1)) await checkbox(k).click()
