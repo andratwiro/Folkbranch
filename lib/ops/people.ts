@@ -13,12 +13,25 @@ export { hiddenFor }
 
 const label = (p: { givenName: string; surname: string } | undefined) => (p && personName(p)) || say('Untitled')
 
-/** A day that is not on the calendar: 31 February, month 13. Written as 1900-02-31 or 31.02.1900; other forms are left alone. */
+/** Month names by their first letters, in the archive's languages: a written month is told from its stem, in any case. */
+const MONTHS: [RegExp, number][] = [
+  [/^(jan|янв|gen|ene|jän)/i, 1], [/^(feb|фев|fév|fev)/i, 2], [/^(mar|мар|mär)/i, 3], [/^(apr|апр|abr|avr)/i, 4], [/^(may|мая|май|mai|mag|maj|maig)/i, 5], [/^(jun|июн|giu|juin|juni)/i, 6],
+  [/^(jul|июл|lug|juil|juli)/i, 7], [/^(aug|авг|ago|août|aout)/i, 8], [/^(sep|сен|set)/i, 9], [/^(oct|окт|ott|okt)/i, 10], [/^(nov|ноя)/i, 11], [/^(dec|дек|dic|déc|dez|des)/i, 12],
+]
+const monthOf = (w: string) => MONTHS.find(([re]) => re.test(w))?.[1] ?? 0
+
+/** A day that is not on the calendar: 31 February, month 13. Written as 1900-02-31, 31.02.1900, 31 February 1900 or February 31, 1900; other forms are left alone. */
 export function impossibleDate(date?: string | null): string | null {
   const s = (date ?? '').trim()
-  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s) ?? /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s)
-  if (!m) return null
-  const [year, month, day] = s.includes('-') ? [+m[1], +m[2], +m[3]] : [+m[3], +m[2], +m[1]]
+  let year = 0, month = 0, day = 0
+  const num = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s) ?? /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s)
+  if (num) [year, month, day] = s.includes('-') ? [+num[1], +num[2], +num[3]] : [+num[3], +num[2], +num[1]]
+  else {
+    const dm = /^(\d{1,2})\s+(?:de\s+|d')?(\p{L}+)\.?,?\s+(?:de\s+)?(\d{4})$/u.exec(s), md = /^(\p{L}+)\.?\s+(\d{1,2}),?\s+(\d{4})$/u.exec(s)
+    if (dm && monthOf(dm[2])) [year, month, day] = [+dm[3], monthOf(dm[2]), +dm[1]]
+    else if (md && monthOf(md[1])) [year, month, day] = [+md[3], monthOf(md[1]), +md[2]]
+    else return null
+  }
   const days = [31, year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
   return month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1] ? null : `${s} is not a day on the calendar`
 }

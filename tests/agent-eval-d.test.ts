@@ -20,6 +20,9 @@ describe('days that are not on the calendar', () => {
     for (const fine of ['1900-02-28', '29.02.1904', '1900', 'ок. 1900', '12 марта 1900', '', '1900-12-31']) expect(impossibleDate(fine), fine).toBeNull()
     expect(impossibleDate('29.02.1900')).toMatch(/not a day/)
     expect(impossibleDate('29.02.2000')).toBeNull()
+    // A month written in words is checked the same way, in any case and any of the archive's languages.
+    for (const bad of ['31 February 1900', 'February 30, 1900', '31 февраля 1900', '30 de febrero 1900', '29 Feb 1901']) expect(impossibleDate(bad), bad).toMatch(/not a day/)
+    for (const fine of ['29 February 1904', '31 March 1900', 'March 31, 1900', '28 февраля 1900', 'Spring 1900', 'abt 31 Jan 1900']) expect(impossibleDate(fine), fine).toBeNull()
   })
   it('create_person and update_person refuse them, naming the date', async () => {
     await expect(run(me(), 'create_person', { person: { givenName: 'Дата', surname: 'Невозможная', birthDate: '31.02.1900' } })).rejects.toThrow(/31\.02\.1900 is not a day/)
