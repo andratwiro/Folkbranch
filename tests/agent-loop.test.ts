@@ -4,6 +4,7 @@ import { MockLanguageModelV4, simulateReadableStream } from 'ai/test'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { assistantRefusal } from '../lib/agent/agent'
 import { assistantResponse } from '../lib/agent/respond'
+import { stampOf } from '../lib/agent/stamp'
 import { getDb, schema } from '../lib/db'
 import { withViewerLang } from '../lib/ops/app-config'
 import { getGraph } from '../lib/ops/people'
@@ -227,5 +228,20 @@ describe('when things go wrong', () => {
     setSetting('assistantForReaders', '1')
     expect(refusal(reader)).toBeNull()
     process.env.ANTHROPIC_API_KEY = had ?? ''
+  })
+})
+
+describe('when and how long', () => {
+  it('stamps an answer with its start, duration, steps and tokens, and the stamp survives saving', async () => {
+    const m = model(calls(['get_settings', {}]), reply('Готово.'))
+    const r = await send(owner, [user('Обзор')], m)
+    const s = stampOf(r.message.metadata)!
+    expect(s.at).toBeGreaterThan(1_700_000_000_000)
+    expect(s.ms).toBeGreaterThanOrEqual(0)
+    expect(s.steps).toBe(2)
+    expect(s.tokens).toBe(4)
+    // What the browser keeps in a saved conversation is JSON of the message: the stamp comes back from it.
+    expect(stampOf(JSON.parse(JSON.stringify(r.message)).metadata)).toEqual(JSON.parse(JSON.stringify(s)))
+    expect((r.message.metadata as { usage?: unknown }).usage).toBeDefined()
   })
 })

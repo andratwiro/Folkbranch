@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import { api, useApp, useWrite } from '@/lib/client'
-import { lifeYears, personName, type Certainty, type Person, type Union } from '@/lib/types'
+import { lifeYears, personName, type Certainty, type Person, type Union, type UnionEnd, unionEnd } from '@/lib/types'
 import { Mini } from './person-pickers'
 import { Field, CERTAINTY, DateField, Segmented } from './person-fields'
 import { Select } from '@/components/ui/select'
@@ -44,7 +44,7 @@ export function FamilyTab({ person }: { person: Person }) {
     <Select look="quiet" title={t('Relationship')} aria-label={t('Relationship')} value={`${l.kind}:${l.certainty}`} onChange={(v) => {
       const [kind, certainty] = v.split(':')
       setCertainty.mutate({ type: 'parent', id: l.id, kind, certainty })
-    }} options={(['birth', 'adopted', 'step'] as const).flatMap((k) => (Object.keys(CERTAINTY) as Certainty[]).map((c) => ({ value: `${k}:${c}`, label: `${t(k === 'birth' ? (female ? 'birth_feminine' : 'birth_masculine') : k === 'adopted' ? (female ? 'adopted' : 'adopted_masculine') : stepWord)} · ${t(CERTAINTY[c])}` })))} />
+    }} options={(['birth', 'adopted', 'foster', 'step'] as const).flatMap((k) => (Object.keys(CERTAINTY) as Certainty[]).map((c) => ({ value: `${k}:${c}`, label: `${t(k === 'birth' ? (female ? 'birth_feminine' : 'birth_masculine') : k === 'adopted' ? (female ? 'adopted' : 'adopted_masculine') : k === 'foster' ? 'foster' : stepWord)} · ${t(CERTAINTY[c])}` })))} />
   )
   const group = (title: string, items: React.ReactNode[], add?: [string, string]) => (!canEdit && !items.length ? null : (
     <section className="mb-4">
@@ -86,7 +86,7 @@ function UnionDetails({ union: u }: { union: Union }) {
   const edit = useWrite((json: Partial<Union>) => api(`relations/union/${u.id}`, { method: 'PATCH', json }))
   const ro = !canEdit
   // "?" keeps an ended union whose date nobody knows.
-  const ended = !!u.endDate
+  const ended = unionEnd(u) !== ''
   const places = useMemo(() => [...new Set(graph.persons.flatMap((p) => [p.birthPlace, p.deathPlace]).concat(graph.unions.map((x) => x.place)).filter(Boolean))].sort().slice(0, 300), [graph])
   if (ro && !u.startDate && !u.endDate && !u.place) return null
   return (
@@ -98,10 +98,10 @@ function UnionDetails({ union: u }: { union: Union }) {
       <span className="text-ink-soft">{t('Place')}</span>
       <Field suggestions={places} readOnly={ro} value={u.place} placeholder={t('e.g. Paris')} onSave={(place) => edit.mutate({ place })} />
       {!ro && (
-        <label className="col-span-2 flex items-center gap-2 cursor-pointer min-h-7">
-          <input type="checkbox" className="accent-[var(--ink)] size-4" checked={ended} onChange={(e) => edit.mutate({ endDate: e.target.checked ? '?' : '' })} />
-          {t('The union ended')}
-        </label>
+        <>
+          <span className="text-ink-soft">{t('Union status')}</span>
+          <Segmented label={t('Union status')} value={unionEnd(u) || 'together'} onChange={(v) => edit.mutate(v === 'together' ? { endKind: '', endDate: '' } : { endKind: v as UnionEnd, ...(u.endDate ? {} : { endDate: '?' }) })} options={[['together', t('together')], ['separated', t('separated')], ['divorced', t('divorced')], ['widowed', t('widowed')]]} />
+        </>
       )}
       {ended && (
         <>

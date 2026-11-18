@@ -129,10 +129,10 @@ export function assertLink(a: Actor, type: string, to: string, other: { id?: str
   if (kind !== 'birth' || !childId) return
   const g = people.getGraph(a)
   const parents = g.parentChild.filter((l) => l.childId === childId && l.kind === 'birth' && l.parentId !== (parentIsOther ? other.id : to))
-  if (parents.length >= 2) throw new OpError(400, `${child.name} already has two parents. Remove one with remove_relation first, or use kind adopted or step.`)
+  if (parents.length >= 2) throw new OpError(400, `${child.name} already has two parents. Remove one with remove_relation first, or use kind adopted, foster or step.`)
   const newSex = parentIsOther ? other.sex : toPerson.sex
   const twin = parents.map((l) => g.persons.find((p) => p.id === l.parentId)).find((p) => p && !p.hidden && p.sex !== 'U' && p.sex === newSex)
-  if (twin) throw new OpError(400, `${child.name} already has a ${newSex === 'M' ? 'father' : 'mother'}: ${personName(twin)}. Remove that link first, or use kind adopted or step.`)
+  if (twin) throw new OpError(400, `${child.name} already has a ${newSex === 'M' ? 'father' : 'mother'}: ${personName(twin)}. Remove that link first, or use kind adopted, foster or step.`)
 }
 
 /** An import runs its links without the checks of a single add_relation, so the same ones run on the whole plan first. */

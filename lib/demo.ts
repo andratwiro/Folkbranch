@@ -9,7 +9,7 @@ import type { Lang, Sex } from './types'
 
 type Row = [key: string, given: string, surname: string, sex: Sex, birth: string, death: string, place: string, parents?: string[], maiden?: string]
 
-const PEOPLE: Row[] = [
+export const PEOPLE: Row[] = [
   ['nik', 'Николай', 'Соколов', 'M', '1890', '1962', 'Кострома'], ['var', 'Варвара', 'Соколова', 'F', '~1895', '1970', 'Кострома', [], 'Лебедева'],
   ['fed', 'Фёдор', 'Белов', 'M', '1888', '1941', 'Вологда'], ['olg', 'Ольга', 'Белова', 'F', '1892', '1965', 'Вологда'],
   ['iva', 'Иван', 'Соколов', 'M', '1918', '1985', 'Кострома', ['nik', 'var']], ['ann', 'Анна', 'Соколова', 'F', '1921', '1999', 'Вологда', ['fed', 'olg'], 'Белова'],
@@ -88,7 +88,7 @@ const WORDS = {
   },
 }
 
-const UNIONS: [a: string, b: string, date?: string, place?: string][] = [
+export const UNIONS: [a: string, b: string, date?: string, place?: string][] = [
   ['nik', 'var'], ['fed', 'olg'], ['iva', 'ann', '1945', 'Вологда'], ['mar', 'gri', '1948', 'Ярославль'], ['ser', 'lud'], ['ser', 'gal'], ['ele', 'vik', '1972', 'Ярославль'], ['ale', 'eka', '2002', 'Москва'], ['iri', 'dmi'],
 ]
 

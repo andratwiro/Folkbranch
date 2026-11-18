@@ -4,10 +4,30 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ## Unreleased
 
+## 1.8.0 - 2026-11-18
+
+Chart editing and assistant work: links can be moved and marked as in a genogram, tidier chart lines, a faster and more visible assistant, and a link to ask a relative for a story.
+
+### Fixed
+- On the chart, dropping a couple's dot on a child who had only one of them now adds the other parent (as mother or father by sex). Before, it did nothing and said the people were already linked. A child who has a parent outside the couple, or two parents already, is refused with a reason.
+- The "Thinking" line under your first message no longer drops a few pixels a moment after it appears, and the answer starts in its place instead of jumping up.
+- A brother or sister is no longer called a half-brother or half-sister when only one of them has a second parent on record: the missing parent may be the shared one.
+- Settings > AI: the units on the usage cards ("this month", "tokens today") are no longer cut off by the card's edge, and the assistant's tokens for the day are said once.
+
 ### Added
+- **An existing link can be moved.** Click a line on the chart and a handle appears on each end; drag one onto another person to move that end there: the wrong parent becomes the right one, the wrong child the right one, a partner is replaced. It is one entry in History and one Undo. A child with two parents replaces the one of the same sex as the new person. The assistant and the API have `move_relation` for the same.
+- **Unions as in a genogram.** Unmarried partners have a dashed line (a marriage a solid one). A divorce is two slashes across the line, a separation one slash; a union ended by a death is not crossed out, since the death shows on the card. The state is set from the line's bar or the couple's card (**together, separated, divorced, widowed**); an older end date with no reason reads as a divorce. GEDCOM writes a divorce as `DIV` and a separation as an event of type Separation, and reads both.
+- **Foster children** are a kind of link next to birth, adopted and step. Adopted, foster and step each have their own line style, and the legend, in all four languages, explains every mark. GEDCOM and Gramps files carry foster children both ways (`PEDI foster`).
+- **Ask a relative to tell a story from the person's own card**: **Ask to tell by a link** in the Stories tab (and in the **Add a story** dialog) opens a small dialog with the person already filled in; name who is asked, press ready questions, and the link comes out with **Copy** and, on a phone, **Share**. The card then lists open links ("Waiting for a story from Nina, link valid until…") with **New link** and **Close**, and what came back waits there with the teller's name, to hear and accept or reject in place. Editors can make and close these links, not only the owner.
+
 - **More languages are easy to add.** English is now the language the interface is written in and every other language, Russian included, is one file in `locales/`; a language is loaded only when someone reads in it, and one line in the language list plus its file adds a new one. The first wave (Portuguese, French, German, Italian, Ukrainian, Polish) is machine-translated and marked **beta** in the language picker until a native reader signs it off. Languages with more than two plural forms, names written surname first, a patronymic in the full name and a different word for a father's and a mother's brother are now possible; lists sort in the reader's own alphabet. How to add or fix a language: [docs/TRANSLATING.md](docs/TRANSLATING.md).
 
 ### Changed
+- **Tidier lines on the family chart.** A couple now stands between its parents and its children, not under its parents only, so a child is no longer drawn far across the chart from its parents: on a generated 2,000-person family the average line is a fifteenth as far across, the gaps between rows stay level (one was 1,525 px tall) and the crossings fall from 252 to 0. A child a few pixels off the stem of its parents is moved into line, so the stem no longer takes a small jog with squeezed corners.
+- While the assistant works, the panel says what the step is about: the person whose card it reads (name and a small avatar that opens them on the chart), "12 of 40" for a long read, and the fact it is writing. The assistant can also read many cards in one call (`get_people`) and add one fact to many people (`add_fact_to_people`) with one confirmation and one undo.
+- The assistant answers "how many relatives" in two round trips instead of five, with about a third of the tokens: a new `count_relatives` tool (also over MCP) returns counts by kind (blood, adopted, step, spouse, by marriage) and degree, with names only on request. A spouse of a blood relative is counted as a relative by marriage, never as a blood relative.
+- Each answer from the assistant shows the time it came and how long it took ("14:32 · 12 s"); on a long answer, opening it shows the steps and tokens. It is kept with the conversation on this device. Older answers show nothing.
+- Printing the chart as a picture or PDF starts with names shown for the owner. Before, the box **Hide living relatives** was ticked every time, so a family with many living people came out as a page of "Living relative". Tick the box to hide them before sending the file to anyone. Editors start with the box ticked as before, and readers never receive the names.
 - A phrase a language has not translated yet shows in English everywhere, never in Russian.
 - `pnpm i18n:check` (also in CI) replaces the old Spanish and Catalan table tests: it fails on a missing, unused or mismatched translation.
 

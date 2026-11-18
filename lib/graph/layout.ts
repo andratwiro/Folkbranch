@@ -18,19 +18,25 @@ const PASS_W = 16
 const LANE = 16
 /** A card placed by hand stays put: everyone else in its row gives way. */
 const PIN_WEIGHT = 1e6
+/** How often the rows are swept up and down: a large family needs many sweeps before its far rows stop moving. */
+const SETTLE_ROUNDS = 30
 /** Between a bar and the rows above and below it. */
 const GAP_EDGE = 26
 const CORNER = 8
 
-export type LineStyle = 'solid' | 'adopted' | 'assumed'
+export type LineStyle = 'solid' | 'adopted' | 'foster' | 'step' | 'assumed'
 export interface CardPos { id: string; x: number; y: number }
-export interface UnionPos { id: string; union: Union; x: number; y: number; path: string; x1: number; x2: number; box: Box }
+export interface UnionPos { id: string; union: Union; x: number; y: number; path: string; x1: number; x2: number; box: Box
+  /** A point on a straight stretch of the line beside the dot, where an ended union is crossed out. */ endAt: [number, number]
+  /** Where the line meets each of its two people, for the handles that move an end. */ ends: { id: string; x: number; y: number }[] }
 export interface EdgePos { id: string; childId: string; parentIds: string[]; path: string; style: LineStyle; links: ParentLink[]; familyKey: string
   /** Around the whole bar with its trunk and all the siblings, so the shared part is never cut. */ box: Box
   /** The stretch that belongs to this child alone, from its bar down to it. */ own: string
   /** Where the line goes on under the estimated caption, to the point it enters the card: clickable below the cards, where the real caption is shorter than the estimate. */ tail: string
   /** The part shared with siblings: from the parents down to the bar, and the bar itself. */ shared: string
   /** Siblings hanging from one bar share a group. */ group: string
+  /** Where the line meets the child, and where it leaves its parents: the handles that move an end. */ childAt: [number, number]
+  parentAt: [number, number]
   barAt: [number, number]
   groupAt: [number, number] }
 export interface Layout {
@@ -344,6 +350,44 @@ function untidiness(g: Graph, rows: { slots: string[] }[][], edges: OrderEdge[])
   return cross * 5 + strangers
 }
 
+/** A line whose two ends are this much out of line, or less, takes a jog that is smaller than its own corners. */
+const JOG = 2 * CORNER
+const JOG_PENALTY = 1000
+
+/**
+ * Where a block can stand to have the fewest lines that almost, but not quite, run straight. Such a line
+ * leaves its parents, takes a step of a few pixels and goes on: with corners as wide as the step is long it
+ * is a wobble, not a corner. A block moves into the free space beside it so one end of each such line meets
+ * the other, as long as that does not leave a worse wobble on its other lines.
+ */
+function straighten(rows: Block[][], entering: Map<string, OrderEdge[]>, leaving: Map<string, OrderEdge[]>, blockFor: Map<string, Block>, offsetOf: Map<string, number>, pinned: Map<Block, number>, gap: number) {
+  const xOf = (slot: string) => blockFor.get(slot)!.x + offsetOf.get(slot)!
+  const off = (e: OrderEdge) => xOf(e.down) - mean(e.up.map(xOf))
+  const price = (o: number) => (Math.abs(o) < 0.5 ? 0 : Math.abs(o) < JOG ? JOG_PENALTY : Math.abs(o) / 1000)
+  for (let round = 0; round < 3; round++) {
+    let moved = false
+    for (const row of rows) row.forEach((b, i) => {
+      if (pinned.has(b)) return
+      const inn = entering.get(b.key) ?? [], out = leaving.get(b.key) ?? []
+      const cost = () => inn.reduce((a, e) => a + price(off(e)), 0) + out.reduce((a, e) => a + price(off(e)), 0)
+      const now = cost()
+      if (now < JOG_PENALTY) return
+      const room = [i ? b.x - b.width / 2 - (row[i - 1].x + row[i - 1].width / 2) - gap : Infinity, i + 1 < row.length ? row[i + 1].x - row[i + 1].width / 2 - (b.x + b.width / 2) - gap : Infinity]
+      // The shifts that would straighten one of its lines.
+      const tries = [...inn.map((e) => -off(e)), ...out.map((e) => off(e) * (e.up.length / Math.max(1, e.up.filter((s) => blockFor.get(s) === b).length)))].filter((s) => Math.abs(s) >= 0.5 && Math.abs(s) < JOG && s >= -room[0] && s <= room[1])
+      let best = 0, bestCost = now
+      for (const s of tries) {
+        b.x += s
+        const c = cost()
+        b.x -= s
+        if (c < bestCost) { best = s; bestCost = c }
+      }
+      if (best) { b.x += best; moved = true }
+    })
+    if (!moved) break
+  }
+}
+
 /** `rootsBelow` draws the tree as it grows: elders at the bottom, the youngest at the top. */
 export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = false }: { rootsBelow?: boolean; /** Where people were placed by hand: person id to x. */ pins?: Record<string, number>; /** Tighter, for paper. */ print?: boolean } = {}): Layout {
   if (!g.persons.length) return { cards: new Map(), unions: [], edges: [], bounds: { x: 0, y: 0, w: 0, h: 0 } }
@@ -385,23 +429,21 @@ export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = 
   /** Where each block must stand because someone in it was placed by hand. */
   const pinned = new Map<Block, number>()
 
-  // Alternate up and down so parents settle above the middle of their children.
-  const settle = (row: Block[], up: boolean) => {
+  // Alternate up and down until the rows stop moving.
+  const settle = (row: Block[]) => {
     const want = row.map((b) => {
       const targets: number[] = []
-      if (up) {
-        for (const e of leaving.get(b.key) ?? []) for (const s of e.up) if (blockFor.get(s) === b) targets.push(xOf(e.down) - offsetOf.get(s)!)
-      } else {
-        for (const e of entering.get(b.key) ?? []) targets.push(edgeTop(e) - offsetOf.get(e.down)!)
-      }
+      // Both sides count at every step, so a couple stands between its parents and its children, nearer the side with more lines.
+      for (const e of leaving.get(b.key) ?? []) for (const s of e.up) if (blockFor.get(s) === b) targets.push(xOf(e.down) - offsetOf.get(s)!)
+      for (const e of entering.get(b.key) ?? []) targets.push(edgeTop(e) - offsetOf.get(e.down)!)
       return pinned.get(b) ?? (targets.length ? mean(targets) : b.x)
     })
     placeInOrder(row, want, gap, (b) => (pinned.has(b) ? PIN_WEIGHT : 1))
   }
-  for (const row of rows) settle(row, false)
-  for (let i = 0; i < 6; i++) {
-    for (let r = rows.length - 2; r >= 0; r--) settle(rows[r], true)
-    for (let r = 1; r < rows.length; r++) settle(rows[r], false)
+  for (const row of rows) settle(row)
+  for (let i = 0; i < SETTLE_ROUNDS; i++) {
+    for (let r = rows.length - 2; r >= 0; r--) settle(rows[r])
+    for (let r = 1; r < rows.length; r++) settle(rows[r])
   }
   // First where everyone would stand by themselves, so that a card dragged past its neighbours can be seen to be
   // on their other side. Then everyone else adjusts around it.
@@ -411,12 +453,14 @@ export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = 
   }
   if (pinned.size) {
     for (const row of rows) if (row.some((b) => pinned.has(b))) row.sort((p, q) => (pinned.get(p) ?? p.x) - (pinned.get(q) ?? q.x))
-    for (const row of rows) settle(row, false)
+    for (const row of rows) settle(row)
     for (let i = 0; i < 3; i++) {
-      for (let r = rows.length - 2; r >= 0; r--) settle(rows[r], true)
-      for (let r = 1; r < rows.length; r++) settle(rows[r], false)
+      for (let r = rows.length - 2; r >= 0; r--) settle(rows[r])
+      for (let r = 1; r < rows.length; r++) settle(rows[r])
     }
   }
+
+  straighten(rows, entering, leaving, blockFor, offsetOf, pinned, gap)
 
   /** The rows as they stand on the page, top first. */
   const lastRank = rows.length - 1
@@ -514,16 +558,18 @@ export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = 
     const l = cards.get(br.l)!, r = cards.get(br.r)!
     const y1 = l.y + AVATAR_CY, y2 = r.y + AVATAR_CY
     const common = { id: br.u.id, union: br.u, x1: l.x, x2: r.x }
-    if (br.kind === 'side') return { ...common, x: br.x, y: y1, path: `M${l.x + edge} ${y1}H${r.x - edge}`, box: boxOf([[l.x, y1], [r.x, y1]]) }
+    // Beside the dot, on the line: where the slashes of an ended union go.
+    const beside = (x: number, toward: number, y: number): [number, number] => [x + Math.sign(toward - x) * Math.min(20, Math.abs(toward - x) / 2), y]
+    if (br.kind === 'side') return { ...common, ends: [{ id: br.l, x: l.x + edge, y: y1 }, { id: br.r, x: r.x - edge, y: y1 }], endAt: beside(br.x, l.x + edge, y1), x: br.x, y: y1, path: `M${l.x + edge} ${y1}H${r.x - edge}`, box: boxOf([[l.x, y1], [r.x, y1]]) }
     if (br.kind === 'over') {
       const top = l.y - 14
       const points: [number, number][] = [[l.x, y1 - edge], [l.x, top], [r.x, top], [r.x, y2 - edge]]
-      return { ...common, x: br.x, y: top, path: orthogonal(points), box: boxOf(points) }
+      return { ...common, ends: [{ id: br.l, x: l.x, y: y1 - edge }, { id: br.r, x: r.x, y: y2 - edge }], endAt: beside(br.x, l.x, top), x: br.x, y: top, path: orthogonal(points), box: boxOf(points) }
     }
     const hi = cards.get(br.hi!)!, lo = cards.get(br.lo!)!
     const midY = netY(br.gap!, br.net!)
     const points: [number, number][] = [[hi.x + br.dir! * edge, hi.y + AVATAR_CY], [br.x, hi.y + AVATAR_CY], [br.x, midY], [br.side!, midY], [br.side!, lo.y + AVATAR_CY]]
-    return { ...common, x: br.x, y: midY, path: orthogonal(points), box: boxOf(points) }
+    return { ...common, ends: [{ id: br.hi!, x: hi.x + br.dir! * edge, y: hi.y + AVATAR_CY }, { id: br.lo!, x: br.side!, y: lo.y + AVATAR_CY }], endAt: beside(br.x, br.side!, midY), x: br.x, y: midY, path: orthogonal(points), box: boxOf(points) }
   })
   const unionById = new Map(unions.map((u) => [u.id, u]))
 
@@ -558,13 +604,15 @@ export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = 
         parentIds: f.parents,
         familyKey: f.key,
         path: orthogonal([...path, [x, barY], [t.x, barY], [t.x, entryY(t)]]),
-        style: links.some((l) => l.kind !== 'birth') ? 'adopted' : links.some((l) => l.certainty === 'assumed') ? 'assumed' : 'solid',
+        style: links.some((l) => l.kind === 'adopted') ? 'adopted' : links.some((l) => l.kind === 'foster') ? 'foster' : links.some((l) => l.kind === 'step') ? 'step' : links.some((l) => l.certainty === 'assumed') ? 'assumed' : 'solid',
         links,
         box,
         own: `M${t.x} ${barY}V${hitEndY(t)}`,
         tail: hitEndY(t) === entryY(t) ? '' : `M${t.x} ${hitEndY(t)}V${entryY(t)}`,
         shared,
         group: `${f.key}@${g2.rank}`,
+        childAt: [t.x, entryY(t)],
+        parentAt: path[0],
         barAt: [t.x, barY],
         groupAt: [(lo + hi) / 2, barY],
       })

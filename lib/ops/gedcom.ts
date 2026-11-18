@@ -147,14 +147,14 @@ export function importGedcom(actor: Actor, text: string, mode: ImportMode = 'add
       // Exports with hidden people can drop both parents; a placeholder keeps the children siblings.
       const placeholder = !a && !b && f.children.length > 1
       if (placeholder) { a = insertPerson(c, { givenName: '?', living: false, certainty: 'assumed' }); personIds.push(a) }
-      if (a && b) addUnion(c, a, b, f.kind, f.date, f.end, f.place)
+      if (a && b) addUnion(c, a, b, f.kind, f.date, f.end, f.place, undefined, f.endKind)
       for (const ch of f.children) {
         const cid = ids.get(ch.xref)
         if (!cid) continue
         // Merging into a tree that already has these people: a link that would make someone their own ancestor is left out.
         const safe = (fn: () => void) => { if (mode !== 'merge') return fn(); try { fn() } catch (e) { if (!(e instanceof OpError)) throw e } }
-        if (a) safe(() => addParent(c, a, cid, ch.adopted ? 'adopted' : 'birth', placeholder ? 'assumed' : 'family'))
-        if (b) safe(() => addParent(c, b, cid, ch.adopted ? 'adopted' : 'birth', 'family'))
+        if (a) safe(() => addParent(c, a, cid, ch.adopted ? 'adopted' : ch.foster ? 'foster' : 'birth', placeholder ? 'assumed' : 'family'))
+        if (b) safe(() => addParent(c, b, cid, ch.adopted ? 'adopted' : ch.foster ? 'foster' : 'birth', 'family'))
       }
     }
     const placed = filePoints(c, g.places, say(gramps ? 'Point from the Gramps file' : 'Point from the GEDCOM file'))

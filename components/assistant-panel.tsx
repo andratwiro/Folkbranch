@@ -14,6 +14,11 @@ import { PromptInput, PromptInputBody, PromptInputButton, PromptInputFooter, Pro
 import { PanelEdge } from './panel-size'
 import { changesData, isOrdinaryEdit, stepLabel, toolLabel } from '@/lib/agent/labels'
 import { api, undoFailure, useApp } from '@/lib/client'
+import { stepDetail } from '@/lib/agent/labels'
+import { subjectOf } from '@/lib/agent/subject'
+import { personName } from '@/lib/types'
+import { avatarUrl } from '@/lib/client'
+import { stampDetail, stampLine, stampOf } from '@/lib/agent/stamp'
 import { forgetChat, loadChats, saveChat, type SavedChat } from '@/lib/chat-store'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { Scope } from '@/lib/graph/select'
@@ -28,6 +33,8 @@ function plainError(e: Error, t: (k: string) => string) {
   return e.message
 }
 
+/** A long step's progress report, before its answer: the step is still running. */
+const preliminary = (p: UIMessage['parts'][number]) => !!(p as { preliminary?: boolean }).preliminary
 const historyIds = (m: UIMessage) => [...new Set(m.parts.flatMap((p) => (isToolUIPart(p) && p.state === 'output-available' && (p.output as { historyId?: string } | null)?.historyId ? [(p.output as { historyId: string }).historyId] : [])))]
 
 export default function AssistantPanel({ open, width, onWidth, onClose, onPath, onDirection, onBranch }: { open: boolean; width: number; onWidth: (w: number) => void; onClose: () => void; onPath: (path: string[]) => void; onDirection: (rootsBelow: boolean) => void; onBranch: (id: string, scope: Scope) => void }) {
@@ -138,6 +145,9 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
         <ConversationContent className="gap-3 p-3">
           {messages.map((m) => {
             if (m.role === 'user' && m.id.startsWith('taken-')) return <p key={m.id} className="text-center text-xs text-ink-soft">{t('This answer\'s changes were undone')}</p>
+            // An answer with nothing to show yet (the stream has opened, no text or step has come) takes no room:
+            // an empty one would push the "Thinking" line down and the answer back up once it began.
+            if (m.role === 'assistant' && !m.parts.some((p) => (p.type === 'text' && p.text) || p.type === 'file' || isToolUIPart(p))) return null
             const ids = m.role === 'assistant' ? historyIds(m) : []
             const finished = m !== messages.at(-1) || !busy
             return (
@@ -156,6 +166,7 @@ export default function AssistantPanel({ open, width, onWidth, onClose, onPath, 
                     if (name === 'set_plan') return m.parts.findLast((x) => isToolUIPart(x) && getToolName(x) === 'set_plan') === p ? <Plan key={p.toolCallId} part={p as ToolUIPart} /> : null
                     return <ToolCall key={p.toolCallId} part={p as ToolUIPart} onAnswer={(approved) => addToolApprovalResponse({ id: p.approval!.id, approved })} onAllowEdits={isOrdinaryEdit(name) && !trusted ? allowEdits : undefined} />
                   })}
+                  {m.role === 'assistant' && finished && <Stamped meta={m.metadata} />}
                   {ids.length > 0 && finished && !pending.length && !undone.includes(m.id) && (
                     <button className="bar-btn self-start border border-border !h-7" onClick={() => takeBack(m)}><Undo2 size={13} /> {t('Undo this answer\'s changes')}</button>
                   )}
@@ -303,13 +314,30 @@ function ToolCall({ part, onAnswer, onAllowEdits }: { part: ToolUIPart; onAnswer
     <>
       <div className="tool-row" title={t(STATUS[part.state])}>
         <div className="flex items-center gap-1.5">
-          {part.state === 'output-available' ? <CircleCheck size={13} className="text-ink-faint" /> : part.state === 'output-error' ? <CircleX size={13} className="text-destructive" /> : <Loader2 size={13} className="animate-spin" />}
+          {part.state === 'output-available' && !preliminary(part) ? <CircleCheck size={13} className="text-ink-faint" /> : part.state === 'output-error' ? <CircleX size={13} className="text-destructive" /> : <Loader2 size={13} className="animate-spin" />}
           <span className="min-w-0 flex-1 truncate">{label}</span>
+          <StepSubject part={part} />
         </div>
       </div>
       {part.state === 'output-error' && <p className="text-xs text-destructive">{part.errorText}</p>}
       {link && <InviteLink link={link} />}
     </>
+  )
+}
+
+/** What the step is about: the person it reads or writes, with a small avatar that opens them on the chart, or how many and how far. */
+function StepSubject({ part }: { part: ToolUIPart }) {
+  const { byId, focus, t } = useApp()
+  const sub = subjectOf(getToolName(part), part.input, part.output)
+  const person = sub.total === 1 ? byId.get(sub.ids[0]) : undefined
+  const shown = person && !person.hidden ? person : undefined
+  const text = stepDetail(sub, (id) => { const q = byId.get(id); return q && !q.hidden ? personName(q) : undefined }, t('of'))
+  if (!text) return null
+  return (
+    <span className="step-subject flex min-w-0 flex-none items-center gap-1 text-ink-soft" data-subject={sub.ids.join(',')} data-progress={sub.done !== undefined ? `${sub.done}/${sub.total}` : undefined}>
+      {shown && <button type="button" className="size-4 flex-none overflow-hidden rounded-full" aria-label={personName(shown)} onClick={() => focus(shown.id)}><img src={avatarUrl(shown)} alt="" className="size-full object-cover" /></button>}
+      <span className="min-w-0 truncate">{text}</span>
+    </span>
   )
 }
 
@@ -340,13 +368,29 @@ function groupSteps(parts: UIMessage['parts']) {
   }
   return out
 }
+/** When the answer came and how long it took; on a long one the steps and tokens open under it. Nothing for an old message. */
+function Stamped({ meta }: { meta: unknown }) {
+  const { t, lang } = useApp()
+  const s = stampOf(meta)
+  if (!s) return null
+  const detail = stampDetail(s, lang, t)
+  const line = stampLine(s, lang, t)
+  if (!detail) return <p className="answer-stamp text-[11.5px] text-ink-faint">{line}</p>
+  return (
+    <details className="answer-stamp text-[11.5px] text-ink-faint">
+      <summary className="flex cursor-pointer list-none items-center gap-1">{line}<ChevronDown size={12} className="chev shrink-0" /></summary>
+      <p className="mt-0.5">{detail}</p>
+    </details>
+  )
+}
+
 /** Whether the screen already shows the assistant at work: text arriving or a step running. Otherwise it is thinking. */
 function visiblyWorking(m: UIMessage | undefined, status: string) {
   if (status === 'submitted' || !m || m.role !== 'assistant') return false
   const last = m.parts.at(-1)
   if (!last) return false
   if (last.type === 'text') return last.state === 'streaming' && last.text.length > 0
-  return isToolUIPart(last) && (RUNNING.includes(last.state) || last.state === 'approval-requested')
+  return isToolUIPart(last) && (RUNNING.includes(last.state) || preliminary(last) || last.state === 'approval-requested')
 }
 
 /** Said at once after sending and whenever the model is quiet between steps, with the seconds it has been at it. */
@@ -368,18 +412,19 @@ function Thinking() {
  */
 function Steps({ parts, live }: { parts: ToolUIPart[]; live: boolean }) {
   const { lang } = useApp()
-  const current = live ? parts.findLast((p) => RUNNING.includes(p.state)) : undefined
+  const current = live ? parts.findLast((p) => RUNNING.includes(p.state) || preliminary(p)) : undefined
   const failed = parts.some((p) => p.state === 'output-error')
   const [open, setOpen] = useState(false)
   // The same step done several times in a row is said once.
   const names = parts.map((p) => stepLabel(getToolName(p), lang)).filter((n, i, all) => n !== all[i - 1])
   const line = current ? `${stepLabel(getToolName(current), lang)}…` : names.join(' · ')
+  const now = current ? <StepSubject part={current} /> : null
   const icon = current ? <Loader2 size={13} className="shrink-0 animate-spin" /> : failed ? <CircleX size={13} className="shrink-0 text-destructive" /> : <CircleCheck size={13} className="shrink-0 text-ink-faint" />
-  if (parts.length === 1 && !failed) return <p className="tool-steps-line">{icon}<span className="min-w-0 flex-1 truncate">{line}</span></p>
+  if (parts.length === 1 && !failed) return <p className="tool-steps-line">{icon}<span className="min-w-0 flex-1 truncate">{line}</span>{now}</p>
   return (
     <details className="tool-steps" open={open || failed} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
       <summary className="tool-steps-line">
-        {icon}<span className="min-w-0 flex-1 truncate">{line}</span><ChevronDown size={13} className="chev shrink-0" />
+        {icon}<span className="min-w-0 flex-1 truncate">{line}</span>{now}<ChevronDown size={13} className="chev shrink-0" />
       </summary>
       <div className="flex flex-col gap-0.5 border-l border-border pl-3 ml-1.5 mt-0.5">
         {parts.map((p) => <ToolCall key={p.toolCallId} part={p} onAnswer={() => {}} />)}

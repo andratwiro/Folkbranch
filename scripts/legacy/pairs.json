@@ -148,8 +148,16 @@
   "Reading a card"
  ],
  [
+  "Читает карточки",
+  "Reading cards"
+ ],
+ [
   "Смотрит родню",
   "Looking at relatives"
+ ],
+ [
+  "Считает родню",
+  "Counting relatives"
  ],
  [
   "Считает родство",
@@ -260,6 +268,10 @@
   "Change a link"
  ],
  [
+  "Перенести конец связи",
+  "Move the end of a link"
+ ],
+ [
   "Создать страницу",
   "Create a page"
  ],
@@ -318,6 +330,10 @@
  [
   "Изменить сразу нескольких",
   "Change several people"
+ ],
+ [
+  "Добавить факт нескольким",
+  "Add a fact to several people"
  ],
  [
   "Удалить связь",
@@ -408,6 +424,10 @@
   "Changing a link"
  ],
  [
+  "Переносит конец связи",
+  "Moving the end of a link"
+ ],
+ [
   "Создаёт страницу",
   "Creating a page"
  ],
@@ -466,6 +486,10 @@
  [
   "Меняет сразу нескольких",
   "Changing several people"
+ ],
+ [
+  "Добавляет факт нескольким",
+  "Adding a fact to several people"
  ],
  [
   "Удаляет связь",

@@ -165,8 +165,8 @@ export function AiOverview({ onGo }: { onGo: Go }) {
         <div className="grid grid-cols-3 gap-3 max-[520px]:grid-cols-1">
           <Usage icon={<MessageSquare size={14} />} label={t('Assistant')} value={provider ? (priced ? spend(provider.month) : provider.tokensToday.toLocaleString(lang)) : '…'}
             unit={!provider ? '' : priced ? t('this month') : t('tokens today')}
-            used={provider?.connected ? [provider.tokensToday, provider.dailyLimit] : null} limitLabel={provider ? `${t('today')} ${provider.tokensToday.toLocaleString(lang)} ${t('of')} ${provider.dailyLimit.toLocaleString(lang)} ${t('tokens')}` : ''}
-            sub={provider ? line(unknown(provider.month), priced && `${provider.tokensToday.toLocaleString(lang)} ${t('tokens today')}`, balance?.remaining != null && `${t('left on the key')} ${money(balance.remaining)}`, !provider.connected && t('not connected')) : ''} />
+            used={provider?.connected ? [provider.tokensToday, provider.dailyLimit] : null} limitLabel={provider ? (priced ? `${t('today')} ${provider.tokensToday.toLocaleString(lang)} ${t('of')} ${provider.dailyLimit.toLocaleString(lang)} ${t('tokens')}` : `${t('of')} ${provider.dailyLimit.toLocaleString(lang)} ${t('tokens')}`) : ''}
+            sub={provider ? line(unknown(provider.month), balance?.remaining != null && `${t('left on the key')} ${money(balance.remaining)}`, !provider.connected && t('not connected')) : ''} />
           <Usage icon={<AudioLines size={14} />} label={t('Speech recognition')} value={speech ? (speech.current ? spend(speech.usage) : money(0)) : '…'} unit={speech?.current ? t('this month') : ''}
             used={speech?.current?.limitMinutes ? [speech.usage.minutes, speech.current.limitMinutes] : null} limitLabel={speech?.current ? `${speech.usage.minutes} ${t('of')} ${speech.current.limitMinutes || '∞'} ${t('min')}` : ''}
             sub={speech?.current ? line(unknown(speech.usage)) : t('on the device, free')} />
@@ -270,16 +270,16 @@ function Usage({ icon, label, value, unit, sub, used, limitLabel }: { icon: Reac
   return (
     <div className="flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-white p-3.5">
       <div className="flex items-center gap-2 text-[13px] text-ink-soft"><span className="grid size-6 place-items-center rounded-md bg-[#f4ede0] text-[#a4502e]">{icon}</span>{label}</div>
-      <div className="flex items-baseline gap-1.5"><span className="font-serif text-[26px] leading-none tabular-nums">{value}</span>{unit && <span className="text-xs text-ink-faint">{unit}</span>}</div>
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-1"><span className="break-anywhere font-serif text-[26px] leading-none tabular-nums">{value}</span>{unit && <span className="break-anywhere text-xs text-ink-faint">{unit}</span>}</div>
       {share !== null && (
         <div>
           <div className="h-1.5 overflow-hidden rounded-full bg-[#efe8da]" role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={used![1]} aria-valuenow={used![0]}>
             <div className={cn('h-full rounded-full', share > 0.8 ? 'bg-[#c98a2b]' : 'bg-[#7a9a6e]')} style={{ width: `${Math.max(share * 100, share > 0 ? 3 : 0)}%` }} />
           </div>
-          <div className="mt-1 text-[11.5px] text-ink-faint">{limitLabel}</div>
+          <div className="break-anywhere mt-1 text-[11.5px] text-ink-faint">{limitLabel}</div>
         </div>
       )}
-      {sub && <div className="text-xs text-ink-faint">{sub}</div>}
+      {sub && <div className="break-anywhere text-xs text-ink-faint">{sub}</div>}
     </div>
   )
 }

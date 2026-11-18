@@ -1,10 +1,11 @@
 export type Role = 'owner' | 'editor' | 'reader'
 export type Sex = 'M' | 'F' | 'U'
 export type Certainty = 'documented' | 'family' | 'assumed'
-export type ParentKind = 'birth' | 'adopted' | 'step'
+export type ParentKind = 'birth' | 'adopted' | 'foster' | 'step'
 export type UnionKind = 'marriage' | 'civil'
 import { collator, langDef, langOf, type Lang } from './languages'
 export type { Lang }
+export type UnionEnd = '' | 'divorced' | 'separated' | 'widowed'
 
 export interface Person {
   id: string
@@ -111,6 +112,9 @@ export interface ParentLink {
   certainty: Certainty
 }
 
+/** How a union stands: an end date with no stated reason reads as a divorce, as GEDCOM files write it. */
+export const unionEnd = (u: { endDate: string; endKind?: UnionEnd }): UnionEnd => u.endKind || (u.endDate ? 'divorced' : '')
+
 export interface Union {
   id: string
   aId: string
@@ -118,6 +122,8 @@ export interface Union {
   kind: UnionKind
   startDate: string
   endDate: string
+  /** Optional: older data and exports have none. */
+  endKind?: UnionEnd
   place: string
   placeId?: string | null
   certainty: Certainty

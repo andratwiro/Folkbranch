@@ -20,7 +20,7 @@ const primary = cn(buttonVariants(), 'self-start')
 const NO_MIC = { insecure: 'Voice recording works only on a secure address (https). You can choose a file.', unsupported: 'This browser cannot record sound. You can choose a file.', denied: 'No access to the microphone. Allow it in the browser, or choose a file.' }
 
 /** A voice from the microphone or from a file, with the words as far as anyone has written them down. */
-export function StoryDialog({ person, story, onClose }: { person: Person; story: Story | null; onClose: () => void }) {
+export function StoryDialog({ person, story, onClose, onAsk }: { person: Person; story: Story | null; onClose: () => void; onAsk?: () => void }) {
   const { t, me, lang, canEdit, byId, notify } = useApp()
   const qc = useQueryClient()
   const rec = useRecorder()
@@ -75,6 +75,7 @@ export function StoryDialog({ person, story, onClose }: { person: Person; story:
       <DialogContent className="max-w-lg max-h-[calc(100dvh-32px)] overflow-auto">
         <DialogTitle className="font-serif text-lg font-medium">{t(story ? 'Edit the story' : 'Add a story')}</DialogTitle>
         <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
+          {!story && onAsk && <button type="button" className="self-start text-xs text-ink-soft underline underline-offset-2 hover:text-ink" onClick={onAsk}>{t('Or ask someone to tell it by a link')}</button>}
           {!story && (
             <div className="flex flex-col gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
               {!rec.recording && !preview && (

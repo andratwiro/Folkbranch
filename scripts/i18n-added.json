@@ -81,7 +81,9 @@
     "Changing settings": "Cambiando los ajustes",
     "Changing a person's access": "Cambiando el acceso de una persona",
     "Creating an invitation": "Creando una invitación",
-    "Revoking an invitation": "Anulando una invitación"
+    "Revoking an invitation": "Anulando una invitación",
+    "Moving the end of a link": "Moviendo el extremo de un vínculo",
+    "Adding a fact to several people": "Añadiendo un hecho a varias personas"
   },
   "ca": {
     "{count} years_one": "{count} any",
@@ -135,6 +137,8 @@
     "Changing settings": "Canviant la configuració",
     "Changing a person's access": "Canviant l'accés d'una persona",
     "Creating an invitation": "Creant una invitació",
-    "Revoking an invitation": "Revocant una invitació"
+    "Revoking an invitation": "Revocant una invitació",
+    "Moving the end of a link": "Movent l'extrem d'un vincle",
+    "Adding a fact to several people": "Afegint un fet a diverses persones"
   }
 }

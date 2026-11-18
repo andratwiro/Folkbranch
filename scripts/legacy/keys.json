@@ -185,9 +185,19 @@
   "Reading a card"
  ],
  [
+  "Читает карточки",
+  "Reading cards",
+  "Reading cards"
+ ],
+ [
   "Смотрит родню",
   "Looking at relatives",
   "Looking at relatives"
+ ],
+ [
+  "Считает родню",
+  "Counting relatives",
+  "Counting relatives"
  ],
  [
   "Считает родство",
@@ -325,6 +335,11 @@
   "Change a link"
  ],
  [
+  "Перенести конец связи",
+  "Move the end of a link",
+  "Move the end of a link"
+ ],
+ [
   "Создать страницу",
   "Create a page",
   "Create a page"
@@ -398,6 +413,11 @@
   "Изменить сразу нескольких",
   "Change several people",
   "Change several people"
+ ],
+ [
+  "Добавить факт нескольким",
+  "Add a fact to several people",
+  "Add a fact to several people"
  ],
  [
   "Удалить связь",
@@ -510,6 +530,11 @@
   "Changing a link"
  ],
  [
+  "Переносит конец связи",
+  "Moving the end of a link",
+  "Moving the end of a link"
+ ],
+ [
   "Создаёт страницу",
   "Creating a page",
   "Creating a page"
@@ -583,6 +608,11 @@
   "Меняет сразу нескольких",
   "Changing several people",
   "Changing several people"
+ ],
+ [
+  "Добавляет факт нескольким",
+  "Adding a fact to several people",
+  "Adding a fact to several people"
  ],
  [
   "Удаляет связь",
@@ -11313,5 +11343,165 @@
   "Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.",
   "Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it.",
   "Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it."
+ ],
+ [
+  "шагов",
+  "steps",
+  "steps"
+ ],
+ [
+  "У этого человека уже есть родитель вне этой пары. Чтобы заменить его, сначала удалите связь с ним",
+  "This person already has a parent outside this couple. To replace them, remove that link first",
+  "This person already has a parent outside this couple. To replace them, remove that link first"
+ ],
+ [
+  "Приёмный ребёнок",
+  "Adopted child",
+  "Adopted child"
+ ],
+ [
+  "опекун",
+  "foster",
+  "foster"
+ ],
+ [
+  "Ребёнок под опекой",
+  "Foster child",
+  "Foster child"
+ ],
+ [
+  "Пасынок или падчерица",
+  "Stepchild",
+  "Stepchild"
+ ],
+ [
+  "Состояние союза",
+  "Union status",
+  "Union status"
+ ],
+ [
+  "вместе",
+  "together",
+  "together"
+ ],
+ [
+  "расстались",
+  "separated",
+  "separated"
+ ],
+ [
+  "развод",
+  "divorced",
+  "divorced"
+ ],
+ [
+  "овдовели",
+  "widowed",
+  "widowed"
+ ],
+ [
+  "Перенести этот конец связи на другого человека",
+  "Drag this end onto another person to move the link",
+  "Drag this end onto another person to move the link"
+ ],
+ [
+  "Перенести к",
+  "Move to",
+  "Move to"
+ ],
+ [
+  "Отпустите на человеке, чтобы перенести конец связи сюда",
+  "Release on a person to move the end of the link there",
+  "Release on a person to move the end of the link there"
+ ],
+ [
+  "Связь перенесена",
+  "Link moved",
+  "Link moved"
+ ],
+ [
+  "Не понять, какого из двух родителей заменить: у нового родителя не указан пол",
+  "Cannot tell which of the two parents to replace: the new parent's sex is not set",
+  "Cannot tell which of the two parents to replace: the new parent's sex is not set"
+ ],
+ [
+  "Без регистрации брака: пунктирная линия",
+  "Unmarried partners: dashed line",
+  "Unmarried partners: dashed line"
+ ],
+ [
+  "Развод: две косые черты на линии",
+  "Divorce: two slashes on the line",
+  "Divorce: two slashes on the line"
+ ],
+ [
+  "Разлука без развода: одна косая черта",
+  "Separation: one slash",
+  "Separation: one slash"
+ ],
+ [
+  "Овдовели: линия не перечёркнута, смерть видна на карточке",
+  "Widowed: the line is not crossed out; the death shows on the card",
+  "Widowed: the line is not crossed out; the death shows on the card"
+ ],
+ [
+  "Попросить рассказать по ссылке",
+  "Ask to tell by a link",
+  "Ask to tell by a link"
+ ],
+ [
+  "Расскажите о близком",
+  "Tell us about someone dear",
+  "Tell us about someone dear"
+ ],
+ [
+  "Запишите рассказ",
+  "Record a story",
+  "Record a story"
+ ],
+ [
+  "Поделиться",
+  "Share",
+  "Share"
+ ],
+ [
+  "Ссылка готова. Отправьте её человеку: рассказ появится на карточке и будет ждать вашей проверки.",
+  "The link is ready. Send it to the person: their story will appear on the card and wait for your review.",
+  "The link is ready. Send it to the person: their story will appear on the card and wait for your review."
+ ],
+ [
+  "Ждём рассказ",
+  "Waiting for a story",
+  "Waiting for a story"
+ ],
+ [
+  "Ждём рассказ от",
+  "Waiting for a story from",
+  "Waiting for a story from"
+ ],
+ [
+  "прислал(а) запись",
+  "sent a recording",
+  "sent a recording"
+ ],
+ [
+  "ссылка до",
+  "link valid until",
+  "link valid until"
+ ],
+ [
+  "ждёт проверки",
+  "waiting for review",
+  "waiting for review"
+ ],
+ [
+  "Саму ссылку показать второй раз нельзя: она хранится только в виде отпечатка. Новая ссылка делается за одно нажатие, старую можно закрыть.",
+  "The link itself cannot be shown a second time: only its fingerprint is stored. A new link takes one press, and the old one can be closed.",
+  "The link itself cannot be shown a second time: only its fingerprint is stored. A new link takes one press, and the old one can be closed."
+ ],
+ [
+  "Или попросить рассказать по ссылке",
+  "Or ask someone to tell it by a link",
+  "Or ask someone to tell it by a link"
  ]
 ]

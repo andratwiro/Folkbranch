@@ -1,6 +1,6 @@
-import { and, eq, isNull, or } from 'drizzle-orm'
+import { and, eq, isNull, ne, or } from 'drizzle-orm'
 import { dataStamp, getDb, schema } from '../db'
-import type { Certainty, Claim, Fact, Graph, ParentKind, Person, Sex, Source, UnionKind } from '../types'
+import type { Certainty, Claim, Fact, Graph, ParentKind, Person, Sex, Source, UnionEnd, UnionKind } from '../types'
 import { personName, yearOf, type Place } from '../types'
 import { placeLink } from '../places'
 import { Actor, Changes, can, mutate, newId, OpError, requireRole, seesOnlyPublic, dropStoriesAboutNobody } from './core'
@@ -66,7 +66,7 @@ function maskedGraph(actor: Actor): Graph {
     ? { ...p, facts: p.facts.map((f) => (f.people ? { ...f, people: f.people.map((x) => (x.personId && unseen.has(x.personId) ? { ...x, personId: null, name: '' } : x)) } : f)) }
     : p)
   // A marriage says when and where the hidden person was: it stays as a line on the chart, without the dates or place.
-  const unions = graph.unions.map((u) => (unseen.has(u.aId) || unseen.has(u.bId) ? { ...u, startDate: '', endDate: '', place: '', placeId: null } : u))
+  const unions = graph.unions.map((u) => (unseen.has(u.aId) || unseen.has(u.bId) ? { ...u, startDate: '', endDate: '', endKind: '' as const, place: '', placeId: null } : u))
   return { ...graph, unions, persons: graph.persons.map((p) => (unseen.has(p.id) ? hidden.get(p.id) ?? maskPerson(p) : scrub(p))) }
 }
 
@@ -239,17 +239,22 @@ export function addParent(c: Changes, parentId: string, childId: string, kind: P
   c.insert('parentChild', { id: newId(), parentId, childId, kind, certainty })
 }
 
-export function addUnion(c: Changes, aId: string, bId: string, kind: UnionKind = 'marriage', startDate = '', endDate = '', place = '', certainty?: Certainty) {
+/** A marriage never joins siblings, or a parent and their child: the chart would draw a couple dot between them. */
+function unionBlocked(aId: string, bId: string) {
+  const db = getDb()
+  const parentsOf = (id: string) => db.select({ p: schema.parentChild.parentId }).from(schema.parentChild).where(eq(schema.parentChild.childId, id)).all().map((r) => r.p)
+  const pa = parentsOf(aId), pb = parentsOf(bId)
+  return pa.some((p) => pb.includes(p)) || pa.includes(bId) || pb.includes(aId)
+}
+
+export function addUnion(c: Changes, aId: string, bId: string, kind: UnionKind = 'marriage', startDate = '', endDate = '', place = '', certainty?: Certainty, endKind: UnionEnd = '') {
   // One person is never a couple with themself, whatever the file says.
   if (aId === bId) return
   const db = getDb()
   const s = schema.unions
-  // A marriage never joins siblings, or a parent and their child: the chart would draw a couple dot between them.
-  const parentsOf = (id: string) => db.select({ p: schema.parentChild.parentId }).from(schema.parentChild).where(eq(schema.parentChild.childId, id)).all().map((r) => r.p)
-  const pa = parentsOf(aId), pb = parentsOf(bId)
-  if (pa.some((p) => pb.includes(p)) || pa.includes(bId) || pb.includes(aId)) return
+  if (unionBlocked(aId, bId)) return
   const dup = db.select().from(s).where(or(and(eq(s.aId, aId), eq(s.bId, bId)), and(eq(s.aId, bId), eq(s.bId, aId)))).get()
-  if (!dup) c.insert('unions', { id: newId(), aId, bId, kind, startDate, endDate, place, placeId: place ? placeLink(place, allPlaces()) : null, ...(certainty ? { certainty } : {}) })
+  if (!dup) c.insert('unions', { id: newId(), aId, bId, kind, startDate, endDate, ...(endKind ? { endKind } : {}), place, placeId: place ? placeLink(place, allPlaces()) : null, ...(certainty ? { certainty } : {}) })
 }
 
 export const FIELD: Record<string, string> = {
@@ -310,6 +315,48 @@ export function updateRelation(actor: Actor, type: 'parent' | 'union', id: strin
     linked.placeId = placeLink(patch.place ?? u.place, allPlaces(), 'placeId' in patch ? patch.placeId : u.placeId)
   }
   mutate(actor, { summary: `${say('Link_relation')}: ${Object.values(patch).filter(Boolean).join(', ')}`, personIds: ids }, (c) => c.update(table, id, linked))
+}
+
+/**
+ * Moves one end of a link to another person, as one change: `end` is parent or child of a parent link, or a or b of a union.
+ * `also` names more links of the same kind that move with it (the links of one child to both parents). The checks are
+ * those of adding the same link new, so nothing can be made that drawing it could not.
+ */
+export function moveRelation(actor: Actor, type: 'parent' | 'union', id: string, end: 'parent' | 'child' | 'a' | 'b', to: string, also: string[] = []) {
+  requireRole(actor, 'editor')
+  const db = getDb()
+  getPersonRow(to)
+  const moves = [id, ...also].map((linkId) => {
+    const row = type === 'parent' ? db.select().from(schema.parentChild).where(eq(schema.parentChild.id, linkId)).get() : db.select().from(schema.unions).where(eq(schema.unions.id, linkId)).get()
+    if (!row) throw new OpError(404, 'not found')
+    const ends: Record<string, string> = 'parentId' in row ? { parent: row.parentId, child: row.childId } : { a: row.aId, b: row.bId }
+    if (!(end in ends)) throw new OpError(400, `${end} is not an end of a ${type} link`)
+    const was = ends[end]
+    if (was === to) throw new OpError(400, 'the link already ends there')
+    let patch: Record<string, string>
+    if ('parentId' in row) {
+      const parentId = end === 'parent' ? to : row.parentId, childId = end === 'child' ? to : row.childId
+      if (parentId === childId) throw new OpError(400, 'same person')
+      if (db.select().from(schema.parentChild).where(and(eq(schema.parentChild.parentId, parentId), eq(schema.parentChild.childId, childId))).get()) throw new OpError(400, 'they are already linked')
+      // The link itself is leaving, so the check must not count it.
+      const up = db.$client.prepare(`
+        with recursive up(id) as (select ? union select p.parent_id from parent_child p join up on p.child_id = up.id where p.id != ?)
+        select 1 from up where id = ? limit 1`).get(parentId, linkId, childId)
+      if (up) throw new OpError(400, 'a person cannot be their own ancestor')
+      patch = { parentId, childId }
+    } else {
+      const aId = end === 'a' ? to : row.aId, bId = end === 'b' ? to : row.bId
+      if (aId === bId) throw new OpError(400, 'same person')
+      if (unionBlocked(aId, bId)) throw new OpError(400, 'a union cannot join siblings, or a parent and their child')
+      if (db.select().from(schema.unions).where(and(ne(schema.unions.id, linkId), or(and(eq(schema.unions.aId, aId), eq(schema.unions.bId, bId)), and(eq(schema.unions.aId, bId), eq(schema.unions.bId, aId))))).get()) throw new OpError(400, 'they are already a couple')
+      patch = { aId, bId }
+    }
+    return { linkId, patch, was, people: Object.values(ends).concat(Object.values(patch)) }
+  })
+  const names = [moves[0].was, to].map((i) => label(getPersonRow(i))).join(' → ')
+  mutate(actor, { summary: `${say('Link_relation')}: ${names}`, personIds: [...new Set(moves.flatMap((m) => m.people))] }, (c) => {
+    for (const m of moves) c.update(type === 'parent' ? 'parentChild' : 'unions', m.linkId, m.patch)
+  })
 }
 
 export function removeRelation(actor: Actor, type: 'parent' | 'union', id: string) {
