@@ -37,7 +37,7 @@ describe('1. the whole graph is visible when the owner allows it', () => {
     const ids = all().map((p) => p.id).sort()
     expect((await run('search_people', { limit: 500 })).map((p: any) => p.id).sort()).toEqual(ids)
     expect((await run('query_people', { limit: 500 })).people.map((p: any) => p.id).sort()).toEqual(ids)
-    const text = await run('export_text', {})
+    const text = await run('export_text', { hideLiving: false })
     for (const p of all()) expect(text, p.givenName).toContain(p.id)
     expect((await run('get_overview', {})).people).toMatchObject({ total: ids.length })
   })
