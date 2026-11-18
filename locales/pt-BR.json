@@ -1544,7 +1544,6 @@
   "This month's face recognition limit set by the owner is used up": "Acabou o limite de reconhecimento facial deste mês definido pelo dono",
   "This month's transcription limit set by the owner has been used up": "Acabou o limite de transcrição deste mês definido pelo dono",
   "This page was changed in another window or by another person. Which text should stay?": "Esta página foi alterada em outra janela ou por outra pessoa. Qual texto deve ficar?",
-  "This person already has a parent outside this couple. To replace them, remove that link first": "Esta pessoa já tem um pai ou uma mãe fora deste casal. Para substituí-lo, remova antes essa relação",
   "This person already has two parents": "Esta pessoa já tem dois pais",
   "This person has just been deleted.": "Acabaram de excluir esta pessoa.",
   "This person has no sources yet": "Esta pessoa ainda não tem fontes",
@@ -2073,5 +2072,14 @@
   "{count} people_other": "{count} pessoas",
   "{count} years_one": "{count} ano",
   "{count} years_many": "{count} anos",
-  "{count} years_other": "{count} anos"
+  "{count} years_other": "{count} anos",
+  "Now a child of {a} and {b}": "Agora é filho(a) de {a} e {b}",
+  "Now a child of {a} only": "Agora é filho(a) somente de {a}",
+  "This person is already the only parent": "Esta pessoa já é o único genitor",
+  "This person is already a child of both": "Esta pessoa já é filha de ambos",
+  "Make a child of both": "Tornar filho(a) de ambos",
+  "Make a child of {name} only": "Tornar filho(a) somente de {name}",
+  "Replace the parent of the same sex": "Substituir o genitor do mesmo sexo",
+  "Set a child's parents": "Alterar os genitores de um filho",
+  "Setting a child's parents": "Alterando os genitores de um filho"
 }

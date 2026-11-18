@@ -535,6 +535,16 @@
   "Moving the end of a link"
  ],
  [
+  "Сменить родителей ребёнка",
+  "Set a child's parents",
+  "Set a child's parents"
+ ],
+ [
+  "Меняет родителей ребёнка",
+  "Setting a child's parents",
+  "Setting a child's parents"
+ ],
+ [
   "Создаёт страницу",
   "Creating a page",
   "Creating a page"

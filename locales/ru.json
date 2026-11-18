@@ -2003,7 +2003,6 @@
   "point from GeoNames": "точка из GeoNames",
   "Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it.": "Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.",
   "steps": "шагов",
-  "This person already has a parent outside this couple. To replace them, remove that link first": "У этого человека уже есть родитель вне этой пары. Чтобы заменить его, сначала удалите связь с ним",
   "Adopted child": "Приёмный ребёнок",
   "foster": "опекун",
   "Foster child": "Ребёнок под опекой",
@@ -2078,5 +2077,14 @@
   "Upload files": "Загрузить файлы",
   "Loading": "Загрузка",
   "Remove relation (Delete)": "Удалить связь (Delete)",
-  "Telegram: linked": "Telegram: привязан"
+  "Telegram: linked": "Telegram: привязан",
+  "Now a child of {a} and {b}": "Теперь ребёнок {a} и {b}",
+  "Now a child of {a} only": "Теперь ребёнок только {a}",
+  "This person is already the only parent": "Этот человек уже единственный родитель",
+  "This person is already a child of both": "Этот человек уже ребёнок обоих",
+  "Make a child of both": "Сделать ребёнком обоих",
+  "Make a child of {name} only": "Сделать ребёнком только {name}",
+  "Replace the parent of the same sex": "Заменить родителя того же пола",
+  "Set a child's parents": "Сменить родителей ребёнка",
+  "Setting a child's parents": "Меняет родителей ребёнка"
 }

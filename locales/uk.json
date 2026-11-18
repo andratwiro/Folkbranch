@@ -1544,7 +1544,6 @@
   "This month's face recognition limit set by the owner is used up": "Місячний ліміт розпізнавання облич, встановлений власником, вичерпано",
   "This month's transcription limit set by the owner has been used up": "Місячний ліміт розшифрування, встановлений власником, вичерпано",
   "This page was changed in another window or by another person. Which text should stay?": "Цю сторінку змінили в іншому вікні або інша людина. Який текст залишити?",
-  "This person already has a parent outside this couple. To replace them, remove that link first": "У цієї людини вже є батько або мати поза цією парою. Щоб замінити їх, спочатку видали цей зв'язок",
   "This person already has two parents": "У цієї людини вже є двоє батьків",
   "This person has just been deleted.": "Цю людину щойно видалено.",
   "This person has no sources yet": "У цієї людини ще немає джерел",
@@ -2078,5 +2077,14 @@
   "{count} years_one": "{count} рік",
   "{count} years_few": "{count} роки",
   "{count} years_many": "{count} років",
-  "{count} years_other": "{count} року"
+  "{count} years_other": "{count} року",
+  "Now a child of {a} and {b}": "Тепер дитина {a} і {b}",
+  "Now a child of {a} only": "Тепер дитина лише {a}",
+  "This person is already the only parent": "Ця людина вже єдиний з батьків",
+  "This person is already a child of both": "Ця людина вже дитина обох",
+  "Make a child of both": "Зробити дитиною обох",
+  "Make a child of {name} only": "Зробити дитиною лише {name}",
+  "Replace the parent of the same sex": "Замінити одного з батьків тієї ж статі",
+  "Set a child's parents": "Змінити батьків дитини",
+  "Setting a child's parents": "Змінює батьків дитини"
 }
