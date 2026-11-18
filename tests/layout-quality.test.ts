@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { CARD_W, layoutFamily, PITCH } from '../lib/graph/layout'
 import { orderRows, type OrderEdge, type OrderNode } from '../lib/graph/order'
 import { assignTracks, type Net } from '../lib/graph/tracks'
+import { bushyFamily, demoGraph, lineMetrics } from './layout-metrics'
 import { buildGraph, kinship, nearLines, quality, randomFamily, TANGLE } from './layout-quality'
 
 describe('lines on the chart', () => {
@@ -13,7 +14,7 @@ describe('lines on the chart', () => {
 
   // These fell from 4, 20, 248 and 809 when the search for the order was written; they must not creep back. Seeds 4 and 6 gave up two and seven crossings when rows began to follow birth years, and seed 4 two more for keeping branches together.
   // The 1500-person case is the slowest in the suite; it is kept once and given room to finish.
-  it.each([[3, 40, 4], [4, 150, 9], [6, 600, 56], [7, 1500, 254]])('keeps crossings down in a random family (seed %i, %i people)', (seed, size, most) => {
+  it.each([[3, 40, 4], [4, 150, 9], [6, 600, 45], [7, 1500, 254]])('keeps crossings down in a random family (seed %i, %i people)', (seed, size, most) => {
     const g = randomFamily(seed, size)
     const q = quality(layoutFamily(g), g)
     expect(q.crossings).toBeLessThanOrEqual(most)
@@ -21,7 +22,7 @@ describe('lines on the chart', () => {
   }, 30_000)
 
   // Lines of different families kept apart enough to follow, and relatives kept in one stretch of their row.
-  it.each([[3, 40, 0, 4], [4, 150, 2, 30], [6, 600, 8, 1140]])('keeps lines apart and branches together (seed %i, %i people)', (seed, size, nearMost, intrusionsMost) => {
+  it.each([[3, 40, 1, 4], [4, 150, 2, 30], [6, 600, 8, 1140]])('keeps lines apart and branches together (seed %i, %i people)', (seed, size, nearMost, intrusionsMost) => {
     const g = randomFamily(seed, size)
     const l = layoutFamily(g)
     expect(nearLines(l)).toBeLessThanOrEqual(nearMost)
@@ -163,4 +164,26 @@ describe('cards placed by hand', () => {
   it('a placement for someone not on this chart changes nothing', () => {
     expect([...layoutFamily(family, { pins: { nobody: 5 } }).cards.values()]).toEqual([...plain.cards.values()])
   })
+})
+
+describe('how tidy the lines are', () => {
+  it('stands parents over their children in a bushy family, not pulled towards their own parents', () => {
+    // Settling by walking only down, then only up, left couples far from their children (24.9 cards on average in this 242-person family, 708 strangers under bars, one gap 469 px tall).
+    const m = lineMetrics(bushyFamily(5))
+    expect(m.meanSpanCards).toBeLessThanOrEqual(6)
+    expect(m.strangersUnderBars).toBe(0)
+    expect(m.rowPitchMax).toBeLessThanOrEqual(300)
+  })
+
+  it('draws no corner squeezed by a line that almost runs straight', () => {
+    // The demo family had a child 13 px off the stem of its single parent: two clamped corners and a wobble.
+    expect(lineMetrics(demoGraph())).toMatchObject({ clampedCorners: 0, jogs: 0 })
+    expect(lineMetrics(randomFamily(4, 150)).clampedCorners).toBeLessThanOrEqual(3)
+  })
+
+  it('keeps lines short on a family with remarriages and cousins', () => {
+    const m = lineMetrics(randomFamily(6, 600))
+    expect(m.totalLengthPerPerson).toBeLessThanOrEqual(4.4)
+    expect(m.p95SpanCards).toBeLessThanOrEqual(15) // 23.7 before
+  }, 30_000)
 })

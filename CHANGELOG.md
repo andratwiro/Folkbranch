@@ -12,6 +12,9 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 - **Unions as in a genogram.** Unmarried partners have a dashed line (a marriage a solid one). A divorce is two slashes across the line, a separation one slash; a union ended by a death is not crossed out, since the death shows on the card. The state is set from the line's bar or the couple's card (**together, separated, divorced, widowed**); an older end date with no reason reads as a divorce. GEDCOM writes a divorce as `DIV` and a separation as an event of type Separation, and reads both.
 - **Foster children** are a kind of link next to birth, adopted and step. Adopted, foster and step each have their own line style, and the legend, in all four languages, explains every mark. GEDCOM and Gramps files carry foster children both ways (`PEDI foster`).
 
+### Changed
+- **Tidier lines on the family chart.** A couple now stands between its parents and its children, not under its parents only, so a child is no longer drawn far across the chart from its parents: on a generated 2,000-person family the average line is a fifteenth as far across, the gaps between rows stay level (one was 1,525 px tall) and the crossings fall from 252 to 0. A child a few pixels off the stem of its parents is moved into line, so the stem no longer takes a small jog with squeezed corners.
+
 ## 1.7.0 - 2026-11-17
 
 The family on a map, year by year. It began as [pull request #14](https://github.com/danarkhipov/Folkbranch/pull/14) by [@andratwiro](https://github.com/andratwiro): thank you. On top of it this release tells two villages of one name apart, suggests points for places that have none, imports Gramps files with their places, and guards the archive against several easy mistakes.

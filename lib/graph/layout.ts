@@ -18,6 +18,8 @@ const PASS_W = 16
 const LANE = 16
 /** A card placed by hand stays put: everyone else in its row gives way. */
 const PIN_WEIGHT = 1e6
+/** How often the rows are swept up and down: a large family needs many sweeps before its far rows stop moving. */
+const SETTLE_ROUNDS = 30
 /** Between a bar and the rows above and below it. */
 const GAP_EDGE = 26
 const CORNER = 8
@@ -348,6 +350,44 @@ function untidiness(g: Graph, rows: { slots: string[] }[][], edges: OrderEdge[])
   return cross * 5 + strangers
 }
 
+/** A line whose two ends are this much out of line, or less, takes a jog that is smaller than its own corners. */
+const JOG = 2 * CORNER
+const JOG_PENALTY = 1000
+
+/**
+ * Where a block can stand to have the fewest lines that almost, but not quite, run straight. Such a line
+ * leaves its parents, takes a step of a few pixels and goes on: with corners as wide as the step is long it
+ * is a wobble, not a corner. A block moves into the free space beside it so one end of each such line meets
+ * the other, as long as that does not leave a worse wobble on its other lines.
+ */
+function straighten(rows: Block[][], entering: Map<string, OrderEdge[]>, leaving: Map<string, OrderEdge[]>, blockFor: Map<string, Block>, offsetOf: Map<string, number>, pinned: Map<Block, number>, gap: number) {
+  const xOf = (slot: string) => blockFor.get(slot)!.x + offsetOf.get(slot)!
+  const off = (e: OrderEdge) => xOf(e.down) - mean(e.up.map(xOf))
+  const price = (o: number) => (Math.abs(o) < 0.5 ? 0 : Math.abs(o) < JOG ? JOG_PENALTY : Math.abs(o) / 1000)
+  for (let round = 0; round < 3; round++) {
+    let moved = false
+    for (const row of rows) row.forEach((b, i) => {
+      if (pinned.has(b)) return
+      const inn = entering.get(b.key) ?? [], out = leaving.get(b.key) ?? []
+      const cost = () => inn.reduce((a, e) => a + price(off(e)), 0) + out.reduce((a, e) => a + price(off(e)), 0)
+      const now = cost()
+      if (now < JOG_PENALTY) return
+      const room = [i ? b.x - b.width / 2 - (row[i - 1].x + row[i - 1].width / 2) - gap : Infinity, i + 1 < row.length ? row[i + 1].x - row[i + 1].width / 2 - (b.x + b.width / 2) - gap : Infinity]
+      // The shifts that would straighten one of its lines.
+      const tries = [...inn.map((e) => -off(e)), ...out.map((e) => off(e) * (e.up.length / Math.max(1, e.up.filter((s) => blockFor.get(s) === b).length)))].filter((s) => Math.abs(s) >= 0.5 && Math.abs(s) < JOG && s >= -room[0] && s <= room[1])
+      let best = 0, bestCost = now
+      for (const s of tries) {
+        b.x += s
+        const c = cost()
+        b.x -= s
+        if (c < bestCost) { best = s; bestCost = c }
+      }
+      if (best) { b.x += best; moved = true }
+    })
+    if (!moved) break
+  }
+}
+
 /** `rootsBelow` draws the tree as it grows: elders at the bottom, the youngest at the top. */
 export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = false }: { rootsBelow?: boolean; /** Where people were placed by hand: person id to x. */ pins?: Record<string, number>; /** Tighter, for paper. */ print?: boolean } = {}): Layout {
   if (!g.persons.length) return { cards: new Map(), unions: [], edges: [], bounds: { x: 0, y: 0, w: 0, h: 0 } }
@@ -389,23 +429,21 @@ export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = 
   /** Where each block must stand because someone in it was placed by hand. */
   const pinned = new Map<Block, number>()
 
-  // Alternate up and down so parents settle above the middle of their children.
-  const settle = (row: Block[], up: boolean) => {
+  // Alternate up and down until the rows stop moving.
+  const settle = (row: Block[]) => {
     const want = row.map((b) => {
       const targets: number[] = []
-      if (up) {
-        for (const e of leaving.get(b.key) ?? []) for (const s of e.up) if (blockFor.get(s) === b) targets.push(xOf(e.down) - offsetOf.get(s)!)
-      } else {
-        for (const e of entering.get(b.key) ?? []) targets.push(edgeTop(e) - offsetOf.get(e.down)!)
-      }
+      // Both sides count at every step, so a couple stands between its parents and its children, nearer the side with more lines.
+      for (const e of leaving.get(b.key) ?? []) for (const s of e.up) if (blockFor.get(s) === b) targets.push(xOf(e.down) - offsetOf.get(s)!)
+      for (const e of entering.get(b.key) ?? []) targets.push(edgeTop(e) - offsetOf.get(e.down)!)
       return pinned.get(b) ?? (targets.length ? mean(targets) : b.x)
     })
     placeInOrder(row, want, gap, (b) => (pinned.has(b) ? PIN_WEIGHT : 1))
   }
-  for (const row of rows) settle(row, false)
-  for (let i = 0; i < 6; i++) {
-    for (let r = rows.length - 2; r >= 0; r--) settle(rows[r], true)
-    for (let r = 1; r < rows.length; r++) settle(rows[r], false)
+  for (const row of rows) settle(row)
+  for (let i = 0; i < SETTLE_ROUNDS; i++) {
+    for (let r = rows.length - 2; r >= 0; r--) settle(rows[r])
+    for (let r = 1; r < rows.length; r++) settle(rows[r])
   }
   // First where everyone would stand by themselves, so that a card dragged past its neighbours can be seen to be
   // on their other side. Then everyone else adjusts around it.
@@ -415,12 +453,14 @@ export function layoutFamily(g: Graph, { rootsBelow = false, pins = {}, print = 
   }
   if (pinned.size) {
     for (const row of rows) if (row.some((b) => pinned.has(b))) row.sort((p, q) => (pinned.get(p) ?? p.x) - (pinned.get(q) ?? q.x))
-    for (const row of rows) settle(row, false)
+    for (const row of rows) settle(row)
     for (let i = 0; i < 3; i++) {
-      for (let r = rows.length - 2; r >= 0; r--) settle(rows[r], true)
-      for (let r = 1; r < rows.length; r++) settle(rows[r], false)
+      for (let r = rows.length - 2; r >= 0; r--) settle(rows[r])
+      for (let r = 1; r < rows.length; r++) settle(rows[r])
     }
   }
+
+  straighten(rows, entering, leaving, blockFor, offsetOf, pinned, gap)
 
   /** The rows as they stand on the page, top first. */
   const lastRank = rows.length - 1
