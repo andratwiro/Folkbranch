@@ -7,7 +7,7 @@ import { customAlphabet } from 'nanoid'
 import { type Actor, OpError, requireRole } from '../ops/core'
 import { getSetting, setSetting, tell } from '../ops/settings'
 import { vaultKey, writeKey } from './keys'
-import { checkBaseUrl, keyOptional, PROBLEM_TEXT, safeFetch } from './safe-url'
+import { checkBaseUrl, keyOptional, safeFetch, type UrlProblem } from './safe-url'
 
 export interface CustomProvider { id: string; name: string; baseUrl: string; model: string; note: string }
 
@@ -65,9 +65,19 @@ const fields = z.object({
   note: z.string().trim().max(300).optional(),
 })
 
+/** An address's problem in words that say what to change. */
+const PROBLEM_TEXT: Record<UrlProblem, () => string> = {
+  form: () => tell('That is not a web address. It looks like https://host/v1'),
+  scheme: () => tell('The address must start with https://'),
+  credentials: () => tell('Leave the name and password out of the address: the key has its own field'),
+  insecure: () => tell('The address must start with https://. Only a server on this computer or your home network may use http://'),
+  forbidden: () => tell('This address cannot be used: it leads to the machine’s own services'),
+  self: () => tell('This address is this app itself'),
+}
+
 const addressOrThrow = (raw: string) => {
   const c = checkBaseUrl(raw)
-  if (!c.ok) throw new OpError(400, tell(PROBLEM_TEXT[c.problem]))
+  if (!c.ok) throw new OpError(400, PROBLEM_TEXT[c.problem]())
   return c.url
 }
 
@@ -148,14 +158,14 @@ export async function customModels(actor: Actor, raw: unknown): Promise<{ models
 
 export type ProbeCode = 'ok' | 'wrong-key' | 'wrong-address' | 'model-missing' | 'no-answer' | 'no-tools' | 'refused'
 
-const TEXT: Record<ProbeCode, string> = {
-  ok: 'The provider answered, and it can call tools. It is ready to use',
-  'wrong-key': 'The provider did not accept the key. Check that it was copied whole',
-  'wrong-address': 'Nothing answers at this address. Check the address, which usually ends in /v1',
-  'model-missing': 'The provider does not know this model. Pick one from the list or check the name',
-  'no-answer': 'The provider did not answer in time. Check the address and that the server is running',
-  'no-tools': 'The provider answers, but it does not accept tools, which the assistant needs. Pick another model or provider',
-  refused: 'The provider refused the request. Check the model name',
+const TEXT: Record<ProbeCode, () => string> = {
+  ok: () => tell('The provider answered, and it can call tools. It is ready to use'),
+  'wrong-key': () => tell('The provider did not accept the key. Check that it was copied whole'),
+  'wrong-address': () => tell('Nothing answers at this address. Check the address, which usually ends in /v1'),
+  'model-missing': () => tell('The provider does not know this model. Pick one from the list or check the name'),
+  'no-answer': () => tell('The provider did not answer in time. Check the address and that the server is running'),
+  'no-tools': () => tell('The provider answers, but it does not accept tools, which the assistant needs. Pick another model or provider'),
+  refused: () => tell('The provider refused the request. Check the model name'),
 }
 
 /** One small request, and what it says in plain words. The key is only ever in the request's header. */
@@ -170,7 +180,7 @@ export async function testCustom(actor: Actor, raw: unknown): Promise<{ ok: bool
     })
     return { status: res.status, text: res.ok ? '' : await res.text().catch(() => '') }
   }
-  const done = (code: ProbeCode) => ({ ok: code === 'ok', code, message: tell(TEXT[code]) })
+  const done = (code: ProbeCode) => ({ ok: code === 'ok', code, message: TEXT[code]() })
   try {
     const first = await ask(true)
     if (first.status >= 200 && first.status < 300) return done('ok')

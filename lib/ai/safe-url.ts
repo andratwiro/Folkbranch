@@ -110,16 +110,6 @@ export function checkBaseUrl(raw: string): Checked {
 /** Where a key may be left out: a server on this machine or a home network. */
 export const keyOptional = (url: string) => { try { return looksLocal(new URL(url).hostname) } catch { return false } }
 
-/** An address's problem in words that say what to change. */
-export const PROBLEM_TEXT: Record<UrlProblem, string> = {
-  form: 'That is not a web address. It looks like https://host/v1',
-  scheme: 'The address must start with https://',
-  credentials: 'Leave the name and password out of the address: the key has its own field',
-  insecure: 'The address must start with https://. Only a server on this computer or your home network may use http://',
-  forbidden: 'This address cannot be used: it leads to the machine’s own services',
-  self: 'This address is this app itself',
-}
-
 class Refused extends Error {}
 
 /** The address a name leads to is checked here, at the moment of connecting, so a name cannot change after the check. */

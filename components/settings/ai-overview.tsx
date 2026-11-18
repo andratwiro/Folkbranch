@@ -5,6 +5,7 @@ import { AudioLines, ChevronRight, Cpu, ExternalLink, KeyRound, MessageSquare, P
 import { Select } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { DataTerms } from './data-terms'
+import { CustomProviderForm, type OwnProvider } from './custom-provider'
 import { formatMoney } from '@/lib/ai/format'
 import { api, useApp } from '@/lib/client'
 import type { AiSettingsFile } from '@/lib/ops/ai-config'
@@ -14,10 +15,10 @@ import { facePreset } from '@/lib/faces/presets'
 import { cn } from '@/lib/utils'
 
 interface Applied { applied: string[]; skipped: { what: string; why: string }[]; onDevice: Partial<Record<Pack, string>> | null }
-interface Provider { connected: boolean; provider: string | null; label: string | null; model: string | null; auto: boolean; source: 'server' | 'app' | null; tokensToday: number; dailyLimit: number; month: Spend & { input: number; cached: number; output: number } }
+interface Provider { custom?: boolean; connected: boolean; provider: string | null; label: string | null; model: string | null; auto: boolean; source: 'server' | 'app' | null; tokensToday: number; dailyLimit: number; month: Spend & { input: number; cached: number; output: number } }
 interface Tally { requests: number; tokens: number; seconds: number; dollars: number; unpriced: number }
 interface Report { totals: Record<'assistant' | 'speech' | 'faces' | 'mcp', Tally>; people: ({ id: string; name: string | null } & Record<'assistant' | 'speech' | 'faces', Tally>)[]; tokens: ({ id: string; name: string | null } & Tally)[] }
-interface Choice { provider: string; label: string; model: string; modelLabel: string; current: boolean; autoPossible: boolean }
+interface Choice { provider: string; label: string; model: string; modelLabel: string; current: boolean; autoPossible: boolean; custom?: boolean }
 interface KeyRow { service: string; label: string; keyEnding: string; can: { assistant: boolean; speech: boolean }; usedBy: { assistant: boolean; speech: boolean } }
 interface Keys { keys: KeyRow[]; available: { service: string; label: string; keysUrl: string | null; can: { assistant: boolean; speech: boolean }; needsFolder: boolean }[] }
 /** A month's spend as the providers stated it; unpriced counts requests whose provider stated no cost. */
@@ -68,8 +69,9 @@ export function AiOverview({ onGo }: { onGo: Go }) {
   const { data: tokens = [] } = useQuery({ queryKey: ['tokens'], queryFn: () => api<Token[]>('tokens') })
   const { data: keys } = useQuery({ queryKey: ['ai-keys'], queryFn: () => api<Keys>('ai/keys') })
   const { data: report } = useQuery({ queryKey: ['ai-usage'], queryFn: () => api<Report>('ai/usage') })
+  const { data: own = [] } = useQuery({ queryKey: ['ai-custom'], queryFn: () => api<OwnProvider[]>('ai/custom') })
   const { data: choices = [] } = useQuery({ queryKey: ['assistant-choices'], queryFn: () => api<Choice[]>('assistant/choices') })
-  const refresh = () => Promise.all(['ai-keys', 'assistant-choices', 'provider', 'stt', 'settings', 'ai-usage'].map((k) => qc.invalidateQueries({ queryKey: [k] })))
+  const refresh = () => Promise.all(['ai-keys', 'ai-custom', 'assistant-choices', 'provider', 'stt', 'settings', 'ai-usage'].map((k) => qc.invalidateQueries({ queryKey: [k] })))
   /** A change from a picker: the error, if any, said where it happened. */
   const apply = async (call: () => Promise<unknown>) => {
     try { await call(); await refresh() } catch (e) { notify((e as Error).message) }
@@ -97,6 +99,8 @@ export function AiOverview({ onGo }: { onGo: Go }) {
 
   // What each function can be switched to: a service from the list of keys and one of its models.
   const [adding, setAdding] = useState<string | null>(null)
+  // The form for a provider of your own: closed, a new one, or one being changed.
+  const [form, setForm] = useState<'new' | OwnProvider | null>(null)
   const withoutKey = (what: 'assistant' | 'speech') => (keys?.available ?? []).filter((a) => a.can[what] && !keys!.keys.some((k) => k.service === a.service)).map((a) => ({ value: `add|${a.service}`, label: `${t(a.label)} · ${t('add a key')}` }))
   const speechOptions = [{ value: 'device', label: t('On this device, free') }, ...withoutKey('speech'), ...(keys?.keys ?? []).filter((k) => k.can.speech).flatMap((k) => [{ value: `${k.service}|auto`, label: `${t(k.label)} · ${t('newest tested')}` }, ...(sttPreset(k.service as never)?.models ?? []).map((m) => ({ value: `${k.service}|${m.id}`, label: `${t(k.label)} · ${t(m.label)}` }))])]
   const speechValue = speech?.current ? `${speech.current.provider}|${speech.current.model}` : 'device'
@@ -113,7 +117,7 @@ export function AiOverview({ onGo }: { onGo: Go }) {
   }
   const assistantOptions = [...new Set(choices.map((c) => c.provider))].flatMap((p) => {
     const of = choices.filter((c) => c.provider === p)
-    return [...(of[0].autoPossible ? [{ value: `${p}|auto`, label: `${t(of[0].label)} · ${t('newest tested')}` }] : []), ...of.map((c) => ({ value: `${c.provider}|${c.model}`, label: `${t(c.label)} · ${c.modelLabel}` }))]
+    return [...(of[0].autoPossible ? [{ value: `${p}|auto`, label: `${t(of[0].label)} · ${t('newest tested')}` }] : []), ...of.map((c) => ({ value: `${c.provider}|${c.model}`, label: c.custom ? `${c.label} · ${c.modelLabel} · ${t('your provider')}` : `${t(c.label)} · ${c.modelLabel}` }))]
   }).concat(withoutKey('assistant'))
   const pickSpeech = (v: string) => {
     if (v.startsWith('add|')) return setAdding(v.slice(4))
@@ -132,6 +136,14 @@ export function AiOverview({ onGo }: { onGo: Go }) {
     if (!await confirm(`${t('Remove the key')} ${t(k.label)}?`, t('Remove the key'), note)) return
     await apply(() => api(`ai/keys/${k.service}`, { method: 'DELETE' }))
   }
+
+  const switchToOwn = (p: OwnProvider) => void apply(() => api('assistant/provider', { method: 'PATCH', json: { provider: p.id } }))
+  const removeOwn = async (p: OwnProvider) => {
+    const note = `${t('The key will be removed from the archive: to bring it back, paste it again.')}${p.active ? ` ${t('Will be switched off')}: ${t('assistant')}.` : ''}`
+    if (!await confirm(`${t('Remove the provider')} ${p.name}?`, t('Remove the provider'), note)) return
+    await apply(() => api(`ai/custom/${p.id}`, { method: 'DELETE' }))
+  }
+  const hostOf = (u: string) => { try { return new URL(u).host } catch { return u } }
 
   const switchAssistant = async (on: boolean) => {
     await api('settings', { method: 'PATCH', json: { assistantEnabled: on ? '1' : '0' } })
@@ -228,6 +240,20 @@ export function AiOverview({ onGo }: { onGo: Go }) {
           ))}
           {provider?.source === 'server' && <Row icon={<KeyRound size={15} />} title={provider.label} meta={t('key in the server settings')} right={<Chip>{t('assistant')}</Chip>} />}
           {faces?.current && <Row icon={<ScanFace size={15} />} title={facesName} meta={t('its own key, for faces')} onOpen={() => onGo('faces')} right={<Chip>{t('faces')}</Chip>} control={<DataTerms service={faces.current.provider} />} />}
+          {own.map((p) => (
+            <Row key={p.id} icon={<KeyRound size={15} />} title={p.name}
+              meta={`${hostOf(p.baseUrl)} · ${p.model}`}
+              control={<span className="text-xs text-ink-faint break-anywhere">{p.keyNeeded ? t('Needs its key again: edit the provider and paste it') : p.hasKey ? t('Key saved for this address') : t('No key: a server on your own network')}</span>}
+              right={<>
+                <Chip>{t('your provider')}</Chip>
+                {p.active ? <Chip>{t('assistant')}</Chip> : <button type="button" className="flex-none text-xs font-medium text-[#a4502e] disabled:opacity-40" disabled={p.keyNeeded} onClick={() => switchToOwn(p)}>{t('Use')}</button>}
+                <button type="button" className="flex-none text-xs font-medium text-[#a4502e]" onClick={() => setForm(p)} aria-label={`${t('Edit')} ${p.name}`}>{t('Edit')}</button>
+                <button type="button" className="grid size-7 flex-none place-items-center rounded-md text-ink-faint hover:bg-black/5 hover:text-destructive" aria-label={`${t('Remove the provider')} ${p.name}`} onClick={() => void removeOwn(p)}><Trash2 size={14} /></button>
+              </>} />
+          ))}
+          {form
+            ? <CustomProviderForm key={form === 'new' ? 'new' : form.id} initial={form === 'new' ? null : form} onCancel={() => setForm(null)} onSaved={async () => { setForm(null); await refresh() }} />
+            : <Row icon={<Plus size={15} />} accent title={t('Add your own provider')} meta={t('any service that speaks the OpenAI protocol')} onOpen={() => setForm('new')} />}
           {keys && <AddKey key={adding ?? ''} initial={adding} available={keys.available.filter((a) => !keys.keys.some((k) => k.service === a.service))} onAdded={() => { setAdding(null); return refresh() }} onCancel={() => setAdding(null)} onFaces={() => onGo('faces')} />}
         </Card>
       </section>
