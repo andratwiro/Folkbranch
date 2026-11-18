@@ -2131,5 +2131,11 @@
   "Undoing a change for one person": "Deshaciendo un cambio de una sola persona",
   "Rolling the archive back": "Devolviendo el archivo",
   "Merging places": "Fusionando lugares",
-  "Creating a story link": "Creando un enlace de relato"
+  "Creating a story link": "Creando un enlace de relato",
+  "Delete several people": "Eliminar a varias personas",
+  "Link children to parents": "Vincular hijos con sus padres",
+  "Deleting several people": "Eliminando a varias personas",
+  "Linking children to parents": "Vinculando hijos con sus padres",
+  "Bulk edits apply at once": "Los cambios en bloque se aplican al instante",
+  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Los cambios a muchas personas a la vez y borrar varias se aplican sin revisión. Las importaciones siguen esperando su aprobación."
 }

@@ -44,7 +44,8 @@ export const accessRoutes: Route[] = [
   human('POST', 'update', 'Update now, where the install can do it by itself: a checked copy of the database first', ({ actor }) => applyUpdate(actor)),
 
   human('GET', 'tokens', 'API tokens', ({ actor }) => tokens.listTokens(actor)),
-  human('POST', 'tokens', 'Issue an API token', async ({ actor, body }) => tokens.createToken(actor, z.object({ expiresInDays: z.number().int().min(1).max(3650).nullish(), name: z.string().min(1), role: z.enum(['reader', 'editor']), review: z.boolean().default(true) }).parse(await body()))),
+  human('POST', 'tokens', 'Issue an API token', async ({ actor, body }) => tokens.createToken(actor, z.object({ expiresInDays: z.number().int().min(1).max(3650).nullish(), name: z.string().min(1), role: z.enum(['reader', 'editor']), review: z.boolean().default(true), trustBulk: z.boolean().default(false) }).parse(await body()))),
+  human('PATCH', 'tokens/:id', 'Let a token apply bulk edits at once, or not', async ({ actor, params, body }) => tokens.setTokenTrustBulk(actor, params.id, z.object({ trustBulk: z.boolean() }).parse(await body()).trustBulk)),
   human('DELETE', 'tokens/:id', 'Revoke an API token', ({ actor, params }) => tokens.revokeToken(actor, params.id)),
 
   human('GET', 'settings', 'Archive settings', () => ({ familyName: settings.getSetting('familyName') ?? '', language: settings.getSetting('language') ?? 'ru', assistantEnabled: settings.getSetting('assistantEnabled') === '1', assistantForReaders: settings.getSetting('assistantForReaders') === '1', assistantProvider: currentProvider()?.label ?? null, assistantModel: currentProvider()?.model ?? null })),

@@ -14,7 +14,7 @@ import { exportGedcom, importGedcom, previewGedcom } from './gedcom'
 import sharp from 'sharp'
 import { getMedia, listAllMedia, listPersonMedia, readMediaFile, updateMedia, uploadMedia } from './media'
 import { getPage, listPages } from './pages'
-import { findGaps } from './gaps'
+import { findGaps, GAP_FIELDS } from './gaps'
 import { getGraph } from './people'
 import { listPlaces } from './places'
 import { OUTPUTS } from './outputs'
@@ -78,7 +78,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
       const count = (key: keyof ReturnType<typeof summary>) => cards.reduce((n, c) => n + c[key], 0)
       return {
         family: getSetting('familyName') ?? '',
-        you: { role: a.role, writes: a.role === 'reader' ? 'not allowed' : a.assistant ? 'call the tool: the app asks the person when needed' : a.review ? 'go to review: a person accepts the draft first' : 'apply at once, except imports, which go to review' },
+        you: { role: a.role, writes: a.role === 'reader' ? 'not allowed' : a.assistant ? 'call the tool: the app asks the person when needed' : a.review ? 'go to review: a person accepts the draft first' : `apply at once, except ${a.trustBulk ? 'imports' : 'bulk tools and imports'} (${Object.entries(OPS).filter(([, d]) => d.bulk && !(a.trustBulk && d.trustable)).map(([n]) => n).join(', ')}), which wait for a person to accept the draft; the answer gives the draft id and my_proposals lists what is in it` },
         // What is hidden from you is not counted either: a number that drops by one would tell you someone is there.
         people: { total: visible.length, links: g.parentChild.filter((l) => seen.has(l.parentId) && seen.has(l.childId)).length, unions: g.unions.filter((u) => seen.has(u.aId) && seen.has(u.bId)).length },
         values: { documented: count('documented'), told: count('told'), unsourced: count('unsourced'), conflicts: count('conflict') },
@@ -89,7 +89,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
   },
   find_gaps: {
     description: 'What is unfinished, person by person: missing dates and places, no parents, values without a source, conflicting versions. People with conflicts come first. Good as a work queue.',
-    input: z.object({ limit: z.number().int().min(1).max(200).default(30), onlyConflicts: z.boolean().default(false) }),
+    input: z.strictObject({ limit: z.number().int().min(1).max(500).default(30), onlyConflicts: z.boolean().default(false), field: z.enum(GAP_FIELDS).optional().describe('Only people who lack this'), sort: z.enum(['gaps', 'birth', 'name']).default('gaps') }),
     run: (a, x) => findGaps(a, x).map(({ person, ...r }) => ({ ...brief(person), ...r })),
   },
   parse_table: {
@@ -127,7 +127,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
     },
   },
   get_people: {
-    description: 'Several people at once, trimmed: names, dates, places, certainty, facts (kind, date, place) and the ids of parents, children and spouses. Use it instead of many get_person calls; get_person has sources, versions and pages.',
+    description: 'Up to 60 people at once, trimmed: names, dates, places, certainty, facts (kind, date, place) and the ids of parents, children and spouses. Use it instead of many get_person calls; get_person has sources, versions and pages.',
     input: z.object({ ids: z.array(z.string()).min(1).max(60) }),
     slices: 10,
     run: (a, x) => {
@@ -266,7 +266,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
 /** Every request carries what its tools look like, so only these go along until the model asks for more. */
 export const CORE_TOOLS = ['search_people', 'query_people', 'search_archive', 'get_person', 'get_people', 'how_related', 'count_relatives', 'create_person', 'update_person', 'add_fact', 'delete_person', 'add_relation', 'remove_relation', 'import_text', 'undo', 'get_history', 'set_plan', 'use_tools']
 export const TOOL_GROUPS: Record<string, { about: string; tools: string[] }> = {
-  people: { about: 'many at once, relatives, gaps, overview, links, tree, tables', tools: ['update_people', 'add_fact_to_people', 'get_relatives', 'find_gaps', 'get_overview', 'update_relation', 'move_relation', 'remove_parent_links', 'export_text', 'preview_text', 'parse_table'] },
+  people: { about: 'many at once, relatives, gaps, overview, links, tree, tables', tools: ['update_people', 'add_fact_to_people', 'delete_people', 'link_people', 'get_relatives', 'find_gaps', 'get_overview', 'update_relation', 'move_relation', 'remove_parent_links', 'export_text', 'preview_text', 'parse_table'] },
   sources: { about: 'adding or removing a source, versions of values', tools: ['add_source', 'remove_source', 'add_version', 'choose_version', 'reject_version', 'restore_version'] },
   files: { about: 'photos, scans, avatars, attached files, GEDCOM, research cases', tools: ['import_kinship_case', 'list_photos', 'view_photo', 'save_attachment', 'set_avatar', 'tag_photo', 'untag_photo', 'update_photo', 'delete_photo', 'upload_photo', 'read_attachment', 'import_gedcom_attachment', 'export_gedcom', 'preview_gedcom', 'import_gedcom'] },
   pages: { about: 'pages about people', tools: ['list_pages', 'get_page', 'create_page', 'update_page', 'move_page', 'delete_page'] },

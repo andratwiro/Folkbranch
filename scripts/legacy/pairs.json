@@ -622,5 +622,21 @@
  [
   "Создаёт ссылку для рассказа",
   "Creating a story link"
+ ],
+ [
+  "Удалить сразу нескольких",
+  "Delete several people"
+ ],
+ [
+  "Связать детей с родителями",
+  "Link children to parents"
+ ],
+ [
+  "Удаляет сразу нескольких",
+  "Deleting several people"
+ ],
+ [
+  "Связывает детей с родителями",
+  "Linking children to parents"
  ]
 ]

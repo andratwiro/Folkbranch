@@ -2131,5 +2131,11 @@
   "Undoing a change for one person": "Annulla una modifica per una sola persona",
   "Rolling the archive back": "Riporta indietro l'archivio",
   "Merging places": "Unisce i luoghi",
-  "Creating a story link": "Crea un link per un racconto"
+  "Creating a story link": "Crea un link per un racconto",
+  "Delete several people": "Elimina più persone",
+  "Link children to parents": "Collega figli ai genitori",
+  "Deleting several people": "Elimina più persone",
+  "Linking children to parents": "Collega figli ai genitori",
+  "Bulk edits apply at once": "Le modifiche di massa si applicano subito",
+  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Le modifiche a molte persone insieme e l'eliminazione di più persone non passano dalla revisione. Le importazioni aspettano ancora te."
 }

@@ -2136,5 +2136,11 @@
   "Undoing a change for one person": "Скасовує зміну в однієї людини",
   "Rolling the archive back": "Відкочує архів",
   "Merging places": "Об’єднує місця",
-  "Creating a story link": "Створює посилання для розповіді"
+  "Creating a story link": "Створює посилання для розповіді",
+  "Delete several people": "Видалити одразу кількох",
+  "Link children to parents": "Пов’язати дітей із батьками",
+  "Deleting several people": "Видаляє одразу кількох",
+  "Linking children to parents": "Пов’язує дітей із батьками",
+  "Bulk edits apply at once": "Масові правки застосовуються одразу",
+  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Правки багатьох людей одразу та видалення кількох ідуть без перевірки. Імпорт, як і раніше, чекає на вас."
 }

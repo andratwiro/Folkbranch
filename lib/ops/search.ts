@@ -85,6 +85,7 @@ export const queryInput = z.strictObject({
   living: z.boolean().optional(),
   hasSources: z.boolean().optional(),
   hasParents: z.boolean().optional(),
+  missing: z.array(z.enum(['birthDate', 'birthPlace', 'deathDate', 'deathPlace', 'parents', 'sources'])).optional().describe('Only people who lack all of these (a living person is not asked for a death)'),
   sort: z.enum(['birth', 'death', 'name']).default('birth'),
   groupBy: z.enum(['birthPlace', 'surname', 'decade', 'sex']).optional().describe('Also count the matches by this'),
   limit: z.number().int().min(0).max(500).default(50).describe('How many to list. 0 when only the counts matter'),
@@ -107,7 +108,8 @@ export function queryPeople(actor: Actor, x: z.infer<typeof queryInput>) {
     && between(p.deathYear, x.diedFrom, x.diedTo)
     && (x.living === undefined || p.living === x.living)
     && (x.hasSources === undefined || (p.sources.length > 0) === x.hasSources)
-    && (x.hasParents === undefined || withParents.has(p.id) === x.hasParents))
+    && (x.hasParents === undefined || withParents.has(p.id) === x.hasParents)
+    && (x.missing ?? []).every((m) => (m === 'parents' ? !withParents.has(p.id) : m === 'sources' ? p.sources.length === 0 : m.startsWith('death') && p.living ? false : !p[m])))
   const year = (v: number | null) => v ?? Infinity
   found.sort(x.sort === 'name' ? (a, b) => collator(archiveLang()).compare(fullName(a), fullName(b)) : x.sort === 'death' ? (a, b) => year(a.deathYear) - year(b.deathYear) : (a, b) => year(a.birthYear) - year(b.birthYear))
   const groupKey = (p: Person) => (x.groupBy === 'decade' ? (p.birthYear ? `${Math.floor(p.birthYear / 10) * 10}s` : '') : x.groupBy ? String(p[x.groupBy as 'birthPlace' | 'surname' | 'sex'] ?? '') : '') || 'unknown'

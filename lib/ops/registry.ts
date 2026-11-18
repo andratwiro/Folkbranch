@@ -78,13 +78,21 @@ export const OPS: Record<string, Def> = {
     input: z.object({ changes: z.array(z.object({ id: z.string(), patch: personInput })).min(1).max(200) }),
     agentInput: z.object({ changes: z.array(z.object({ id: z.string(), patch: z.record(z.string(), z.unknown()).describe('Fields as in update_person') })).min(1).max(200) }),
     bulk: true,
+    trustable: true,
     expand: (a, x) => {
       if (new Set(x.changes.map((c: { id: string }) => c.id)).size !== x.changes.length) throw new OpError(400, 'the same person is listed twice')
+      // Every bad entry is reported at once, so a list is fixed in one go rather than one error at a time.
+      const bad: string[] = []
       for (const c of x.changes) {
-        agentPatch.parse(c.patch)
-        if (!isTemp(c.id)) personFor(a, c.id)
-        checkPatch(a, c.id, c.patch)
+        try {
+          agentPatch.parse(c.patch)
+          if (!isTemp(c.id)) personFor(a, c.id)
+          checkPatch(a, c.id, c.patch)
+        } catch (e) {
+          bad.push(`${c.id}: ${e instanceof z.ZodError ? e.issues.map((i) => `${i.path.join('.')} ${i.message}`).join('; ') : (e as Error).message}`)
+        }
       }
+      if (bad.length) throw new OpError(400, `nothing was changed; ${bad.length} of ${x.changes.length} entries are wrong: ${bad.join(' | ')}`)
       return x.changes.map((c: { id: string; patch: unknown }) => ({ op: 'update_person', args: c }) as PlannedOp)
     },
     summary: (x) => `${say('Bulk change')}: ${x.changes.length}`,
@@ -102,6 +110,7 @@ export const OPS: Record<string, Def> = {
       }),
     }),
     bulk: true,
+    trustable: true,
     expand: (a, x) => {
       if (new Set(x.personIds).size !== x.personIds.length) throw new OpError(400, 'the same person is listed twice')
       for (const id of x.personIds) if (!isTemp(id)) personFor(a, id)
@@ -109,6 +118,44 @@ export const OPS: Record<string, Def> = {
     },
     summary: (x) => `${say('Add a fact')}: ${x.fact.kind} × ${x.personIds.length}`,
     apply: () => { throw new OpError(500, 'add_fact_to_people is expanded before applying') },
+    describe: () => ({ text: '' }),
+  }),
+  delete_people: def({
+    risk: 'danger',
+    description: 'Delete several people (up to 200) as one change: one confirmation, one history entry, one undo. Each goes with their links, pages and photo tags, as delete_person does.',
+    input: z.object({ ids: z.array(z.string()).min(1).max(200) }),
+    bulk: true,
+    trustable: true,
+    expand: (a, x) => {
+      if (new Set(x.ids).size !== x.ids.length) throw new OpError(400, 'the same person is listed twice')
+      const bad = x.ids.filter((id: string) => { try { if (!isTemp(id)) personFor(a, id); return false } catch { return true } })
+      if (bad.length) throw new OpError(404, `nothing was deleted; not found: ${bad.join(', ')}`)
+      return x.ids.map((id: string) => ({ op: 'delete_person', args: { id } }) as PlannedOp)
+    },
+    summary: (x) => `${say('Delete person')} × ${x.ids.length}`,
+    apply: () => { throw new OpError(500, 'delete_people is expanded before applying') },
+    describe: () => ({ text: '' }),
+  }),
+  link_people: def({
+    risk: 'danger',
+    description: 'Make existing people children of one parent, or of a couple, in one change and one undo: son or daughter is chosen by each child\'s sex (a child whose sex is unknown is named in the error, nothing is linked). Use it instead of many add_relation calls.',
+    input: z.object({ parentId: z.string(), otherParentId: z.string().nullish(), childIds: z.array(z.string()).min(1).max(100), kind: z.enum(['birth', 'adopted', 'foster', 'step']).optional() }),
+    bulk: true,
+    trustable: true,
+    expand: (a, x) => {
+      const ops: PlannedOp[] = []
+      const bad: string[] = []
+      for (const id of x.childIds as string[]) {
+        const child = isTemp(id) ? null : personFor(a, id)
+        const type = child?.sex === 'M' ? 'son' : child?.sex === 'F' ? 'daughter' : null
+        if (!type) { bad.push(`${id}${child ? ` (${personName(child as never)})` : ''}: sex unknown`); continue }
+        ops.push({ op: 'add_relation', args: { type, to: x.parentId, other: id, otherParentId: x.otherParentId ?? null, ...(x.kind ? { kind: x.kind } : {}) } } as PlannedOp)
+      }
+      if (bad.length) throw new OpError(400, `nothing was linked; set the sex first of: ${bad.join('; ')}`)
+      return ops
+    },
+    summary: (x) => `${say('Add a link')} × ${x.childIds.length}`,
+    apply: () => { throw new OpError(500, 'link_people is expanded before applying') },
     describe: () => ({ text: '' }),
   }),
   delete_person: def({
@@ -433,7 +480,9 @@ The answer lists each new person's id.`,
         return { text: `${tell('Replace the tree with a file')}: ${n} ${tell('people_count')} · ${tell('Deleted')}: ${removed}` }
       }
       const verb = x.mode === 'merge' ? 'Объединить с файлом' : 'Импорт GEDCOM'
-      return { text: `${tell(verb)}: ${n} ${tell('people_count')}` }
+      // Whoever accepts the draft reads who is in it, not only how many.
+      const names = [...x.text.matchAll(/^1 NAME (.*)$/gm)].slice(0, 30).map((m) => m[1].replace(/\//g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean)
+      return { text: `${tell(verb)}: ${n} ${tell('people_count')}`, details: names.length < n ? [...names, '…'] : names }
     },
   }),
   import_kinship_case: def({

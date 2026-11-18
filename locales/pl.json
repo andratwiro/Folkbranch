@@ -2136,5 +2136,11 @@
   "Undoing a change for one person": "Cofa zmianę dla jednej osoby",
   "Rolling the archive back": "Cofa archiwum",
   "Merging places": "Łączy miejsca",
-  "Creating a story link": "Tworzy link do opowieści"
+  "Creating a story link": "Tworzy link do opowieści",
+  "Delete several people": "Usuń kilka osób",
+  "Link children to parents": "Powiąż dzieci z rodzicami",
+  "Deleting several people": "Usuwa kilka osób",
+  "Linking children to parents": "Powiązuje dzieci z rodzicami",
+  "Bulk edits apply at once": "Zmiany zbiorcze są stosowane od razu",
+  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Zmiany wielu osób naraz i usuwanie kilku nie wymagają przeglądu. Importy nadal czekają na Ciebie."
 }

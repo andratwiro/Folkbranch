@@ -28,6 +28,7 @@ export function TokensTab() {
   const [name, setName] = useState('')
   const [role, setRole] = useState<'reader' | 'editor'>('reader')
   const [review, setReview] = useState(true)
+  const [trustBulk, setTrustBulk] = useState(false)
   const [days, setDays] = useState('365')
   const [made, setMade] = useState('')
   const refresh = () => qc.invalidateQueries({ queryKey: ['tokens'] })
@@ -53,7 +54,7 @@ export function TokensTab() {
         <form className="flex flex-col gap-3" onSubmit={async (e) => {
           e.preventDefault()
           if (!name.trim()) return
-          const r = await api<{ token: string }>('tokens', { json: { name: name.trim(), role, review, expiresInDays: days ? Number(days) : null } })
+          const r = await api<{ token: string }>('tokens', { json: { name: name.trim(), role, review, trustBulk: role === 'editor' && !review && trustBulk, expiresInDays: days ? Number(days) : null } })
           setMade(r.token)
           setName('')
           refresh()
@@ -65,6 +66,7 @@ export function TokensTab() {
           </div>
           <p className="text-xs leading-snug text-ink-soft">{t(role === 'editor' ? 'An editor token sees living relatives, and this data will reach the AI provider.' : 'A read-only token does not see living relatives.')}</p>
           {role === 'editor' && <SwitchRow title={t('Changes need review')} description={t('Edits wait for your approval under Review.')} checked={review} onChange={setReview} />}
+          {role === 'editor' && !review && <SwitchRow title={t('Bulk edits apply at once')} description={t('Changes to many people at once, and deleting several, skip review. Imports still wait for you.')} checked={trustBulk} onChange={setTrustBulk} />}
           <Button className="self-start" disabled={!name.trim()}><KeyRound /> {t('Create token')}</Button>
         </form>
         {made && (

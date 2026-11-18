@@ -20,7 +20,11 @@
     "Undoing a change for one person": "Undoing a change for one person",
     "Rolling the archive back": "Rolling the archive back",
     "Merging places": "Merging places",
-    "Creating a story link": "Creating a story link"
+    "Creating a story link": "Creating a story link",
+    "Delete several people": "Delete several people",
+    "Link children to parents": "Link children to parents",
+    "Deleting several people": "Deleting several people",
+    "Linking children to parents": "Linking children to parents"
   },
   "ru": {
     "{count} years_one": "{count} год",
@@ -82,7 +86,11 @@
     "Undoing a change for one person": "Отменяет правку у одного человека",
     "Rolling the archive back": "Откатывает архив",
     "Merging places": "Объединяет места",
-    "Creating a story link": "Создаёт ссылку для рассказа"
+    "Creating a story link": "Создаёт ссылку для рассказа",
+    "Delete several people": "Удалить сразу нескольких",
+    "Link children to parents": "Связать детей с родителями",
+    "Deleting several people": "Удаляет сразу нескольких",
+    "Linking children to parents": "Связывает детей с родителями"
   },
   "es": {
     "{count} years_one": "{count} año",
@@ -178,7 +186,11 @@
     "Undoing a change for one person": "Deshaciendo un cambio de una sola persona",
     "Rolling the archive back": "Devolviendo el archivo",
     "Merging places": "Fusionando lugares",
-    "Creating a story link": "Creando un enlace de relato"
+    "Creating a story link": "Creando un enlace de relato",
+    "Delete several people": "Eliminar a varias personas",
+    "Link children to parents": "Vincular hijos con sus padres",
+    "Deleting several people": "Eliminando a varias personas",
+    "Linking children to parents": "Vinculando hijos con sus padres"
   },
   "ca": {
     "{count} years_one": "{count} any",
@@ -274,6 +286,10 @@
     "Undoing a change for one person": "Desfent un canvi d'una sola persona",
     "Rolling the archive back": "Tornant l'arxiu enrere",
     "Merging places": "Fusionant llocs",
-    "Creating a story link": "Creant un enllaç de relat"
+    "Creating a story link": "Creant un enllaç de relat",
+    "Delete several people": "Eliminar diverses persones",
+    "Link children to parents": "Vincular fills amb els pares",
+    "Deleting several people": "Eliminant diverses persones",
+    "Linking children to parents": "Vinculant fills amb els pares"
   }
 }

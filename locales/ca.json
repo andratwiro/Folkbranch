@@ -2131,5 +2131,11 @@
   "Undoing a change for one person": "Desfent un canvi d'una sola persona",
   "Rolling the archive back": "Tornant l'arxiu enrere",
   "Merging places": "Fusionant llocs",
-  "Creating a story link": "Creant un enllaç de relat"
+  "Creating a story link": "Creant un enllaç de relat",
+  "Delete several people": "Eliminar diverses persones",
+  "Link children to parents": "Vincular fills amb els pares",
+  "Deleting several people": "Eliminant diverses persones",
+  "Linking children to parents": "Vinculant fills amb els pares",
+  "Bulk edits apply at once": "Els canvis en bloc s'apliquen a l'instant",
+  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Els canvis a moltes persones alhora i eliminar-ne diverses s'apliquen sense revisió. Les importacions continuen esperant el vostre vistiplau."
 }

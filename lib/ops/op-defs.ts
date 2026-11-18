@@ -90,6 +90,8 @@ export interface Def<S extends z.ZodType = z.ZodType> {
   ownerOnly?: boolean
   /** Mass change: queued even for tokens allowed to write directly. */
   bulk?: boolean
+  /** A bulk change the owner may let a trusted token apply at once (edits, not imports). */
+  trustable?: boolean
   /** Never queued. */
   direct?: boolean
   /** Replaces the operation by several smaller ones. */

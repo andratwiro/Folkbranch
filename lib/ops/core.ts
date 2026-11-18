@@ -13,6 +13,8 @@ export interface Actor {
   /** Set when the caller is an API token rather than a signed-in person. */
   tokenId?: string
   review?: boolean
+  /** The owner trusts this token's bulk edits (not imports) to apply at once, even though a bulk change normally waits for review. */
+  trustBulk?: boolean
   /** The app's built-in assistant, acting for this person. */
   assistant?: boolean
   /** Came through a link and has no account. `only`: the people of the view that link shows, or null for everyone. */

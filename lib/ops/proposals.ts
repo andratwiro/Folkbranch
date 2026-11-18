@@ -69,7 +69,8 @@ export async function dispatch(actor: Actor, name: string, raw: unknown) {
   if (!d) throw new OpError(404, 'unknown operation')
   requireRole(actor, 'editor')
   const parsed = cleanText(d.input.parse(raw))
-  const queue = !!actor.tokenId && !d.direct && (actor.review || d.bulk)
+  // Imports always wait for a person; the owner can let a trusted token apply its other bulk edits at once.
+  const queue = !!actor.tokenId && !d.direct && (actor.review || (d.bulk && !(actor.trustBulk && d.trustable)))
 
   if (d.expand) {
     const ops = d.expand(actor, parsed)
