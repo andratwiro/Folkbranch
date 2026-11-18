@@ -541,6 +541,9 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
       writeYear(y)
       const e = engine.current
       if (!e) return
+      // The last frame of a jump or a scrub may have been skipped by the frame rate: at rest the trails are drawn for
+      // exactly this moment, so no line of an earlier one stays.
+      if (state.current.show !== 'events') { const key = ghostKey(state.current); if (key !== ghostShown.current) { ghostShown.current = key; e.ghost.redraw() } e.live.redraw() }
       if ((y >= pacing.max || (lineEndRef.current !== null && y >= lineEndRef.current)) && e.follow.following) e.follow.fit(followRef.current ?? allPointsRef.current, true)
       else e.follow.keep(keepInView(y, 0))
     })

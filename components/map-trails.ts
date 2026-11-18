@@ -120,6 +120,20 @@ function finishedBy(tracks: Track[], who: string, apart: (id: string) => boolean
   return lo
 }
 
+/** The year after which each life is gone (its end plus one), sorted: how many lives have ended is part of what the ghost shows. */
+const endings = new WeakMap<Track[], { who: string; years: Float64Array }>()
+function endedBy(tracks: Track[], who: string, apart: (id: string) => boolean, year: number) {
+  let a = endings.get(tracks)
+  if (!a || a.who !== who) {
+    const ys: number[] = []
+    for (const tr of tracks) if (!apart(tr.personId)) { const e = lifeSpan(tr)[1] + 1; if (Number.isFinite(e)) ys.push(e) }
+    a = { who, years: Float64Array.from(ys.sort((x, y) => x - y)) }
+    endings.set(tracks, a)
+  }
+  let lo = 0, hi = a.years.length
+  while (lo < hi) { const m = (lo + hi) >> 1; if (a.years[m] <= year) lo = m + 1; else hi = m }
+  return lo
+}
 
 /** What both trail canvases draw with: world to screen, whose trails are apart, and a journey as one stroke. */
 function pen({ ctx, scale: s, ox, oy, dpr }: View, st: TrailState) {
@@ -228,19 +242,21 @@ export function drawTrails(v: View, st: TrailState) {
     // Nobody is left to draw live ink behind.
     if (year >= lifeSpan(tr)[1] + 1) continue
     const pos = st.positions.get(tr.personId)
-    // Journeys under way: their ghost so far, live.
+    // Journeys under way: their ghost so far, live. Where the recent ink draws the same way (it does for a traveller
+    // near the view), the way is drawn once, in that ink, not again underneath it.
+    const inked = recentShown && near(pos ?? null)
     ctx.globalAlpha = GHOST * quiet
     ctx.lineWidth = 1.2
     for (const leg of trackLegs(tr)) {
       if (leg.leave >= year) break
-      if (leg.arrive <= year) continue
+      if (leg.arrive <= year || inked) continue
       // A journey entirely off the canvas, or of another region at this zoom, is not drawn point by point for nothing.
       if (!leg.path.wraps && (!onCanvas(legBox(leg), v) || legTooFar(legBox(leg), v))) continue
       let n = 0
       while (n < leg.path.world.length && leg.at[n] <= year) n++
       stroke(leg, n, pos?.leg === leg ? headOf(pos) : null)
     }
-    if (recentShown && near(pos ?? null)) live.push({ tr, pos: pos ?? null })
+    if (inked) live.push({ tr, pos: pos ?? null })
   }
   // Recent ink is shared out by how much of it there is: with a crowd on screen each trail is quieter, so the many
   // do not add up to black, while a lone traveller is drawn as dark as before.
@@ -400,5 +416,5 @@ export function ghostKey(st: TrailState) {
   const apart = (id: string) => id === focusId || !!line?.ids.has(id)
   const who = `${focusId}|${line?.key}`
   // A journey enters the ghost when it ends and leaves it a generation later: either way the canvas changes.
-  return `${st.routes ?? 'recent'}|${st.departed ? 'dead' : ''}|${st.trails === false ? 'off' : 'on'}|${finishedBy(st.tracks, who, apart, st.year)}-${finishedBy(st.tracks, who, apart, st.year - GHOST_YEARS - 1e-9)}|${focusId}|${line?.key}|${st.ink}`
+  return `${st.routes ?? 'recent'}|${st.departed ? 'dead' : ''}|${st.trails === false ? 'off' : 'on'}|${finishedBy(st.tracks, who, apart, st.year)}-${finishedBy(st.tracks, who, apart, st.year - GHOST_YEARS - 1e-9)}|${endedBy(st.tracks, who, apart, st.year)}|${focusId}|${line?.key}|${st.ink}`
 }
