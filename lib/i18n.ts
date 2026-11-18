@@ -1284,6 +1284,26 @@ const en: Record<string, string> = {
   'точка из GeoNames': 'point from GeoNames',
   'Догадки по списку городов и сёл, который хранится в самом приложении: названия мест никуда не отправляются. Точка ставится, только когда вы её подтвердите.': 'Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it.',
 
+  'У этого человека уже есть родитель вне этой пары. Чтобы заменить его, сначала удалите связь с ним': 'This person already has a parent outside this couple. To replace them, remove that link first',
+  'Приёмный ребёнок': 'Adopted child',
+  'опекун': 'foster',
+  'Ребёнок под опекой': 'Foster child',
+  'Пасынок или падчерица': 'Stepchild',
+  'Перенести конец связи': 'Move the end of a link',
+  'Состояние союза': 'Union status',
+  'вместе': 'together',
+  'расстались': 'separated',
+  'развод': 'divorced',
+  'овдовели': 'widowed',
+  'Перенести этот конец связи на другого человека': 'Drag this end onto another person to move the link',
+  'Перенести к': 'Move to',
+  'Отпустите на человеке, чтобы перенести конец связи сюда': 'Release on a person to move the end of the link there',
+  'Связь перенесена': 'Link moved',
+  'Не понять, какого из двух родителей заменить: у нового родителя не указан пол': 'Cannot tell which of the two parents to replace: the new parent\'s sex is not set',
+  'Без регистрации брака: пунктирная линия': 'Unmarried partners: dashed line',
+  'Развод: две косые черты на линии': 'Divorce: two slashes on the line',
+  'Разлука без развода: одна косая черта': 'Separation: one slash',
+  'Овдовели: линия не перечёркнута, смерть видна на карточке': 'Widowed: the line is not crossed out; the death shows on the card',
 }
 
 /** Spanish and Catalan live in lib/i18n-es.ts and lib/i18n-ca.ts, and reach a browser only when it reads in them (lib/i18n-load.ts). */

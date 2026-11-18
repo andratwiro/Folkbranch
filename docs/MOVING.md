@@ -13,7 +13,7 @@ Checked on files written the way Gramps 6 and webtrees 2.2 write them, in `tests
 - Birth, death and their places; baptism, burial, occupation, residence, education, religion, census, emigration and other events as facts.
 - Notes, including shared ones, as a biography page.
 - Sources with their archive and sheet, and how sure each citation is.
-- Families, marriages, divorces and adoptions.
+- Families, marriages, divorces, and adopted and foster children (`PEDI adopted`, `PEDI foster`; in Gramps, the child's relation to each parent). A divorce is drawn on the chart as a union crossed out with two slashes, and a separation (an event of type Separation) with one.
 - Godparents and witnesses (`ASSO`), as a fact naming the person. On an event, such as a baptism, they become its participants with their role.
 - "No children" (`NCHI 0`) and "never married" (`NMR 0`).
 - Someone marked private (`RESN confidential` or `privacy`) stays hidden from readers.

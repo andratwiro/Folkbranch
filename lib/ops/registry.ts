@@ -104,7 +104,7 @@ export const OPS: Record<string, Def> = {
     description: 'Link two existing people: `other` becomes the father, mother, son, daughter or spouse of `to`.',
     input: z.object({
       type: relationType, to: z.string(), other: z.string(), otherParentId: z.string().nullish(),
-      kind: z.enum(['birth', 'adopted', 'step']).optional(), certainty: certainty.optional(),
+      kind: z.enum(['birth', 'adopted', 'foster', 'step']).optional(), certainty: certainty.optional(),
       unionKind: z.enum(['marriage', 'civil']).optional(), startDate: z.string().optional(), endDate: z.string().optional(),
     }),
     refs: { to: 'persons', other: 'persons' },
@@ -124,18 +124,26 @@ export const OPS: Record<string, Def> = {
   update_relation: def({
     risk: 'write',
     description: 'Change a link: kind, certainty and, for a union, its dates and place. Link ids come from get_person.',
-    input: z.object({ type: z.enum(['parent', 'union']), id: z.string(), kind: z.string().optional(), certainty: certainty.optional(), startDate: z.string().max(60).optional(), endDate: z.string().max(60).optional(), place: z.string().max(120).optional() }),
+    input: z.object({ type: z.enum(['parent', 'union']), id: z.string(), kind: z.string().optional(), certainty: certainty.optional(), startDate: z.string().max(60).optional(), endDate: z.string().max(60).optional(), endKind: z.enum(['', 'divorced', 'separated', 'widowed']).optional(), place: z.string().max(120).optional() }),
     prepare: (_a, x) => {
       const { type, id, ...patch } = x
       if (!Object.keys(patch).length) throw new OpError(400, 'nothing to change')
       const table = type === 'parent' ? schema.parentChild : schema.unions
       if (!getDb().select({ id: table.id }).from(table).where(eq(table.id, id)).get()) throw new OpError(404, `link ${id} not found`)
-      if (x.kind && !(type === 'parent' ? ['birth', 'adopted', 'step'] : ['marriage', 'civil']).includes(x.kind)) throw new OpError(400, `${x.kind} is not a kind of ${type} link`)
-      if (type === 'parent' && (x.startDate !== undefined || x.endDate !== undefined || x.place !== undefined)) throw new OpError(400, 'dates and place belong to a union, not a parent link')
+      if (x.kind && !(type === 'parent' ? ['birth', 'adopted', 'foster', 'step'] : ['marriage', 'civil']).includes(x.kind)) throw new OpError(400, `${x.kind} is not a kind of ${type} link`)
+      if (type === 'parent' && (x.startDate !== undefined || x.endDate !== undefined || x.endKind !== undefined || x.place !== undefined)) throw new OpError(400, 'dates and place belong to a union, not a parent link')
       return x
     },
     apply: (a, { type, id, ...patch }) => people.updateRelation(a, type, id, patch),
-    describe: (x) => ({ text: `${tell('Связь')}: ${[x.kind, x.certainty, x.startDate, x.endDate, x.place].filter(Boolean).join(', ')}` }),
+    describe: (x) => ({ text: `${tell('Связь')}: ${[x.kind, x.certainty, x.startDate, x.endDate, x.endKind, x.place].filter(Boolean).join(', ')}` }),
+  }),
+  move_relation: def({
+    risk: 'write',
+    description: 'Move one end of an existing link to another person: `end` is parent or child of a parent link, or a or b of a union. Link ids come from get_person. It is one change, so one undo takes it back.',
+    input: z.object({ type: z.enum(['parent', 'union']), id: z.string(), end: z.enum(['parent', 'child', 'a', 'b']), to: z.string(), also: z.array(z.string()).max(6).optional() }),
+    refs: { to: 'persons' },
+    apply: (a, x) => people.moveRelation(a, x.type, x.id, x.end, x.to, x.also),
+    describe: (x, c) => ({ text: `${tell('Связь')}: → ${c.name(x.to)}` }),
   }),
   remove_relation: def({
     risk: 'danger',

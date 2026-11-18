@@ -245,7 +245,7 @@ export function parseGramps(text: string, lang: Lang = 'ru'): Imported {
     return {
       husb: xrefOf.get(kid(f, 'father')?.attrs.hlink ?? ''),
       wife: xrefOf.get(kid(f, 'mother')?.attrs.hlink ?? ''),
-      children: kids(f, 'childref').map((c) => ({ xref: xrefOf.get(c.attrs.hlink) ?? '', adopted: c.attrs.frel === 'Adopted' || c.attrs.mrel === 'Adopted' })).filter((c) => c.xref),
+      children: kids(f, 'childref').map((c) => ({ xref: xrefOf.get(c.attrs.hlink) ?? '', adopted: c.attrs.frel === 'Adopted' || c.attrs.mrel === 'Adopted', ...(c.attrs.frel === 'Foster' || c.attrs.mrel === 'Foster' ? { foster: true } : {}) })).filter((c) => c.xref),
       date: grampsDate(marr), end: div ? grampsDate(div) || '?' : '',
       place: marr ? title(kid(marr, 'place')?.attrs.hlink, span?.[0] ?? span?.[1] ?? null) : '',
       kind: kid(f, 'rel')?.attrs.type === 'Civil Union' ? 'civil' : 'marriage',

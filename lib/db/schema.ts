@@ -126,6 +126,8 @@ export const unions = sqliteTable('unions', {
   kind: text('kind').notNull().default('marriage'),
   startDate: text('start_date').notNull().default(''),
   endDate: text('end_date').notNull().default(''),
+  /** Why the union ended: divorced, separated or widowed. Empty with an end date reads as divorced, as older files wrote it. */
+  endKind: text('end_kind').notNull().default(''),
   place: text('place').notNull().default(''),
   placeId: text('place_id'),
   certainty: text('certainty').notNull().default('family'),

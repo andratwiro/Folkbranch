@@ -104,3 +104,19 @@ describe('a migration on an archive that holds data', () => {
     expect(tables(path.join(data, 'backups', newest, 'family.db'))).not.toContain('stories')
   })
 })
+
+describe('the migration that adds how a union ended', () => {
+  it('keeps an ended union of an older archive as it was, with no reason given', () => {
+    const data = temp()
+    run(data, migrationsUpTo(16))
+    const old = new Database(path.join(data, 'family.db'))
+    old.prepare("insert into persons (id, given_name) values ('a', 'Дед'), ('b', 'Бабка')").run()
+    old.prepare("insert into unions (id, a_id, b_id, kind, start_date, end_date) values ('u', 'a', 'b', 'civil', '1920', '1935')").run()
+    expect(old.prepare("select name from pragma_table_info('unions')").all().map((r) => (r as { name: string }).name)).not.toContain('end_kind')
+    old.close()
+    run(data, 'drizzle')
+    const now = new Database(path.join(data, 'family.db'), { readonly: true })
+    expect(now.prepare("select kind, start_date, end_date, end_kind from unions where id = 'u'").get()).toEqual({ kind: 'civil', start_date: '1920', end_date: '1935', end_kind: '' })
+    now.close()
+  })
+})

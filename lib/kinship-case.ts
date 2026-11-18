@@ -201,7 +201,7 @@ export function planCase(files: CaseFiles, lang: Lang = 'ru'): CasePlan {
     const how = (r.biological_legal_household ?? '').toLowerCase()
     if (relation.as === 'spouse') { unions.push({ a: a.caseId, b: b.caseId, kind: /civil|cohab|граждан/.test(how) ? 'civil' : 'marriage', certainty }); continue }
     const [parent, child] = relation.as === 'parent' ? [a, b] : [b, a]
-    const kind: ParentKind = relation.kind ?? (/adopt|усынов|удочер/.test(how) ? 'adopted' : /step|household|отчим|мачех/.test(how) ? 'step' : 'birth')
+    const kind: ParentKind = relation.kind ?? (/adopt|усынов|удочер/.test(how) ? 'adopted' : /foster|опек|патронат/.test(how) ? 'foster' : /step|household|отчим|мачех/.test(how) ? 'step' : 'birth')
     // Two people cannot descend from each other, and a third parent by birth is a contradiction: both are for a person to resolve.
     const third = kind === 'birth' && parents.filter((l) => l.child === child.caseId && l.kind === 'birth' && l.parent !== parent.caseId).length >= 2
     if (isAncestor(child.caseId, parent.caseId) || third) { keepOpen(a, b, r, t('Связь противоречит другим')); continue }

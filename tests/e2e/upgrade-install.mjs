@@ -42,6 +42,9 @@ try {
   const g0 = await api('GET', 'graph')
   await api('PATCH', `persons/${g0.persons[0].id}`, { birthPlace: 'Тверь' })
   await api('POST', 'persons', { person: { givenName: 'Ёжик', surname: 'Проверочный', sex: 'M', birthDate: '1900' } })
+  // An ended civil union, as the old version writes it: it has an end date and no reason for it.
+  const [first, second] = (await api('GET', 'graph')).persons
+  await api('POST', 'relations', { type: 'spouse', to: first.id, other: second.id, unionKind: 'civil', startDate: '1900', endDate: '1910' })
   const before = await api('GET', 'graph')
   const env0 = fs.readFileSync(path.join(dir, '.env'), 'utf8')
   // A page stays open while the update runs, as it would for a person.
@@ -67,6 +70,9 @@ try {
   const added = after.persons.flatMap((p) => { const base = before.persons.find((x) => x.id === p.id) ?? {}; return Object.keys(p).filter((k) => !(k in base)).map((k) => [k, p[k]]) })
   ok('a field this version added is empty for what the old version wrote', added.every(([, v]) => v == null || v === '' || (Array.isArray(v) && !v.length)), JSON.stringify(added.filter(([, v]) => !(v == null || v === '')).slice(0, 3)))
   ok('every link the same', after.parentChild.length === before.parentChild.length && after.unions.length === before.unions.length)
+  // The union keeps every field the old version had; a field this version added (how it ended) is empty.
+  const oldUnion = before.unions.find((u) => u.endDate === '1910'), newUnion = after.unions.find((u) => u.id === oldUnion?.id)
+  ok('the ended union is the same, and its added fields are empty', !!oldUnion && !!newUnion && Object.keys(oldUnion).every((k) => newUnion[k] === oldUnion[k]) && Object.keys(newUnion).filter((k) => !(k in oldUnion)).every((k) => !newUnion[k]), JSON.stringify([oldUnion, newUnion]))
   const env1 = fs.readFileSync(path.join(dir, '.env'), 'utf8')
   ok('settings in .env are kept', env0.split('\n').filter(Boolean).every((l) => env1.includes(l)))
   spawnSync('sh', ['-c', './folkbranch restart'], { cwd: dir, env, encoding: 'utf8' })

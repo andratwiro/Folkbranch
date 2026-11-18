@@ -6,7 +6,7 @@ import { layoutFamily, CARD_W } from '@/lib/graph/layout'
 import { useApp } from '@/lib/client'
 import { yourTerm } from '@/lib/kinship'
 import { cn } from '@/lib/utils'
-import { personName } from '@/lib/types'
+import { personName, unionEnd } from '@/lib/types'
 import { useChartLight } from './chart-light'
 import { useCardMove } from './chart-move'
 import type { ChartScope } from './chart-scope'
@@ -42,7 +42,7 @@ export const GraphCanvas = forwardRef<CanvasHandle, { pathIds: string[] | null; 
     const { canvas, world, clipped, shown, center } = view
     const light = useChartLight(layout, pathIds, groupIds, view.isFar)
     const { kin, near: hoverKin, wave, fromMe, active, hotPairs, lightMode, childNote, hoverSoon, setHoverFamily } = light
-    const { draft, startLink, startFromPerson } = useLinkDrawing(layout, view.toChart, () => light.setHoverId(null))
+    const { draft, startLink, startFromPerson, startEndMove, handlesFor } = useLinkDrawing(layout, view.toChart, () => light.setHoverId(null))
     const [menu, setMenu] = useState<{ x: number; y: number; id?: string; at?: { x: number; rank: number } } | null>(null)
     useEffect(() => {
       if (!menu) return
@@ -149,19 +149,23 @@ export const GraphCanvas = forwardRef<CanvasHandle, { pathIds: string[] | null; 
           <svg className="hits" width="1" height="1">
             <HitAreas layout={layout} edges={shown.edges} unions={shown.unions} groupHeads={shown.groupHeads} acts={acts} />
             <FamilyDots unions={shown.unions} active={active} canEdit={app.canEdit} acts={acts} />
+            {sel && handlesFor(selEdges, selUnion).map((h) => (
+              <circle key={h.key} cx={h.x} cy={h.y} r={7} className="link-handle link-start" data-link-handle={h.key} onPointerDown={(e) => startEndMove(e, h)}><title>{h.title}</title></circle>
+            ))}
             {draft && <path d={`M${draft.x1} ${draft.y1}L${draft.x2} ${draft.y2}`} className="link-draft" />}
           </svg>
           {sel && (selEdges.length > 0 || selUnion) && (
             <div className="float linkbar" style={{ left: sel.ax, top: sel.ay }} onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
               {selEdges.length > 0 && (
                 <>
-                  <Select look="quiet" aria-label={t('Родство')} value={selEdges[0].links[0]?.kind} onChange={(kind) => patchSelected({ kind })} options={[{ value: 'birth', label: t('родной') }, { value: 'adopted', label: t('приёмный') }, { value: 'step', label: t('отчим или мачеха') }]} />
+                  <Select look="quiet" aria-label={t('Родство')} value={selEdges[0].links[0]?.kind} onChange={(kind) => patchSelected({ kind })} options={[{ value: 'birth', label: t('родной') }, { value: 'adopted', label: t('приёмный') }, { value: 'foster', label: t('опекун') }, { value: 'step', label: t('отчим или мачеха') }]} />
                   {selEdges.length > 1 && <span className="linkbar-count">{t('Выбрано')}: {selEdges.length}</span>}
                 </>
               )}
               {selUnion && (
                 <>
                   <Select look="quiet" aria-label={t('Родство')} value={selUnion.union.kind} onChange={(kind) => patchSelected({ kind })} options={[{ value: 'marriage', label: t('брак') }, { value: 'civil', label: t('гражданский') }]} />
+                  <Select look="quiet" aria-label={t('Состояние союза')} value={unionEnd(selUnion.union) || 'together'} onChange={(v) => patchSelected(v === 'together' ? { endKind: '', endDate: '' } : { endKind: v, ...(selUnion.union.endDate ? {} : { endDate: '?' }) })} options={[{ value: 'together', label: t('вместе') }, { value: 'separated', label: t('расстались') }, { value: 'divorced', label: t('развод') }, { value: 'widowed', label: t('овдовели') }]} />
                 </>
               )}
               <button className="linkbar-del" title={`${t('Удалить связь')} (Delete)`} aria-label={t('Удалить связь')} onClick={removeSelected}><Trash2 size={14} /></button>
