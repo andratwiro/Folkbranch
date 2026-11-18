@@ -150,7 +150,7 @@ describe('changing a person', () => {
 describe('the shape of the family stays sound', () => {
   it('no cycles, no self links', async () => {
     await expect(run('add_relation', { type: 'son', to: f.pyotr.id, other: f.nikolai.id })).rejects.toThrow()
-    await expect(run('add_relation', { type: 'father', to: f.nikolai.id, other: f.nikolai.id })).rejects.toThrow(/same person/)
+    await expect(run('add_relation', { type: 'father', to: f.nikolai.id, other: f.nikolai.id })).rejects.toThrow(/cannot be their own parent/)
   })
   it('no third birth parent, and no second father', async () => {
     const extra = await run('create_person', { person: { givenName: 'Третий', surname: 'Родитель', sex: 'M', birthDate: '1860', deathDate: '1930' } })

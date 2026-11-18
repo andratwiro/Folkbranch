@@ -99,7 +99,7 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   set_avatar: write(ok),
   create_place: write(z.object({ id })),
   update_place: write(z.object({ id })),
-  add_version: write(written),
+  add_version: write(written.extend({ claimId: id.optional() })),
   add_source: write(z.object({ sourceId: id })),
   remove_source: write(ok),
   restore_version: write(written),

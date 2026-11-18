@@ -14,6 +14,7 @@ import * as pages from './pages'
 import * as places from './places'
 import * as stories from './stories'
 import * as people from './people'
+import { PLACE_KINDS } from '../places'
 import { say, tell } from './settings'
 import { certainty, personInput, claimField, sourceInput, relationType, agentCreate, agentPatch, relationInput, box, blocks, markdown, type Def, def, personFor, isAgent, isTemp, assertLink, assertPlanSound, assertSpouses, checkNewPerson, checkPatch, withVersions, assertVersion, pageContent, FIELD, REL, nameOfReal, pageName } from './op-defs'
 
@@ -24,6 +25,10 @@ const placeDetails = (p: { kind?: string; otherNames?: { name: string; years?: s
   p.lat != null && p.lon != null ? `${p.lat}, ${p.lon}` : '',
   p.note,
 ].filter((x): x is string => !!x)
+
+/** The archive's own words for a kind of place ("Город", "Деревня"), whichever language the model wrote it in: "town" must not become a second kind next to "Город". */
+const KIND_WORDS: Record<string, string> = { village: 'Деревня', hamlet: 'Деревня', farm: 'Деревня', 'large village': 'Село', settlement: 'Посёлок', 'urban-type settlement': 'Посёлок', town: 'Город', city: 'Город', parish: 'Приход', volost: 'Волость', county: 'Уезд', uyezd: 'Уезд', governorate: 'Губерния', province: 'Губерния', gubernia: 'Губерния', district: 'Район', region: 'Область', oblast: 'Область', state: 'Область', country: 'Страна', nation: 'Страна' }
+const placeKind = (raw: string) => { const k = raw.trim().toLowerCase().replace(/ё/g, 'е'); return PLACE_KINDS.find((w) => w.toLowerCase().replace(/ё/g, 'е') === k) ?? KIND_WORDS[k] ?? raw }
 
 export const OPS: Record<string, Def> = {
   create_person: def({
@@ -177,10 +182,13 @@ export const OPS: Record<string, Def> = {
     refs: { to: 'persons', other: 'persons' },
     prepare: (a, x) => {
       if (!isAgent(a) || isTemp(x.to) || isTemp(x.other)) return x
-      if (x.to === x.other) throw new OpError(400, 'same person')
+      if (x.to === x.other) throw new OpError(400, x.type === 'spouse' ? 'a person cannot be their own spouse' : x.type === 'father' || x.type === 'mother' ? 'a person cannot be their own parent' : 'a person cannot be their own child')
       const other = personFor(a, x.other)
       personFor(a, x.to)
-      if (x.type === 'spouse') assertSpouses(a, x.to, x.other)
+      if (x.type === 'spouse') {
+        if (people.getGraph(a).unions.some((u) => (u.aId === x.to && u.bId === x.other) || (u.aId === x.other && u.bId === x.to))) throw new OpError(409, 'they are already spouses: nothing was changed. Use update_relation to change the dates or the state')
+        assertSpouses(a, x.to, x.other)
+      }
       else assertLink(a, x.type, x.to, { id: x.other, sex: other.sex, birthDate: other.birthDate, name: personName(other) }, x.kind)
       if (x.otherParentId && !isTemp(x.otherParentId)) personFor(a, x.otherParentId)
       return x
@@ -343,7 +351,7 @@ export const OPS: Record<string, Def> = {
     description: 'Add a place: a village, town, parish or region, with what it was part of, its other and old names, and its point on a map. Look in list_places first. A place with no point stays off the map: give lat and lon only for a place you are sure of, and say in the note where they come from.',
     input: places.placeInput,
     creates: true,
-    prepare: (_a, x) => { if (x.parentId && !isTemp(x.parentId)) places.getPlace(x.parentId); return x },
+    prepare: (_a, x) => { if (x.parentId && !isTemp(x.parentId)) places.getPlace(x.parentId); return { ...x, kind: placeKind(x.kind) } },
     apply: (a, x) => places.savePlace(a, null, x),
     describe: (x) => ({ text: `${tell('Place')}: ${x.name}`, details: placeDetails(x) }),
   }),
@@ -351,7 +359,7 @@ export const OPS: Record<string, Def> = {
     risk: 'write',
     description: 'Change a place. Only the given fields change; otherNames replaces the whole list.',
     input: z.object({ id: z.string(), patch: places.placePatch }),
-    prepare: (_a, x) => { if (!isTemp(x.id)) places.getPlace(x.id); return x },
+    prepare: (_a, x) => { if (!isTemp(x.id)) places.getPlace(x.id); return x.patch.kind === undefined ? x : { ...x, patch: { ...x.patch, kind: placeKind(x.patch.kind) } } },
     apply: (a, x) => places.savePlace(a, x.id, { ...places.getPlace(x.id), ...x.patch }),
     describe: (x) => ({ text: `${tell('Place')}: ${isTemp(x.id) ? x.patch.name ?? x.id : places.getPlace(x.id).name}`, details: placeDetails(x.patch) }),
   }),
@@ -378,7 +386,11 @@ export const OPS: Record<string, Def> = {
       const source = x.source ? { ...x.source, id: newId(), ref: x.source.ref ?? '', page: x.source.page ?? '', url: x.source.url ?? '' } : null
       const sources = source ? [...p.sources, source] : p.sources
       if (x.sourceId && !sources.some((s) => s.id === x.sourceId)) throw new OpError(404, `source ${x.sourceId} not found on this person`)
-      return people.updatePerson(a, x.personId, { sources, ...claims.addVersion({ ...p, sources }, x.field, x.value, source?.id ?? x.sourceId ?? null) })
+      const patch = claims.addVersion({ ...p, sources }, x.field, x.value, source?.id ?? x.sourceId ?? null)
+      // The version just recorded is the newest one with this field and value (the card's own current value may also appear as a version).
+      const claimId = (patch.claims as { id: string; field: string; value: string }[] | undefined)?.findLast((c) => c.field === x.field && c.value === x.value)?.id
+      // The id of the version just recorded, to choose or reject it later.
+      return { ...people.updatePerson(a, x.personId, { sources, ...patch }), ...(claimId ? { claimId } : {}) }
     },
     describe: (x, c) => ({ text: `${c.name(x.personId)}: ${x.field} = ${x.value}`, details: [x.source?.title].filter(Boolean) }),
   }),
