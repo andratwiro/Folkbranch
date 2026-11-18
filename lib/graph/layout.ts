@@ -364,25 +364,43 @@ function straighten(rows: Block[][], entering: Map<string, OrderEdge[]>, leaving
   const xOf = (slot: string) => blockFor.get(slot)!.x + offsetOf.get(slot)!
   const off = (e: OrderEdge) => xOf(e.down) - mean(e.up.map(xOf))
   const price = (o: number) => (Math.abs(o) < 0.5 ? 0 : Math.abs(o) < JOG ? JOG_PENALTY : Math.abs(o) / 1000)
+  const costOf = (blocks: Block[]) => {
+    let c = 0
+    for (const b of blocks) for (const e of [...(entering.get(b.key) ?? []), ...(leaving.get(b.key) ?? [])]) c += price(off(e))
+    return c
+  }
   for (let round = 0; round < 3; round++) {
     let moved = false
     for (const row of rows) row.forEach((b, i) => {
       if (pinned.has(b)) return
       const inn = entering.get(b.key) ?? [], out = leaving.get(b.key) ?? []
-      const cost = () => inn.reduce((a, e) => a + price(off(e)), 0) + out.reduce((a, e) => a + price(off(e)), 0)
-      const now = cost()
-      if (now < JOG_PENALTY) return
-      const room = [i ? b.x - b.width / 2 - (row[i - 1].x + row[i - 1].width / 2) - gap : Infinity, i + 1 < row.length ? row[i + 1].x - row[i + 1].width / 2 - (b.x + b.width / 2) - gap : Infinity]
+      if (costOf([b]) < JOG_PENALTY) return
       // The shifts that would straighten one of its lines.
-      const tries = [...inn.map((e) => -off(e)), ...out.map((e) => off(e) * (e.up.length / Math.max(1, e.up.filter((s) => blockFor.get(s) === b).length)))].filter((s) => Math.abs(s) >= 0.5 && Math.abs(s) < JOG && s >= -room[0] && s <= room[1])
-      let best = 0, bestCost = now
+      const tries = [...inn.map((e) => -off(e)), ...out.map((e) => off(e) * (e.up.length / Math.max(1, e.up.filter((s) => blockFor.get(s) === b).length)))].filter((s) => Math.abs(s) >= 0.5 && Math.abs(s) < JOG)
+      let best: [Block, number][] = [], bestGain = 0
       for (const s of tries) {
-        b.x += s
-        const c = cost()
-        b.x -= s
-        if (c < bestCost) { best = s; bestCost = c }
+        // Free room beside it is used first; what is missing pushes the neighbours on that side along, as far as they allow.
+        const dir = Math.sign(s)
+        const moves: [Block, number][] = [[b, s]]
+        let need = Math.abs(s), j = i, ok = true
+        while (need > 0) {
+          const next = row[j + dir]
+          const edgeGap = next ? (dir > 0 ? next.x - next.width / 2 - (row[j].x + row[j].width / 2) : row[j].x - row[j].width / 2 - (next.x + next.width / 2)) - gap : Infinity
+          need = Math.max(0, need - Math.max(0, edgeGap))
+          if (need <= 0) break
+          if (!next || pinned.has(next) || moves.length > 3) { ok = false; break }
+          moves.push([next, dir * need])
+          j += dir
+        }
+        if (!ok) continue
+        const touched = moves.map(([m]) => m)
+        const before = costOf(touched)
+        for (const [m, d] of moves) m.x += d
+        const gain = before - costOf(touched)
+        for (const [m, d] of moves) m.x -= d
+        if (gain > bestGain) { best = moves; bestGain = gain }
       }
-      if (best) { b.x += best; moved = true }
+      if (best.length) { for (const [m, d] of best) m.x += d; moved = true }
     })
     if (!moved) break
   }
