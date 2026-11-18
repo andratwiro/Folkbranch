@@ -38,6 +38,7 @@ export function MapLayers() {
           <SwitchRow title={t('People')} description={t('People on the map')} checked={layers.people} disabled={layers.people && !layers.events} onChange={(on) => setLayers({ people: on })} />
           <SwitchRow title={t('Events')} description={t('Icons for births, marriages and other events')} checked={layers.events} disabled={layers.events && !layers.people} onChange={(on) => setLayers({ events: on })} />
           <SwitchRow title={t('Routes')} description={t('Move lines')} checked={layers.trails} onChange={(on) => setLayers({ trails: on })} />
+          <SwitchRow title={t('People who have died')} description={layers.departed ? t('On: a person stays on the map, faded, where they were last placed, with all their moves.') : t('Off: a person leaves the map, and their lines with them, when their life ends.')} checked={layers.departed} onChange={(on) => setLayers({ departed: on })} />
           <SwitchRow title={t('All past moves')} description={layers.routes === 'all' ? t('Every move builds up into a pattern that shows where the family spread.') : t('Off: each person\'s latest move stays visible for one generation, then disappears.')} checked={layers.routes === 'all'} disabled={!layers.trails} onChange={(on) => setLayers({ routes: on ? 'all' : 'recent' })} />
         </div>
         <h3 className="mb-1 mt-3 font-serif text-base text-ink">{t('Which places to show')}</h3>

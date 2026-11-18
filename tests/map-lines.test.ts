@@ -33,6 +33,18 @@ const track = (id: string, a: [number, number], b: [number, number], years: [num
 const state = (tracks: Track[], year: number): TrailState => ({ tracks, year, positions: new Map(), pulses: [], ink: '#2a2620', focus: null, line: null })
 
 describe('the ghost of finished journeys', () => {
+  it('lets a line go with its traveller when their life ends, unless the dead are kept', () => {
+    const moved = { ...track('m', [0, 0], [0, 1], [1900, 1901]), died: 1905 }
+    const drawn = (year: number, departed?: boolean) => { const ctx = recorder(); drawGhost(view(ctx, 6), { ...state([moved], year), departed }); return ctx.xs.length }
+    // While they live the way they came stays; the year after the death it runs on to nobody and is gone.
+    expect(drawn(1905)).toBeGreaterThan(0)
+    expect(drawn(1906)).toBe(0)
+    // Kept, the dead keep every move they made, long after the generation a living one's last move stays for.
+    expect(drawn(1906, true)).toBeGreaterThan(0)
+    expect(drawn(1901 + GHOST_YEARS + 20, true)).toBeGreaterThan(0)
+    expect(ghostKey({ ...state([moved], 1906), departed: true })).not.toBe(ghostKey(state([moved], 1906)))
+  })
+
   it('draws every journey in one stroke, so shared routes cannot add up to black', () => {
     const ctx = recorder()
     // Two people took exactly the same way: drawn leg by leg, the ink would be laid twice (0.3 + 0.3).

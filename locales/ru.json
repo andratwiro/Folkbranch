@@ -152,7 +152,6 @@
   "Play": "Воспроизвести",
   "Year": "Год",
   "Speed": "Скорость",
-  "Follow": "Следить",
   "not on the map": "не на карте",
   "without a place or year": "без места или года",
   "on the map now": "на карте сейчас",
@@ -2078,5 +2077,12 @@
   "Upload files": "Загрузить файлы",
   "Loading": "Загрузка",
   "Remove relation (Delete)": "Удалить связь (Delete)",
-  "Telegram: linked": "Telegram: привязан"
+  "Telegram: linked": "Telegram: привязан",
+  "People who have died": "Ушедшие из жизни",
+  "On: a person stays on the map, faded, where they were last placed, with all their moves.": "Включено: человек остаётся на карте приглушённым там, где его место известно последним, со всеми его переездами.",
+  "Off: a person leaves the map, and their lines with them, when their life ends.": "Выключено: когда жизнь человека кончается, он уходит с карты, и его линии вместе с ним.",
+  "Follow {name}": "Следить за {name}",
+  "Follow the family": "Следить за семьёй",
+  "The camera goes back to this person and stays with them": "Камера возвращается к этому человеку и остаётся с ним",
+  "The camera goes where people are moving; pick someone on the map to follow only them": "Камера идёт туда, где люди переезжают; выберите человека на карте, чтобы следить только за ним"
 }

@@ -192,6 +192,8 @@ export interface Position {
    * stands at the last known place, so the person can be followed, but it is not shown as being there.
    */
   after?: number
+  /** Set for someone whose life has ended, kept on the map where they were last placed: shown faded. */
+  gone?: true
 }
 
 /** How far back from a death a life is taken to reach when the birth is unknown, and forward from a birth. */
@@ -223,10 +225,16 @@ const spans = new WeakMap<Track, [number, number]>()
  * Before their first placed event they stand at its place, after the last at the last: someone with one known place
  * stays there all their life, so the map is not empty. At a stop's own year they are exactly at the stop.
  */
-export function positionAt(track: Track, year: number): Position | null {
+export function positionAt(track: Track, year: number, afterLife = false): Position | null {
   const [start, end] = lifeSpan(track)
-  // A life ends at the end of its last year, so the death year is still shown whole.
-  if (year < start || year >= end + 1) return null
+  if (year < start) return null
+  // A life ends at the end of its last year, so the death year is still shown whole. Asked to keep them, the person
+  // stays at the last place written, marked as gone.
+  if (year >= end + 1) {
+    if (!afterLife) return null
+    const last = track.stops[track.stops.length - 1]
+    return { lat: last.lat, lon: last.lon, at: last, moving: null, leg: null, progress: 0, gone: true }
+  }
   const first = track.stops[0]
   // A stay ends at the end of its last year, as a life does.
   const still = (at: TimedStop): Position => ({ lat: at.lat, lon: at.lon, at, moving: null, leg: null, progress: 0, ...(at.until !== undefined && year >= at.until + 1 ? { after: at.until } : {}) })

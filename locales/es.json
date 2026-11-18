@@ -113,7 +113,6 @@
   "Play": "Reproducir",
   "Year": "Año",
   "Speed": "Velocidad",
-  "Follow": "Seguir",
   "not on the map": "fuera del mapa",
   "without a place or year": "sin lugar ni año",
   "on the map now": "en el mapa ahora",
@@ -2073,5 +2072,12 @@
   "Upload files": "Subir archivos",
   "Loading": "Cargando",
   "Remove relation (Delete)": "Eliminar relación (Delete)",
-  "Telegram: linked": "Telegram: vinculado"
+  "Telegram: linked": "Telegram: vinculado",
+  "People who have died": "Personas fallecidas",
+  "On: a person stays on the map, faded, where they were last placed, with all their moves.": "Activado: la persona se queda en el mapa, atenuada, en el último lugar conocido, con todos sus traslados.",
+  "Off: a person leaves the map, and their lines with them, when their life ends.": "Desactivado: cuando termina su vida, la persona sale del mapa y sus líneas con ella.",
+  "Follow {name}": "Seguir a {name}",
+  "Follow the family": "Seguir a la familia",
+  "The camera goes back to this person and stays with them": "La cámara vuelve a esta persona y se queda con ella",
+  "The camera goes where people are moving; pick someone on the map to follow only them": "La cámara va adonde se mueve la gente; elige a alguien en el mapa para seguir solo a esa persona"
 }

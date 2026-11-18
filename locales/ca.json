@@ -113,7 +113,6 @@
   "Play": "Reprodueix",
   "Year": "Any",
   "Speed": "Velocitat",
-  "Follow": "Segueix",
   "not on the map": "fora del mapa",
   "without a place or year": "sense lloc ni any",
   "on the map now": "al mapa ara",
@@ -2073,5 +2072,12 @@
   "Upload files": "Puja fitxers",
   "Loading": "S'està carregant",
   "Remove relation (Delete)": "Esborra la relació (Delete)",
-  "Telegram: linked": "Telegram: vinculat"
+  "Telegram: linked": "Telegram: vinculat",
+  "People who have died": "Persones difuntes",
+  "On: a person stays on the map, faded, where they were last placed, with all their moves.": "Activat: la persona es queda al mapa, atenuada, a l'últim lloc conegut, amb tots els seus trasllats.",
+  "Off: a person leaves the map, and their lines with them, when their life ends.": "Desactivat: quan acaba la seva vida, la persona surt del mapa i les seves línies amb ella.",
+  "Follow {name}": "Segueix {name}",
+  "Follow the family": "Segueix la família",
+  "The camera goes back to this person and stays with them": "La càmera torna a aquesta persona i es queda amb ella",
+  "The camera goes where people are moving; pick someone on the map to follow only them": "La càmera va on es mou la gent; tria algú al mapa per seguir només aquesta persona"
 }

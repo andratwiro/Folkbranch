@@ -442,6 +442,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--ink); }
 .map-face-in.moving img { box-shadow: 0 0 0 2px var(--accent), 0 0 0 3.5px var(--paper); filter: grayscale(.35) sepia(.25); }
 .map-face-in.hidden-face { display: none; }
 /* After a stay written as a period, where the person went is not known: the face stays, faded and dashed. */
+.map-face-in.gone { filter: grayscale(1); opacity: .55; }
 .map-face-in.unsure { opacity: .5; outline: 1px dashed currentColor; outline-offset: 1px; }
 .map-face.map-yield { pointer-events: none !important; }
 .map-face.map-folded { pointer-events: none !important; }

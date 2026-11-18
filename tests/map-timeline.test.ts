@@ -45,6 +45,10 @@ describe('the map timeline', () => {
     const tr = tl.tracks[0]
     expect(positionAt(tr, 1899)).toBeNull()
     expect(positionAt(tr, 1961)).toBeNull()
+    // Asked to keep the dead, they stand at the last place written, marked as gone, and never before their birth.
+    expect(positionAt(tr, 1961, true)).toMatchObject({ gone: true, leg: null, moving: null })
+    expect(positionAt(tr, 1899, true)).toBeNull()
+    expect(positionAt(tr, 1920, true)?.gone).toBeUndefined()
     expect(positionAt(tr, 1920)).toMatchObject({ lat: 41.15, moving: null })
     const mid = positionAt(tr, 1929)!
     expect(mid.moving?.place).toBe('Madrid')

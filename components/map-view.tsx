@@ -304,7 +304,7 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
   useLayoutEffect(() => { faceOf.current = faceFor })
   /** What the canvas and the layout read, kept outside React. */
   const state = useRef<TrailState & { show: Show; events: Mark[]; points: [number, number][] }>({ tracks: [], year: data.min, positions: new Map(), pulses: [], ink: '#2a2620', show: 'both', events: [], focus: null, line: null, points: [] })
-  useLayoutEffect(() => { state.current.focus = focusTrack; state.current.line = lineDraw; state.current.routes = layers.routes; state.current.trails = layers.trails })
+  useLayoutEffect(() => { state.current.focus = focusTrack; state.current.line = lineDraw; state.current.routes = layers.routes; state.current.trails = layers.trails; state.current.departed = layers.departed; departedRef.current = layers.departed })
   // Chosen in the map's layers: the lines are drawn again at once.
   useEffect(() => { engine.current?.ghost.redraw(); engine.current?.live.redraw() }, [layers.routes, layers.trails])
   /** The places a followed route or line keeps in view, framed once when it is followed; null when no one is. */
@@ -424,14 +424,16 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
    * there until the next journey leaves, and a traveller is worked out anew on every frame. The map is filled in
    * place rather than made again, so a play does not make two thousand entries a frame.
    */
+  const departedRef = useRef(layers.departed)
   const posCache = useRef(new WeakMap<Track, { from: number; until: number; p: Position | null }>())
   const positionNow = (tr: Track, y: number): Position | null => {
     const cache = posCache.current, kept = cache.get(tr)
     if (kept && y >= kept.from && y < kept.until) return kept.p
     const [start, end] = lifeSpan(tr)
-    const p = positionAt(tr, y)
+    const p = positionAt(tr, y, departedRef.current)
     let until: number
     if (!p) until = y < start ? start : Infinity
+    else if (p.gone) until = Infinity
     else if (p.leg) until = Math.min(p.leg.arrive, end + 1)
     else {
       // A journey leaves from the stop they stand at; until then they are exactly where they are now.
@@ -460,6 +462,13 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
     }
     return out
   }
+  // The dead kept or let go: everyone is placed again, and the faces and lines follow.
+  useEffect(() => {
+    const st = state.current
+    posCache.current = new WeakMap(); st.positions.clear(); st.positions = place(st.year)
+    relayout.current(); engine.current?.ghost.redraw(); engine.current?.live.redraw()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layers.departed])
   /** The places the camera should keep in view from a moment on: people now and soon, or events in events mode. */
   const keepInView = (y: number, ahead: number): [number, number][] => {
     const st = state.current
@@ -811,8 +820,8 @@ export default function MapView({ card: cardOpen, onCard, root = null }: { card:
           onSeek={clock.seek} onPlay={play} onSpeed={clock.nextSpeed} />
       </div>
       {!following && (
-        <button type="button" className="map-follow float bar-btn fixed right-3 top-16 z-10 !h-9 text-ink max-sm:top-3" onClick={followAgain}>
-          <LocateFixed size={14} /> {t('Follow')}
+        <button type="button" className="map-follow float bar-btn fixed right-3 top-16 z-10 !h-9 text-ink max-sm:top-3" onClick={followAgain} title={focusTrack ? t('The camera goes back to this person and stays with them') : t('The camera goes where people are moving; pick someone on the map to follow only them')}>
+          <LocateFixed size={14} /> {focusTrack ? t('Follow {name}').replace('{name}', () => focusTrack.name) : t('Follow the family')}
         </button>
       )}
       {card && <MapPlaceCard x={card.x} y={card.y} place={card.place} year={card.year} people={card.people} onClose={closeCard} onZoom={zoomCard} onPick={(id) => { setCard(null); follow(id) }} />}
