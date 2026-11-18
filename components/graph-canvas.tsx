@@ -168,7 +168,7 @@ export const GraphCanvas = forwardRef<CanvasHandle, { pathIds: string[] | null; 
                   <Select look="quiet" aria-label={t('Union status')} value={unionEnd(selUnion.union) || 'together'} onChange={(v) => patchSelected(v === 'together' ? { endKind: '', endDate: '' } : { endKind: v, ...(selUnion.union.endDate ? {} : { endDate: '?' }) })} options={[{ value: 'together', label: t('together') }, { value: 'separated', label: t('separated') }, { value: 'divorced', label: t('divorced') }, { value: 'widowed', label: t('widowed') }]} />
                 </>
               )}
-              <button className="linkbar-del" title={`${t('Remove relation')} (Delete)`} aria-label={t('Remove relation')} onClick={removeSelected}><Trash2 size={14} /></button>
+              <button className="linkbar-del" title={t('Remove relation (Delete)')} aria-label={t('Remove relation')} onClick={removeSelected}><Trash2 size={14} /></button>
             </div>
           )}
         </div>

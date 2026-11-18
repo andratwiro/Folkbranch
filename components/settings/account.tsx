@@ -96,7 +96,7 @@ function SignInWays({ providers }: { providers: SignInMethods }) {
       </div>
       {providers.telegram && (
         <div className="flex flex-col items-start gap-1">
-          {accounts.includes('telegram') ? <p className="text-sm">Telegram: {t('linked')}</p> : <TelegramButton bot={providers.telegram} onAuth={telegram} />}
+          {accounts.includes('telegram') ? <p className="text-sm">{t('Telegram: linked')}</p> : <TelegramButton bot={providers.telegram} onAuth={telegram} />}
           {telegramError && <p role="alert" className="text-sm text-destructive">{telegramError}</p>}
         </div>
       )}

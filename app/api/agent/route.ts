@@ -1,4 +1,5 @@
 import { OpError } from '@/lib/ops/core'
+import { errorFor } from '@/lib/i18n-errors'
 import { headers } from 'next/headers'
 import { fromOurPages } from '@/lib/same-origin'
 import { z } from 'zod'
@@ -41,7 +42,7 @@ async function answer(req: Request, h: Headers) {
   } catch (e) {
     release()
     if (e instanceof z.ZodError || e instanceof SyntaxError) return Response.json({ error: 'bad request' }, { status: 400 })
-    if (e instanceof OpError) return Response.json({ error: e.message, plain: true }, { status: e.status })
+    if (e instanceof OpError) return Response.json({ error: errorFor(e.message, langOfRequest(h)), plain: true }, { status: e.status })
     console.error(e)
     return Response.json({ error: 'server error' }, { status: 500 })
   }
