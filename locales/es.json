@@ -2137,5 +2137,7 @@
   "Deleting several people": "Eliminando a varias personas",
   "Linking children to parents": "Vinculando hijos con sus padres",
   "Bulk edits apply at once": "Los cambios en bloque se aplican al instante",
-  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Los cambios a muchas personas a la vez y borrar varias se aplican sin revisión. Las importaciones siguen esperando su aprobación."
+  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Los cambios a muchas personas a la vez y borrar varias se aplican sin revisión. Las importaciones siguen esperando su aprobación.",
+  "Counting across the archive": "Contando en todo el archivo",
+  "Looking for who lived together": "Buscando quién vivió junto"
 }

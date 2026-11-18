@@ -2137,5 +2137,7 @@
   "Deleting several people": "Eliminant diverses persones",
   "Linking children to parents": "Vinculant fills amb els pares",
   "Bulk edits apply at once": "Els canvis en bloc s'apliquen a l'instant",
-  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Els canvis a moltes persones alhora i eliminar-ne diverses s'apliquen sense revisió. Les importacions continuen esperant el vostre vistiplau."
+  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Els canvis a moltes persones alhora i eliminar-ne diverses s'apliquen sense revisió. Les importacions continuen esperant el vostre vistiplau.",
+  "Counting across the archive": "Comptant a tot l'arxiu",
+  "Looking for who lived together": "Cercant qui va viure junt"
 }

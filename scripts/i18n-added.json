@@ -24,7 +24,9 @@
     "Delete several people": "Delete several people",
     "Link children to parents": "Link children to parents",
     "Deleting several people": "Deleting several people",
-    "Linking children to parents": "Linking children to parents"
+    "Linking children to parents": "Linking children to parents",
+    "Counting across the archive": "Counting across the archive",
+    "Looking for who lived together": "Looking for who lived together"
   },
   "ru": {
     "{count} years_one": "{count} год",
@@ -90,7 +92,9 @@
     "Delete several people": "Удалить сразу нескольких",
     "Link children to parents": "Связать детей с родителями",
     "Deleting several people": "Удаляет сразу нескольких",
-    "Linking children to parents": "Связывает детей с родителями"
+    "Linking children to parents": "Связывает детей с родителями",
+    "Counting across the archive": "Считает по всему архиву",
+    "Looking for who lived together": "Ищет, кто жил рядом"
   },
   "es": {
     "{count} years_one": "{count} año",
@@ -190,7 +194,9 @@
     "Delete several people": "Eliminar a varias personas",
     "Link children to parents": "Vincular hijos con sus padres",
     "Deleting several people": "Eliminando a varias personas",
-    "Linking children to parents": "Vinculando hijos con sus padres"
+    "Linking children to parents": "Vinculando hijos con sus padres",
+    "Counting across the archive": "Contando en todo el archivo",
+    "Looking for who lived together": "Buscando quién vivió junto"
   },
   "ca": {
     "{count} years_one": "{count} any",
@@ -290,6 +296,8 @@
     "Delete several people": "Eliminar diverses persones",
     "Link children to parents": "Vincular fills amb els pares",
     "Deleting several people": "Eliminant diverses persones",
-    "Linking children to parents": "Vinculant fills amb els pares"
+    "Linking children to parents": "Vinculant fills amb els pares",
+    "Counting across the archive": "Comptant a tot l'arxiu",
+    "Looking for who lived together": "Cercant qui va viure junt"
   }
 }

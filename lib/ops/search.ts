@@ -60,6 +60,20 @@ function snippet(text: string, terms: string[]) {
   return `${start ? '…' : ''}${text.slice(start, at + 140).trim()}${at + 140 < text.length ? '…' : ''}`
 }
 
+/** Whether two words differ by at most one letter (two for a long word): a typo, not another name. */
+function within(a: string, b: string) {
+  if (a === b) return true
+  const max = Math.max(a.length, b.length) >= 7 ? 2 : 1
+  if (b.length < 4 || Math.abs(a.length - b.length) > max) return false
+  const row = Array.from({ length: b.length + 1 }, (_, j) => j)
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0]
+    row[0] = i
+    for (let j = 1; j <= b.length; j++) { const keep = row[j]; row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = keep }
+  }
+  return row[b.length] <= max
+}
+
 const allWords = (value: string, query: string) => normal(query).split(/\s+/).filter(Boolean).every((w) => normal(value).includes(w))
 
 /** People by words in any order; if none has them all, whoever comes closest, so a typo still finds them. */
@@ -67,6 +81,9 @@ export function findPeople(actor: Actor, query: string, limit: number) {
   const people = getGraph(actor).persons.filter((p) => !p.hidden)
   const exact = people.filter((p) => allWords(`${fullName(p)} ${p.maidenName} ${p.otherNames} ${p.birthPlace} ${p.deathPlace} ${p.tags.join(' ')} ${p.facts.map((f) => `${f.kind} ${f.place} ${f.note}`).join(' ')}`, query))
   if (exact.length || !query.trim()) return exact.slice(0, limit)
+  // A name with a letter wrong, missing or added: every word of the query is close to a word of the name.
+  const close = people.filter((p) => { const names = `${fullName(p)} ${p.maidenName} ${p.otherNames}`.split(/\s+/).filter(Boolean); return normal(query).split(/\s+/).filter(Boolean).every((w) => names.some((n) => within(normal(n), w))) })
+  if (close.length) return close.slice(0, limit)
   return searchPeople(actor, query, limit).flatMap((r) => people.find((p) => p.id === r.personId) ?? [])
 }
 

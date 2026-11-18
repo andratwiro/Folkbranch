@@ -2142,5 +2142,7 @@
   "Deleting several people": "Видаляє одразу кількох",
   "Linking children to parents": "Пов’язує дітей із батьками",
   "Bulk edits apply at once": "Масові правки застосовуються одразу",
-  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Правки багатьох людей одразу та видалення кількох ідуть без перевірки. Імпорт, як і раніше, чекає на вас."
+  "Changes to many people at once, and deleting several, skip review. Imports still wait for you.": "Правки багатьох людей одразу та видалення кількох ідуть без перевірки. Імпорт, як і раніше, чекає на вас.",
+  "Counting across the archive": "Рахує по всьому архіву",
+  "Looking for who lived together": "Шукає, хто жив поруч"
 }

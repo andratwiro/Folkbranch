@@ -15,6 +15,8 @@ const READ: Record<string, [string, string]> = {
   get_relatives: ['Смотрит родню', 'Looking at relatives'],
   count_relatives: ['Считает родню', 'Counting relatives'],
   how_related: ['Считает родство', 'Working out the relation'],
+  get_statistics: ['Считает по всему архиву', 'Counting across the archive'],
+  find_overlaps: ['Ищет, кто жил рядом', 'Looking for who lived together'],
   list_pages: ['Смотрит список страниц', 'Listing pages'],
   get_page: ['Читает страницу', 'Reading a page'],
   list_photos: ['Смотрит фото', 'Looking at photos'],

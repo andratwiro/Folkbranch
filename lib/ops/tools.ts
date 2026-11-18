@@ -153,11 +153,11 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
     run: (a, x) => {
       const { g } = visiblePerson(a, x.id)
       const byId = new Map(g.persons.map((p) => [p.id, p]))
-      return [...new Family(g).relatives(x.id, lang())].filter(([id]) => !byId.get(id)!.hidden).map(([id, k]) => ({ ...brief(byId.get(id)!), relation: k.label, blood: k.blood, kind: k.kind }))
+      return [...new Family(g).relatives(x.id, lang())].filter(([id]) => !byId.get(id)!.hidden).map(([id, k]) => ({ ...brief(byId.get(id)!), relation: k.label, blood: k.kind === 'blood', kind: k.kind }))
     },
   },
   count_relatives: {
-    description: 'Relatives of one person as counts: total, by kind (blood, adopted, step, spouse, marriage), blood by degree (2 = siblings, grandparents; 4 = cousins), and the immediate family by name. Use it for "how many relatives"; pass kind or maxDegree to list names.',
+    description: 'Relatives of one person as counts: total, by kind (blood, adopted, step, spouse, marriage), blood by degree (steps up plus steps down: 1 parent or child, 2 sibling or grandparent, 3 uncle or aunt, 4 first cousin, 5 first cousin once removed), and the immediate family by name. Use it for "how many relatives"; pass kind or maxDegree to list names.',
     input: z.object({ id: z.string().optional(), name: z.string().optional(), kind: z.enum(RELATIVE_KINDS).optional(), maxDegree: z.number().int().min(1).max(30).optional(), limit: z.number().int().min(1).max(200).default(25) }),
     run: (a, x) => {
       if (!x.id) {
@@ -187,9 +187,51 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
         return { ...base, matching: picked.length, list: picked.slice(0, x.limit).map(entry), ...(picked.length > x.limit ? { more: picked.length - x.limit } : {}) }
       }
       // The immediate family by name; everyone else is a count until asked for.
-      const near = new Set([...(fam.spouses.get(x.id) ?? []), ...(fam.parents.get(x.id) ?? []), ...(fam.children.get(x.id) ?? []), ...(fam.parents.get(x.id) ?? []).flatMap((q) => fam.children.get(q) ?? [])])
+      const near = new Set([...(fam.spouses.get(x.id) ?? []), ...(fam.spouses.get(x.id) ?? []).flatMap((q) => fam.children.get(q) ?? []), ...(fam.parents.get(x.id) ?? []), ...(fam.children.get(x.id) ?? []), ...(fam.parents.get(x.id) ?? []).flatMap((q) => fam.children.get(q) ?? [])])
       near.delete(x.id)
       return { ...base, immediateFamily: all.filter(([id]) => near.has(id)).map(entry) }
+    },
+  },
+  get_statistics: {
+    description: 'Numbers about the whole archive, grouped by decade of birth, birth place, generation (0 = people with no recorded parents) or sex: people, how many have died, the average age at death (only where both years are known), and marriages with how many ended in divorce. For "average age at death by generation" and the like.',
+    input: z.strictObject({ by: z.enum(['decade', 'place', 'generation', 'sex']).default('decade'), limit: z.number().int().min(1).max(200).default(40) }),
+    run: (a, x) => {
+      const g = getGraph(a)
+      const people = g.persons.filter((p) => !p.hidden)
+      const seen = new Set(people.map((p) => p.id))
+      const parents = new Map<string, string[]>()
+      for (const l of g.parentChild) if (seen.has(l.parentId) && seen.has(l.childId)) parents.set(l.childId, [...(parents.get(l.childId) ?? []), l.parentId])
+      const depth = new Map<string, number>()
+      const gen = (id: string, guard = 0): number => { if (depth.has(id)) return depth.get(id)!; const ps = parents.get(id) ?? []; const d = guard > 60 || !ps.length ? 0 : 1 + Math.max(...ps.map((p) => gen(p, guard + 1))); depth.set(id, d); return d }
+      const key = (p: Person) => (x.by === 'decade' ? (p.birthYear ? `${Math.floor(p.birthYear / 10) * 10}s` : '') : x.by === 'place' ? p.birthPlace.split(',')[0].trim() : x.by === 'sex' ? p.sex : String(gen(p.id))) || 'unknown'
+      const unionsOf = (id: string) => g.unions.filter((u) => (u.aId === id || u.bId === id) && seen.has(u.aId) && seen.has(u.bId))
+      const groups = [...Map.groupBy(people, key)].map(([group, list]) => {
+        const aged = list.filter((p) => p.birthYear && p.deathYear && p.deathYear >= p.birthYear)
+        const unions = new Set(list.flatMap((p) => unionsOf(p.id).map((u) => u.id)))
+        const divorced = [...unions].filter((id) => { const u = g.unions.find((q) => q.id === id)!; return unionEnd(u) === 'divorced' }).length
+        return { group, people: list.length, died: list.filter((p) => !p.living).length, averageAgeAtDeath: aged.length ? Math.round((aged.reduce((n, p) => n + (p.deathYear! - p.birthYear!), 0) / aged.length) * 10) / 10 : null, ageKnownFor: aged.length, marriages: unions.size, divorced }
+      }).sort((m, n) => (x.by === 'decade' || x.by === 'generation' ? m.group.localeCompare(n.group, undefined, { numeric: true }) : n.people - m.people))
+      return { by: x.by, people: people.length, groups: groups.slice(0, x.limit) }
+    },
+  },
+  find_overlaps: {
+    description: 'Who lived in the same place at the same time: for a place (a part of its name) the people whose birth, death or a fact names it, and the pairs of them whose lifetimes overlap. Without a place, the places with the most such people.',
+    input: z.strictObject({ place: z.string().optional(), limit: z.number().int().min(1).max(100).default(20) }),
+    run: (a, x) => {
+      const people = getGraph(a).persons.filter((p) => !p.hidden)
+      const low = (s: string) => s.toLowerCase().replace(/ё/g, 'е')
+      const placesOf = (p: Person) => [...new Set([p.birthPlace, p.deathPlace, ...p.facts.map((f) => f.place)].map((s) => s.split(',')[0].trim()).filter(Boolean))]
+      const byPlace = new Map<string, Person[]>()
+      for (const p of people) for (const pl of placesOf(p)) if (!x.place || low(pl).includes(low(x.place))) byPlace.set(pl, [...(byPlace.get(pl) ?? []), p])
+      const span = (p: Person): [number, number] | null => p.birthYear ? [p.birthYear, p.deathYear ?? (p.living ? new Date().getFullYear() : p.birthYear + 80)] : null
+      return [...byPlace].filter(([, list]) => list.length > 1).map(([place, list]) => {
+        const pairs: { a: string; b: string; from: number; to: number }[] = []
+        for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+          const s = span(list[i]), t = span(list[j])
+          if (s && t && Math.max(s[0], t[0]) <= Math.min(s[1], t[1])) pairs.push({ a: list[i].id, b: list[j].id, from: Math.max(s[0], t[0]), to: Math.min(s[1], t[1]) })
+        }
+        return { place, people: list.map((p) => ({ id: p.id, name: fullName(p), years: lifeYears(p) })), overlapping: pairs.length, pairs: pairs.slice(0, 30) }
+      }).filter((r) => r.overlapping > 0).sort((m, n) => n.overlapping - m.overlapping).slice(0, x.limit)
     },
   },
   how_related: {
@@ -228,9 +270,13 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
     run: (a) => listPlaces(a),
   },
   export_text: {
-    description: 'The whole graph in the text format: `family Title`, `Name id: x, b: 1880, d: 1950, sex: m`, `A + B m: 1905` with children indented below. Edit it and send it back with import_text.',
-    input: z.object({}),
-    run: (a) => serializeFamilyText(getGraph(a), getSetting('familyName') ?? ''),
+    description: 'The whole graph in the text format: `family Title`, `Name id: x, b: 1880, d: 1950, sex: m`, `A + B m: 1905` with children indented below. Living people are left out unless hideLiving is false. Edit it and send it back with import_text.',
+    input: z.strictObject({ hideLiving: z.boolean().default(true).describe('False keeps living people in the text') }),
+    run: (a, x) => {
+      const g = getGraph(a)
+      const out = new Set(g.persons.filter((p) => p.hidden || (x.hideLiving && p.living)).map((p) => p.id))
+      return serializeFamilyText(out.size ? { ...g, persons: g.persons.filter((p) => !out.has(p.id)), parentChild: g.parentChild.filter((l) => !out.has(l.parentId) && !out.has(l.childId)), unions: g.unions.filter((u) => !out.has(u.aId) && !out.has(u.bId)) } : g, getSetting('familyName') ?? '')
+    },
   },
   preview_text: {
     description: 'What import_text would do with this text, without changing anything.',
@@ -266,7 +312,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
 /** Every request carries what its tools look like, so only these go along until the model asks for more. */
 export const CORE_TOOLS = ['search_people', 'query_people', 'search_archive', 'get_person', 'get_people', 'how_related', 'count_relatives', 'create_person', 'update_person', 'add_fact', 'delete_person', 'add_relation', 'remove_relation', 'import_text', 'undo', 'get_history', 'set_plan', 'use_tools']
 export const TOOL_GROUPS: Record<string, { about: string; tools: string[] }> = {
-  people: { about: 'many at once, relatives, gaps, overview, links, tree, tables', tools: ['update_people', 'add_fact_to_people', 'delete_people', 'link_people', 'get_relatives', 'find_gaps', 'get_overview', 'update_relation', 'move_relation', 'remove_parent_links', 'export_text', 'preview_text', 'parse_table'] },
+  people: { about: 'many at once, relatives, gaps, overview, links, tree, tables', tools: ['update_people', 'add_fact_to_people', 'delete_people', 'link_people', 'get_statistics', 'find_overlaps', 'get_relatives', 'find_gaps', 'get_overview', 'update_relation', 'move_relation', 'remove_parent_links', 'export_text', 'preview_text', 'parse_table'] },
   sources: { about: 'adding or removing a source, versions of values', tools: ['add_source', 'remove_source', 'add_version', 'choose_version', 'reject_version', 'restore_version'] },
   files: { about: 'photos, scans, avatars, attached files, GEDCOM, research cases', tools: ['import_kinship_case', 'list_photos', 'view_photo', 'save_attachment', 'set_avatar', 'tag_photo', 'untag_photo', 'update_photo', 'delete_photo', 'upload_photo', 'read_attachment', 'import_gedcom_attachment', 'export_gedcom', 'preview_gedcom', 'import_gedcom'] },
   pages: { about: 'pages about people', tools: ['list_pages', 'get_page', 'create_page', 'update_page', 'move_page', 'delete_page'] },

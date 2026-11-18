@@ -58,6 +58,8 @@ export const OUTPUTS: Record<string, z.ZodType> = {
     immediateFamily: z.array(brief.extend({ relation: text, kind: text, degree: z.number().optional() })).optional(),
     matching: z.number().optional(), more: z.number().optional(), list: z.array(brief.extend({ relation: text, kind: text, degree: z.number().optional() })).optional(),
   })]),
+  get_statistics: z.object({ by: text, people: z.number(), groups: z.array(z.object({ group: text, people: z.number(), died: z.number(), averageAgeAtDeath: z.number().nullable(), ageKnownFor: z.number(), marriages: z.number(), divorced: z.number() })) }),
+  find_overlaps: z.array(z.object({ place: text, people: z.array(z.object({ id, name: text, years: text })), overlapping: z.number(), pairs: z.array(z.object({ a: id, b: id, from: z.number(), to: z.number() })) })),
   how_related: z.object({ relation: text.nullable(), blood: z.boolean().optional(), path: z.array(z.object({ id, name: text })).optional() }),
   list_pages: z.array(pageMeta),
   get_page: pageMeta.extend({ markdown: text, content: z.array(z.unknown()).optional() }),
