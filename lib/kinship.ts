@@ -10,7 +10,19 @@ export interface Kin {
   /** Person ids from `from` to `to`. */
   path: string[]
   blood: boolean
+  /** Why this person counts as a relative; see `RELATIVE_KINDS`. */
+  kind: KinKind
+  /** Blood relatives only: steps up to the nearest shared ancestor plus steps down (a sibling 2, a cousin 4). */
+  degree?: number
 }
+
+/**
+ * The one definition of "a relative": everyone this person is connected to by a birth parent, an adoption, a step
+ * relation or a marriage, at any distance. A spouse of a blood relative counts, as a relative by marriage, but is never
+ * counted among the blood relatives. Counts say which kind they count; a total always names what it adds up.
+ */
+export const RELATIVE_KINDS = ['blood', 'adopted', 'step', 'spouse', 'marriage'] as const
+export type KinKind = (typeof RELATIVE_KINDS)[number]
 
 export class Family {
   parents = new Map<string, string[]>()
@@ -69,10 +81,13 @@ export class Family {
     return best
   }
 
-  /** Siblings with only one shared parent are half-siblings. */
+  /**
+   * Siblings are half-siblings only when they share one parent and each has another parent on record who is not
+   * the other's. With the second parent of one of them not recorded, that parent may well be the shared one.
+   */
   private isHalf(a: string, b: string) {
     const pa = this.parents.get(a) ?? [], pb = this.parents.get(b) ?? []
-    return pa.filter((p) => pb.includes(p)).length === 1 && (pa.length > 1 || pb.length > 1)
+    return pa.filter((p) => pb.includes(p)).length === 1 && pa.some((p) => !pb.includes(p)) && pb.some((p) => !pa.includes(p))
   }
 
   private pathIsAdopted(path: string[]) {
@@ -86,22 +101,23 @@ export class Family {
     const b = this.blood(from, to)
     if (b) {
       let label = T.blood(b.up, b.down, s, b.up === 1 && b.down === 1 && this.isHalf(from, to))
-      if (this.pathIsAdopted(b.path)) label = T.adopted(label, s)
-      else if (this.step.has(`${to}|${from}`)) label = T.stepParent(s)
-      else if (this.step.has(`${from}|${to}`)) label = T.stepChild(s)
-      return { label, path: b.path, blood: true }
+      let kind: KinKind = 'blood'
+      if (this.pathIsAdopted(b.path)) { label = T.adopted(label, s); kind = 'adopted' }
+      else if (this.step.has(`${to}|${from}`)) { label = T.stepParent(s); kind = 'step' }
+      else if (this.step.has(`${from}|${to}`)) { label = T.stepChild(s); kind = 'step' }
+      return { label, path: b.path, blood: true, kind, degree: b.up + b.down }
     }
     const spouses = this.spouses.get(from) ?? []
-    if (spouses.includes(to)) return { label: T.spouse(s), path: [from, to], blood: false }
+    if (spouses.includes(to)) return { label: T.spouse(s), path: [from, to], blood: false, kind: 'spouse' }
 
     // A parent's spouse who is not a parent: stepparent. A spouse's child: stepchild.
     // Only when the other parent is on record as someone else: with one parent on record, the partner may well be the other parent.
     const mine = this.parents.get(from) ?? []
     for (const p of mine)
-      if ((this.spouses.get(p) ?? []).includes(to)) return { label: mine.length === 1 ? T.parentsPartner(s, this.sex.get(p) ?? 'U') : T.stepParent(s), path: [from, p, to], blood: false }
+      if ((this.spouses.get(p) ?? []).includes(to)) return { label: mine.length === 1 ? T.parentsPartner(s, this.sex.get(p) ?? 'U') : T.stepParent(s), path: [from, p, to], blood: false, kind: 'step' }
     for (const sp of spouses) {
       const theirs = this.parents.get(to) ?? []
-      if (theirs.includes(sp)) return { label: theirs.length === 1 ? T.partnersChild(s, this.sex.get(sp) ?? 'U') : T.stepChild(s), path: [from, sp, to], blood: false }
+      if (theirs.includes(sp)) return { label: theirs.length === 1 ? T.partnersChild(s, this.sex.get(sp) ?? 'U') : T.stepChild(s), path: [from, sp, to], blood: false, kind: 'step' }
     }
 
     // Through my spouse: their parents and siblings.
@@ -110,16 +126,16 @@ export class Family {
       if (!via) continue
       const key = `${via.up},${via.down}`
       const named = T.inLawViaSpouse(key, this.sex.get(from) ?? 'U', this.sex.get(sp) ?? 'U', s)
-      if (named) return { label: named, path: [from, ...via.path], blood: false }
-      return { label: T.spouseKin(T.blood(via.up, via.down, s, false), this.sex.get(sp) ?? 'U'), path: [from, ...via.path], blood: false }
+      if (named) return { label: named, path: [from, ...via.path], blood: false, kind: 'marriage' }
+      return { label: T.spouseKin(T.blood(via.up, via.down, s, false), this.sex.get(sp) ?? 'U'), path: [from, ...via.path], blood: false, kind: 'marriage' }
     }
     // Through the other person's spouse: my child's or sibling's spouse.
     for (const sp of this.spouses.get(to) ?? []) {
       const via = this.blood(from, sp)
       if (!via) continue
       const named = T.inLawOfKin(`${via.up},${via.down}`, s)
-      if (named) return { label: named, path: [...via.path, to], blood: false }
-      return { label: T.kinSpouse(T.blood(via.up, via.down, this.sex.get(sp) ?? 'U', false), s, this.sex.get(sp) ?? 'U'), path: [...via.path, to], blood: false }
+      if (named) return { label: named, path: [...via.path, to], blood: false, kind: 'marriage' }
+      return { label: T.kinSpouse(T.blood(via.up, via.down, this.sex.get(sp) ?? 'U', false), s, this.sex.get(sp) ?? 'U'), path: [...via.path, to], blood: false, kind: 'marriage' }
     }
     return null
   }

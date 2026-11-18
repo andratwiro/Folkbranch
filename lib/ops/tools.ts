@@ -2,7 +2,7 @@
 // this list, so what one can do and what the ops layer allows never drift apart.
 import { z } from 'zod'
 import { blocksToMarkdown } from '../markdown'
-import { Family } from '../kinship'
+import { Family, RELATIVE_KINDS, type KinKind } from '../kinship'
 import { parseFamilyText, planFamilyText, serializeFamilyText } from '../textformat'
 import { summary } from '../claims'
 import { guessMapping, parseCsv, rowsToText, type Mapping } from '../import-formats'
@@ -43,6 +43,8 @@ export interface ToolDef {
   /** What the model gets instead of the output, when the output holds a secret only the person may see. */
   forModel?: (output: any) => unknown
   /** A picture or document the model looks at, fetched for it alone: the chat keeps only the answer. */
+  /** A long list in `ids` is read this many at a time, reporting progress between the parts. */
+  slices?: number
   shown?: (actor: Actor, output: any) => Promise<{ file: Buffer; mediaType: string; name: string }>
 }
 
@@ -58,7 +60,7 @@ function visiblePerson(actor: Actor, id: string) {
 }
 
 /** Read tools: what each returns is already limited by the caller's role in the ops layer. */
-const READS: Record<string, { description: string; input: z.ZodObject; run: (a: Actor, x: any) => unknown }> = {
+const READS: Record<string, { description: string; input: z.ZodObject; run: (a: Actor, x: any) => unknown; slices?: number }> = {
   get_overview: {
     description: 'Start here. Who you are in this archive, whether your writes go to review, how many people there are, how much is unsourced or in conflict, and how many of your drafts wait.',
     input: z.object({}),
@@ -116,13 +118,68 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
       }
     },
   },
+  get_people: {
+    description: 'Several people at once, trimmed: names, dates, places, certainty, facts (kind, date, place) and the ids of parents, children and spouses. Use it instead of many get_person calls; get_person has sources, versions and pages.',
+    input: z.object({ ids: z.array(z.string()).min(1).max(60) }),
+    slices: 10,
+    run: (a, x) => {
+      const g = getGraph(a)
+      const byId = new Map(g.persons.map((q) => [q.id, q]))
+      return x.ids.map((id: string) => {
+        const q = byId.get(id)
+        if (!q) return { id, missing: true as const }
+        if (q.hidden) return { id, hidden: true as const }
+        return {
+          id, name: fullName(q), maidenName: q.maidenName, sex: q.sex, years: lifeYears(q), living: q.living, birthDate: q.birthDate, birthPlace: q.birthPlace, deathDate: q.deathDate, deathPlace: q.deathPlace, certainty: q.certainty, tags: q.tags,
+          facts: q.facts.map((f) => ({ kind: f.kind, date: f.date, place: f.place })),
+          parentIds: g.parentChild.filter((l) => l.childId === id).map((l) => l.parentId), childIds: g.parentChild.filter((l) => l.parentId === id).map((l) => l.childId),
+          spouseIds: g.unions.filter((u) => u.aId === id || u.bId === id).map((u) => (u.aId === id ? u.bId : u.aId)),
+        }
+      })
+    },
+  },
   get_relatives: {
-    description: 'Everyone related to a person, with the kinship term for each.',
+    description: 'Everyone related to a person, one row each with the kinship term. Long for a big family: for a count or a summary use count_relatives instead.',
     input: z.object({ id: z.string() }),
     run: (a, x) => {
       const { g } = visiblePerson(a, x.id)
       const byId = new Map(g.persons.map((p) => [p.id, p]))
-      return [...new Family(g).relatives(x.id, lang())].map(([id, k]) => ({ ...brief(byId.get(id)!), relation: k.label, blood: k.blood }))
+      return [...new Family(g).relatives(x.id, lang())].map(([id, k]) => ({ ...brief(byId.get(id)!), relation: k.label, blood: k.blood, kind: k.kind }))
+    },
+  },
+  count_relatives: {
+    description: 'Relatives of one person as counts: total, by kind (blood, adopted, step, spouse, marriage), blood by degree (2 = siblings, grandparents; 4 = cousins), and the immediate family by name. Use it for "how many relatives"; pass kind or maxDegree to list names.',
+    input: z.object({ id: z.string().optional(), name: z.string().optional(), kind: z.enum(RELATIVE_KINDS).optional(), maxDegree: z.number().int().min(1).max(30).optional(), limit: z.number().int().min(1).max(200).default(25) }),
+    run: (a, x) => {
+      if (!x.id) {
+        // A name saves the search step; a name that fits several people is handed back for the person to choose.
+        if (!x.name?.trim()) throw new OpError(400, 'pass id or name')
+        const found = findPeople(a, x.name, 6).filter((q) => !q.hidden)
+        if (!found.length) throw new OpError(404, `nobody is called ${x.name}`)
+        if (found.length > 1) return { ambiguous: found.map(brief), note: 'The name fits more than one person: ask which one, with years and places. Do not choose.' }
+        x = { ...x, id: found[0].id }
+      }
+      const { g, p } = visiblePerson(a, x.id)
+      const byId = new Map(g.persons.map((q) => [q.id, q]))
+      const fam = new Family(g)
+      const all = [...fam.relatives(x.id, lang())]
+      const entry = ([id, k]: (typeof all)[number]) => {
+        const q = byId.get(id)!
+        return q.hidden ? { id, hidden: true as const } : { id, name: fullName(q), years: lifeYears(q), relation: k.label, kind: k.kind, ...(k.degree ? { degree: k.degree } : {}) }
+      }
+      const byKind = Object.fromEntries(RELATIVE_KINDS.map((k) => [k, all.filter(([, r]) => r.kind === k).length])) as Record<KinKind, number>
+      const bloodByDegree: Record<string, number> = {}
+      for (const [, r] of all) if (r.kind === 'blood') bloodByDegree[r.degree!] = (bloodByDegree[r.degree!] ?? 0) + 1
+      const base = { person: { id: p.id, name: fullName(p) }, total: all.length, byKind, bloodByDegree, hiddenFromYou: all.filter(([id]) => byId.get(id)!.hidden).length, definition: 'A relative is anyone connected by a birth parent, an adoption, a step relation or a marriage, at any distance. The spouse of a blood relative counts as a relative by marriage, not as a blood relative. "Blood" excludes adopted, step, spouse and by marriage.' }
+      if (x.kind || x.maxDegree) {
+        const picked = all.filter(([, r]) => (!x.kind || r.kind === x.kind) && (!x.maxDegree || (r.degree !== undefined && r.degree <= x.maxDegree)))
+          .sort((m, n) => (m[1].degree ?? 99) - (n[1].degree ?? 99) || m[1].label.localeCompare(n[1].label))
+        return { ...base, matching: picked.length, list: picked.slice(0, x.limit).map(entry), ...(picked.length > x.limit ? { more: picked.length - x.limit } : {}) }
+      }
+      // The immediate family by name; everyone else is a count until asked for.
+      const near = new Set([...(fam.spouses.get(x.id) ?? []), ...(fam.parents.get(x.id) ?? []), ...(fam.children.get(x.id) ?? []), ...(fam.parents.get(x.id) ?? []).flatMap((q) => fam.children.get(q) ?? [])])
+      near.delete(x.id)
+      return { ...base, immediateFamily: all.filter(([id]) => near.has(id)).map(entry) }
     },
   },
   how_related: {
@@ -196,9 +253,9 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
 }
 
 /** Every request carries what its tools look like, so only these go along until the model asks for more. */
-export const CORE_TOOLS = ['search_people', 'query_people', 'search_archive', 'get_person', 'how_related', 'create_person', 'update_person', 'add_fact', 'delete_person', 'add_relation', 'remove_relation', 'import_text', 'undo', 'get_history', 'set_plan', 'use_tools']
+export const CORE_TOOLS = ['search_people', 'query_people', 'search_archive', 'get_person', 'get_people', 'how_related', 'count_relatives', 'create_person', 'update_person', 'add_fact', 'delete_person', 'add_relation', 'remove_relation', 'import_text', 'undo', 'get_history', 'set_plan', 'use_tools']
 export const TOOL_GROUPS: Record<string, { about: string; tools: string[] }> = {
-  people: { about: 'many at once, relatives, gaps, overview, links, tree, tables', tools: ['update_people', 'get_relatives', 'find_gaps', 'get_overview', 'update_relation', 'move_relation', 'remove_parent_links', 'export_text', 'preview_text', 'parse_table'] },
+  people: { about: 'many at once, relatives, gaps, overview, links, tree, tables', tools: ['update_people', 'add_fact_to_people', 'get_relatives', 'find_gaps', 'get_overview', 'update_relation', 'move_relation', 'remove_parent_links', 'export_text', 'preview_text', 'parse_table'] },
   sources: { about: 'adding or removing a source, versions of values', tools: ['add_source', 'remove_source', 'add_version', 'choose_version', 'reject_version', 'restore_version'] },
   files: { about: 'photos, scans, avatars, attached files, GEDCOM, research cases', tools: ['import_kinship_case', 'list_photos', 'view_photo', 'save_attachment', 'set_avatar', 'tag_photo', 'untag_photo', 'update_photo', 'delete_photo', 'upload_photo', 'read_attachment', 'import_gedcom_attachment', 'export_gedcom', 'preview_gedcom', 'import_gedcom'] },
   pages: { about: 'pages about people', tools: ['list_pages', 'get_page', 'create_page', 'update_page', 'move_page', 'delete_page'] },

@@ -6,11 +6,12 @@
 //   node scripts/ui-check.mjs --no-build      use the build already in .next
 //   node scripts/ui-check.mjs layout          only the checks whose file name contains "layout"
 // Screenshots of every state it looked at go to ./ui-shots (UI_SHOTS=dir to move them), for the pull request.
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { startApp } from '../tests/ui/serve.mjs'
+import { startModelStub } from '../tests/ui/model-stub.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const args = process.argv.slice(2)
@@ -30,6 +31,8 @@ const checks = [
   { file: 'tests/ui/map-layers.mjs', port: 3591 },
   { file: 'tests/ui/chart-drag.mjs', port: 3694 },
   { file: 'tests/ui/chart-marks.mjs', port: 3695 },
+  { file: 'tests/ui/settings-ai.mjs', port: 3594 },
+  { file: 'tests/ui/assistant-panel.mjs', port: 3595, stub: true },
   { file: 'tests/e2e/map.mjs', port: 3592 },
   { file: 'tests/ui/map-reload.mjs', port: 3593, people: 2000, perf: true },
 ].filter((c) => (perf || !c.perf) && (!only.length || only.some((o) => c.file.includes(o))))
@@ -37,11 +40,14 @@ const checks = [
 let failed = 0
 for (const c of checks) {
   console.log(`== ${c.file}`)
-  const app = await startApp({ port: c.port, people: c.people ?? 0 })
+  // A check that talks to the assistant gets a model that costs nothing: the "local model" provider pointed at a stub.
+  const stub = c.stub ? await startModelStub(c.port + 100) : null
+  const app = await startApp({ port: c.port, people: c.people ?? 0, env: stub ? { AGENT_PROVIDER: 'local', AGENT_BASE_URL: stub.url, AGENT_MODEL: 'stub' } : {} }).catch((e) => { stub?.stop(); throw e })
   try {
-    const r = spawnSync('node', [c.file], { cwd: root, stdio: 'inherit', env: { ...process.env, FG_URL: app.B, FG_COOKIE: app.cookie, UI_SHOTS: shots, NODE_OPTIONS: `--import "${path.join(root, 'tests/e2e/no-tour.mjs')}"` } })
+    // Asynchronous: the model stub of a check runs in this process and must keep answering.
+    const r = await new Promise((done) => spawn('node', [c.file], { cwd: root, stdio: 'inherit', env: { ...process.env, FG_URL: app.B, FG_COOKIE: app.cookie, UI_SHOTS: shots, NODE_OPTIONS: `--import "${path.join(root, 'tests/e2e/no-tour.mjs')}"` } }).on('exit', (code) => done({ status: code })))
     if (r.status !== 0) failed++
-  } finally { app.stop() }
+  } finally { app.stop(); stub?.stop() }
 }
 console.log(`\n${checks.length - failed} of ${checks.length} checks passed; screenshots in ${shots} (${existsSync(shots) ? readdirSync(shots).length : 0} files)`)
 process.exit(failed ? 1 : 0)

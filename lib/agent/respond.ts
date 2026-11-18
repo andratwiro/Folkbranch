@@ -5,6 +5,7 @@ import { assistantActor, assistantTools, buildAgent, ToolRefusal } from './agent
 import { modelSees, providerFailure, providerFor, replaceMissingModel } from './provider-key'
 import { OpError } from '../ops/core'
 import { tell } from '../ops/settings'
+import { stampMaker } from './stamp'
 import { attachmentBytes, attachmentIdFromUrl, attachmentView, getAttachment, readAttachmentText } from './attachments'
 
 export const chatInput = z.object({
@@ -67,10 +68,7 @@ export async function assistantResponse(person: Actor, body: unknown, opts: { mo
     abortSignal: opts.abortSignal,
     onError: (e) => (e instanceof ToolRefusal ? e.message : (e as { cause?: unknown })?.cause instanceof ToolRefusal ? ((e as { cause: Error }).cause.message) : providerFailure(e) ?? 'The assistant could not answer. Try again.'),
     // What the answer cost, for the check script and anyone who wants to watch it.
-    messageMetadata: ({ part }) => {
-      if (part.type === 'start') return { at: Date.now() }
-      if (part.type !== 'finish') return undefined
-      return { usage: part.totalUsage }
-    },
+    // When it began, and at the end how long it took, in how many steps and tokens (see stamp.ts).
+    messageMetadata: ((stamp) => ({ part }: { part: Parameters<typeof stamp>[0] }) => stamp(part))(stampMaker()),
   })
 }

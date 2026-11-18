@@ -6,6 +6,9 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ### Fixed
 - On the chart, dropping a couple's dot on a child who had only one of them now adds the other parent (as mother or father by sex). Before, it did nothing and said the people were already linked. A child who has a parent outside the couple, or two parents already, is refused with a reason.
+- The "Thinking" line under your first message no longer drops a few pixels a moment after it appears, and the answer starts in its place instead of jumping up.
+- A brother or sister is no longer called a half-brother or half-sister when only one of them has a second parent on record: the missing parent may be the shared one.
+- Settings > AI: the units on the usage cards ("this month", "tokens today") are no longer cut off by the card's edge, and the assistant's tokens for the day are said once.
 
 ### Added
 - **An existing link can be moved.** Click a line on the chart and a handle appears on each end; drag one onto another person to move that end there: the wrong parent becomes the right one, the wrong child the right one, a partner is replaced. It is one entry in History and one Undo. A child with two parents replaces the one of the same sex as the new person. The assistant and the API have `move_relation` for the same.
@@ -14,6 +17,9 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ### Changed
 - **Tidier lines on the family chart.** A couple now stands between its parents and its children, not under its parents only, so a child is no longer drawn far across the chart from its parents: on a generated 2,000-person family the average line is a fifteenth as far across, the gaps between rows stay level (one was 1,525 px tall) and the crossings fall from 252 to 0. A child a few pixels off the stem of its parents is moved into line, so the stem no longer takes a small jog with squeezed corners.
+- While the assistant works, the panel says what the step is about: the person whose card it reads (name and a small avatar that opens them on the chart), "12 of 40" for a long read, and the fact it is writing. The assistant can also read many cards in one call (`get_people`) and add one fact to many people (`add_fact_to_people`) with one confirmation and one undo.
+- The assistant answers "how many relatives" in two round trips instead of five, with about a third of the tokens: a new `count_relatives` tool (also over MCP) returns counts by kind (blood, adopted, step, spouse, by marriage) and degree, with names only on request. A spouse of a blood relative is counted as a relative by marriage, never as a blood relative.
+- Each answer from the assistant shows the time it came and how long it took ("14:32 · 12 s"); on a long answer, opening it shows the steps and tokens. It is kept with the conversation on this device. Older answers show nothing.
 
 ## 1.7.0 - 2026-11-17
 

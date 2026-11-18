@@ -1741,6 +1741,7 @@ const es: Record<string, string> = {
   'Ищет по всему архиву': 'Buscando en todo el archivo',
   'Читает карточку': 'Leyendo una ficha',
   'Смотрит родню': 'Mirando los familiares',
+  'Считает родню': 'Contando los familiares',
   'Считает родство': 'Calculando el parentesco',
   'Смотрит список страниц': 'Mirando la lista de páginas',
   'Читает страницу': 'Leyendo una página',
@@ -2239,5 +2240,8 @@ const es: Record<string, string> = {
   'Развод: две косые черты на линии': 'Divorcio: dos barras en la línea',
   'Разлука без развода: одна косая черта': 'Separación sin divorcio: una barra',
   'Овдовели: линия не перечёркнута, смерть видна на карточке': 'Viudez: la línea no se tacha; la muerte se ve en la ficha',
+  'шагов': 'pasos',
+  'Читает карточки': 'Leyendo fichas',
+  'Добавить факт нескольким': 'Añadir un dato a varias personas',
 }
 export default es

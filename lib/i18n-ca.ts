@@ -1741,6 +1741,7 @@ const ca: Record<string, string> = {
   'Ищет по всему архиву': "Cercant a tot l'arxiu",
   'Читает карточку': 'Llegint una fitxa',
   'Смотрит родню': 'Consultant els familiars',
+  'Считает родню': 'Comptant els familiars',
   'Считает родство': 'Calculant el parentiu',
   'Смотрит список страниц': 'Consultant la llista de pàgines',
   'Читает страницу': 'Llegint una pàgina',
@@ -2239,5 +2240,8 @@ const ca: Record<string, string> = {
   'Развод: две косые черты на линии': 'Divorci: dues barres a la línia',
   'Разлука без развода: одна косая черта': 'Separació sense divorci: una barra',
   'Овдовели: линия не перечёркнута, смерть видна на карточке': 'Viduïtat: la línia no es ratlla; la mort es veu a la fitxa',
+  'шагов': 'passos',
+  'Читает карточки': 'Llegint fitxes',
+  'Добавить факт нескольким': 'Afegeix una dada a diverses persones',
 }
 export default ca

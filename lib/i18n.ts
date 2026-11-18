@@ -802,6 +802,7 @@ const en: Record<string, string> = {
   'запросов': 'requests',
   'ключ ассистента': 'assistant\'s key',
   'мин': 'min',
+  'шагов': 'steps',
   'оставьте пустым, чтобы не менять': 'leave empty to keep it',
   'предел': 'limit',
   'Один сервис распознавания речи на всех: вы подключаете и платите, редакторы пользуются.': 'One speech recognition service for everyone: you connect and pay, editors use it.',

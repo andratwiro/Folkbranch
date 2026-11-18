@@ -91,6 +91,26 @@ export const OPS: Record<string, Def> = {
     apply: () => { throw new OpError(500, 'update_people is expanded before applying') },
     describe: () => ({ text: '' }),
   }),
+  add_fact_to_people: def({
+    risk: 'danger',
+    description: 'Add the same fact to several people as one change, undone all at once: one confirmation for the whole list. Use it instead of many add_fact calls, and only after the person agreed to the list. Each person keeps their other facts.',
+    input: z.object({
+      personIds: z.array(z.string()).min(1).max(200),
+      fact: z.strictObject({
+        kind: z.string().max(80).min(1, 'say what happened: "Occupation", "Move", "Service"'),
+        date: z.string().max(60).default(''), place: z.string().max(120).default(''), note: z.string().max(800).default(''), source: z.string().max(300).optional(),
+      }),
+    }),
+    bulk: true,
+    expand: (a, x) => {
+      if (new Set(x.personIds).size !== x.personIds.length) throw new OpError(400, 'the same person is listed twice')
+      for (const id of x.personIds) if (!isTemp(id)) personFor(a, id)
+      return x.personIds.map((personId: string) => ({ op: 'add_fact', args: { personId, fact: x.fact } }) as PlannedOp)
+    },
+    summary: (x) => `${say('Добавить факт')}: ${x.fact.kind} × ${x.personIds.length}`,
+    apply: () => { throw new OpError(500, 'add_fact_to_people is expanded before applying') },
+    describe: () => ({ text: '' }),
+  }),
   delete_person: def({
     risk: 'danger',
     description: 'Delete a person with their relations, pages and photo tags. Can be undone.',
