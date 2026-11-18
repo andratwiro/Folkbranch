@@ -59,6 +59,8 @@ export const SOURCE_LANG: Lang = 'en'
 export const langDef = (lang: Lang): LanguageDef => LANGUAGES[lang]
 
 /** Each language named in itself, as the language picker shows it. */
+/** What a picker shows: the language's own name, and "beta" while a native reader has not signed the translation off. */
+export const langLabel = (l: Lang) => (LANGUAGES[l].status === 'draft' ? `${LANGUAGES[l].name} · beta` : LANGUAGES[l].name)
 export const LANG_NAMES = Object.fromEntries(LANGS.map((l) => [l, LANGUAGES[l].name])) as Record<Lang, string>
 
 export const isLang = (s: unknown): s is Lang => typeof s === 'string' && (LANGS as string[]).includes(s)

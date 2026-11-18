@@ -9,7 +9,7 @@ import { Select } from '@/components/ui/select'
 import { api, useApp } from '@/lib/client'
 import { draftsLeft } from '@/lib/autosave'
 import { signOut } from '@/lib/sign-out'
-import { LANG_NAMES, LANGS, setLangCookie, setPageLang } from '@/lib/languages'
+import { LANGS, langLabel, setLangCookie, setPageLang } from '@/lib/languages'
 import { personName, type Lang } from '@/lib/types'
 import type { SignInMethods } from '@/lib/sign-in-methods'
 import { MailCode, OAuthButtons, TelegramButton, authPost } from '../sign-in-buttons'
@@ -51,7 +51,7 @@ export function Account({ providers }: { providers: SignInMethods }) {
     <div className="flex min-w-0 flex-col gap-7 text-sm">
       <Section title={`${me.name} · ${t(roleName[me.role])}`} description={t(roleHelp[me.role])} />
       <Section title={t('Interface language')} description={t('For you on this device only. The archive keeps its own language.')}>
-        <Select aria-label={t('Interface language')} value={lang} onChange={(next) => chooseLang(next as Lang)} options={LANGS.map((l) => ({ value: l, label: LANG_NAMES[l] }))} />
+        <Select aria-label={t('Interface language')} value={lang} onChange={(next) => chooseLang(next as Lang)} options={LANGS.map((l) => ({ value: l, label: langLabel(l) }))} />
       </Section>
       {me.role !== 'reader' && (
         <Section title={t('My card on the chart')} description={t('The chart will then show how each person is related to you. Only a living person can be chosen.')}>

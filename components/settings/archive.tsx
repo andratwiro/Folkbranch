@@ -6,7 +6,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { api, useApp } from '@/lib/client'
-import { LANG_NAMES, LANGS } from '@/lib/languages'
+import { LANGS, langLabel } from '@/lib/languages'
 import { type Lang } from '@/lib/types'
 
 export function Archive({ familyName, lang }: { familyName: string; lang: Lang }) {
@@ -24,7 +24,7 @@ export function Archive({ familyName, lang }: { familyName: string; lang: Lang }
     <div className="flex min-w-0 max-w-md flex-col gap-7 text-sm">
       <div className="flex flex-col gap-3">
         <Field label={t('Family name')} hint={t('Everyone sees it in the top bar. It saves by itself.')}><Input value={name} onChange={(e) => setName(e.target.value)} onBlur={() => name !== familyName && name && save({ familyName: name })} /></Field>
-        <Field label={t('Archive language')} hint={t('The archive\'s data language: dates, kinds of fact and the assistant\'s answers. Each person chooses their own interface language.')}><Select aria-label={t('Archive language')} value={lang} onChange={(language) => save({ language })} options={LANGS.map((l) => ({ value: l, label: LANG_NAMES[l] }))} /></Field>
+        <Field label={t('Archive language')} hint={t('The archive\'s data language: dates, kinds of fact and the assistant\'s answers. Each person chooses their own interface language.')}><Select aria-label={t('Archive language')} value={lang} onChange={(language) => save({ language })} options={LANGS.map((l) => ({ value: l, label: langLabel(l) }))} /></Field>
         {saved && <p role="status" className="flex items-center gap-1 text-xs text-ink-soft"><Check size={13} /> {t('Saved')}</p>}
       </div>
     </div>
