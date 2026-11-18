@@ -2,7 +2,9 @@
 
 All notable changes are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org). Each version is a Git tag, and ready images are at `ghcr.io/danarkhipov/folkbranch`.
 
-## Unreleased
+## 1.7.1 - 2026-11-18
+
+Chart editing and assistant work: links can be moved and marked as in a genogram, tidier chart lines, a faster and more visible assistant, and a link to ask a relative for a story.
 
 ### Fixed
 - On the chart, dropping a couple's dot on a child who had only one of them now adds the other parent (as mother or father by sex). Before, it did nothing and said the people were already linked. A child who has a parent outside the couple, or two parents already, is refused with a reason.
@@ -21,6 +23,7 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 - While the assistant works, the panel says what the step is about: the person whose card it reads (name and a small avatar that opens them on the chart), "12 of 40" for a long read, and the fact it is writing. The assistant can also read many cards in one call (`get_people`) and add one fact to many people (`add_fact_to_people`) with one confirmation and one undo.
 - The assistant answers "how many relatives" in two round trips instead of five, with about a third of the tokens: a new `count_relatives` tool (also over MCP) returns counts by kind (blood, adopted, step, spouse, by marriage) and degree, with names only on request. A spouse of a blood relative is counted as a relative by marriage, never as a blood relative.
 - Each answer from the assistant shows the time it came and how long it took ("14:32 · 12 s"); on a long answer, opening it shows the steps and tokens. It is kept with the conversation on this device. Older answers show nothing.
+- Printing the chart as a picture or PDF starts with names shown for the owner. Before, the box **Hide living relatives** was ticked every time, so a family with many living people came out as a page of "Living relative". Tick the box to hide them before sending the file to anyone. Editors start with the box ticked as before, and readers never receive the names.
 
 ## 1.7.0 - 2026-11-17
 

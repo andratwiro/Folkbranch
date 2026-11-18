@@ -18,12 +18,12 @@ const hide = (p: Person): Person => ({ ...p, givenName: '', surname: '', maidenN
 type Part = 'shown' | 'all' | Exclude<Scope, 'all'>
 
 export function PrintDialog({ graph: shown, whole, family, focusId, onClose }: { graph: Graph; whole: Graph; family: Family; focusId: string | null; onClose: () => void }) {
-  const { t, familyName, rootsBelow, canEdit, notify, lang } = useApp()
+  const { t, familyName, rootsBelow, canEdit, me, notify, lang } = useApp()
   const [mode, setMode] = useState<'one' | 'sheets' | 'image'>('one')
   const [paper, setPaper] = useState<Paper>('A3')
   const [sheet, setSheet] = useState<Paper>('A4')
   const [namePt, setNamePt] = useState(8)
-  const [hideLiving, setHideLiving] = useState(true)
+  const [hideLiving, setHideLiving] = useState(me.role !== 'owner')
   const [busy, setBusy] = useState<number | null>(null)
   // Which part of the family: what the chart shows now, all of it, or one person's branch.
   const [part, setPart] = useState<Part>('shown')
