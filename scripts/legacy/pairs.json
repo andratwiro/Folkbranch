@@ -562,5 +562,65 @@
  [
   "Событие",
   "Event"
+ ],
+ [
+  "Смотрит ссылки для рассказов",
+  "Looking at story links"
+ ],
+ [
+  "Ищет двойников среди карточек",
+  "Looking for duplicate cards"
+ ],
+ [
+  "Сравнивает две карточки",
+  "Comparing two cards"
+ ],
+ [
+  "Ищет похожие места",
+  "Looking for similar places"
+ ],
+ [
+  "Подбирает точки на карте",
+  "Looking for map points"
+ ],
+ [
+  "Закрыть ссылку для рассказа",
+  "Close a story link"
+ ],
+ [
+  "Закрывает ссылку для рассказа",
+  "Closing a story link"
+ ],
+ [
+  "Отменить правку у одного человека",
+  "Undo a change for one person"
+ ],
+ [
+  "Откатить архив до правки",
+  "Roll the archive back to a change"
+ ],
+ [
+  "Объединить места",
+  "Merge places"
+ ],
+ [
+  "Создать ссылку для рассказа",
+  "Create a story link"
+ ],
+ [
+  "Отменяет правку у одного человека",
+  "Undoing a change for one person"
+ ],
+ [
+  "Откатывает архив",
+  "Rolling the archive back"
+ ],
+ [
+  "Объединяет места",
+  "Merging places"
+ ],
+ [
+  "Создаёт ссылку для рассказа",
+  "Creating a story link"
  ]
 ]

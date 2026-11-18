@@ -35,6 +35,11 @@ const READ: Record<string, [string, string]> = {
   show_branch: ['Показывает ветку на схеме', 'Showing a branch on the chart'],
   show_path: ['Показывает путь на схеме', 'Showing the path on the chart'],
   set_chart_direction: ['Меняет направление схемы', 'Changing the chart direction'],
+  list_story_requests: ['Смотрит ссылки для рассказов', 'Looking at story links'],
+  find_duplicates: ['Ищет двойников среди карточек', 'Looking for duplicate cards'],
+  preview_merge: ['Сравнивает две карточки', 'Comparing two cards'],
+  list_similar_places: ['Ищет похожие места', 'Looking for similar places'],
+  get_place_suggestions: ['Подбирает точки на карте', 'Looking for map points'],
 }
 /** Ordinary edits: these can be allowed for a whole conversation. */
 const WRITE: Record<string, [string, string]> = {
@@ -58,6 +63,7 @@ const WRITE: Record<string, [string, string]> = {
   choose_version: ['Выбрать версию факта', 'Choose a version of a fact'],
   restore_version: ['Вернуть версию факта', 'Bring back a version of a fact'],
   add_source: ['Добавить источник', 'Add a source'],
+  revoke_story_request: ['Закрыть ссылку для рассказа', 'Close a story link'],
 }
 /** Always asked. */
 const CAREFUL: Record<string, [string, string]> = {
@@ -76,6 +82,10 @@ const CAREFUL: Record<string, [string, string]> = {
   import_gedcom_attachment: ['Импортировать файл GEDCOM', 'Import a GEDCOM file'],
   import_text: ['Импортировать данные', 'Import data'],
   undo: ['Отменить правку', 'Undo a change'],
+  undo_person: ['Отменить правку у одного человека', 'Undo a change for one person'],
+  rollback_to: ['Откатить архив до правки', 'Roll the archive back to a change'],
+  merge_places: ['Объединить места', 'Merge places'],
+  create_story_request: ['Создать ссылку для рассказа', 'Create a story link'],
   update_settings: ['Изменить настройки', 'Change settings'],
   set_user_role: ['Изменить роль', 'Change a role'],
   create_invite: ['Создать приглашение', 'Create an invitation'],
@@ -104,6 +114,11 @@ const DOING: Record<string, [string, string]> = {
   choose_version: ["Выбирает версию факта", "Choosing a version of a fact"],
   restore_version: ["Возвращает версию факта", "Bringing back a version of a fact"],
   add_source: ["Добавляет источник", "Adding a source"],
+  revoke_story_request: ["Закрывает ссылку для рассказа", "Closing a story link"],
+  undo_person: ["Отменяет правку у одного человека", "Undoing a change for one person"],
+  rollback_to: ["Откатывает архив", "Rolling the archive back"],
+  merge_places: ["Объединяет места", "Merging places"],
+  create_story_request: ["Создаёт ссылку для рассказа", "Creating a story link"],
   delete_person: ["Удаляет человека", "Deleting a person"],
   update_people: ["Меняет сразу нескольких", "Changing several people"],
   add_fact_to_people: ["Добавляет факт нескольким", "Adding a fact to several people"],

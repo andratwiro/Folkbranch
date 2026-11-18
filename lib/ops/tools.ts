@@ -20,6 +20,11 @@ import { listPlaces } from './places'
 import { OUTPUTS } from './outputs'
 import { describeOp, dispatch, myProposals } from './proposals'
 import { OPS } from './registry'
+import { duplicateCandidates, previewMerge } from './merge-people'
+import { placePointGuesses } from './place-guesses'
+import { closeRequest, createRequest, listRequests } from './story-requests'
+import { similarPlaces } from '../places'
+import { publicUrl } from '../public-url'
 import { findPeople, queryPeople, queryInput, searchArchive } from './search'
 import { archiveLang, createInvite, getSetting, tell, listHistory, listInvites, listUsers, revokeInvite, setSetting, setUserRole } from './settings'
 
@@ -260,7 +265,8 @@ export const TOOL_GROUPS: Record<string, { about: string; tools: string[] }> = {
   sources: { about: 'adding or removing a source, versions of values', tools: ['add_source', 'remove_source', 'add_version', 'choose_version', 'reject_version', 'restore_version'] },
   files: { about: 'photos, scans, avatars, attached files, GEDCOM, research cases', tools: ['import_kinship_case', 'list_photos', 'view_photo', 'save_attachment', 'set_avatar', 'tag_photo', 'untag_photo', 'update_photo', 'delete_photo', 'upload_photo', 'read_attachment', 'import_gedcom_attachment', 'export_gedcom', 'preview_gedcom', 'import_gedcom'] },
   pages: { about: 'pages about people', tools: ['list_pages', 'get_page', 'create_page', 'update_page', 'move_page', 'delete_page'] },
-  places: { about: 'places, old names', tools: ['list_places', 'create_place', 'update_place'] },
+  places: { about: 'places, old names, merging places, points for places', tools: ['list_places', 'create_place', 'update_place', 'list_similar_places', 'merge_places', 'get_place_suggestions'] },
+  merging: { about: 'duplicate cards, what a merge would do, story links, rolling back', tools: ['find_duplicates', 'preview_merge', 'list_story_requests', 'create_story_request', 'revoke_story_request', 'undo_person', 'rollback_to'] },
   screen: { about: 'show someone, a branch or a path', tools: ['focus_person', 'show_branch', 'show_path', 'set_chart_direction'] },
   admin: { about: 'name, language, access, invitations', tools: ['get_settings', 'update_settings', 'list_users', 'set_user_role', 'list_invites', 'create_invite', 'revoke_invite'] },
 }
@@ -329,7 +335,7 @@ const isPdf = (m: { mime: string; originalName: string }) => m.mime === 'applica
 
 /** A photo or scan from the archive, put in front of the model so it can read it. */
 const VIEW_PHOTO: Omit<ToolDef, 'output'> = {
-  name: 'view_photo', risk: 'read', minRole: 'reader', surfaces: ['assistant'],
+  name: 'view_photo', risk: 'read', minRole: 'reader', surfaces: ['mcp', 'assistant'],
   description: 'Look at a photo or a scanned document already in the archive (a picture or a PDF), by its id from list_photos. Read what is written, word for word, and say what you could not read. Propose what it shows with add_source, add_version or a page, never as certain when the reading is not.',
   input: z.object({ id: z.string() }),
   run: (a, x) => {
@@ -376,6 +382,50 @@ async function fullText(a: Actor, id: string) {
 
 const personNameOf = (a: Actor, id: string) => { const p = getGraph(a).persons.find((x) => x.id === id); return p && !p.hidden ? fullName(p) : '' }
 
+const personRef = (a: Actor, id: string) => ({ id, name: personNameOf(a, id) })
+const nothingLeft = () => ({ created: true as const, note: 'The link is shown to the person in the chat. You do not have it.' })
+
+/**
+ * What the app does for a person on its own pages and an agent can now do too: story links, what a merge would do, places
+ * that look alike, and point candidates. Merging two cards stays a person's own action on the page (see mergePeople).
+ */
+const PARITY: Omit<ToolDef, 'output'>[] = [
+  { name: 'list_story_requests', risk: 'read', minRole: 'editor', surfaces: ['mcp', 'assistant'], description: 'Open links that ask a relative to tell a story: who each is about and for, the question, when it expires, how many recordings came and how many wait for review. Never the link itself: it cannot be shown again.', input: z.object({}),
+    run: (a) => listRequests(a).map((r) => ({ id: r.id, personId: r.personId, about: r.about, tellerName: r.tellerName, question: r.question, received: r.received, expiresAt: r.expiresAt, createdAt: r.createdAt, waiting: r.waiting.length, state: r.waiting.length ? 'recordings wait for review' : r.received ? 'recordings reviewed' : 'waiting for a recording' })) },
+  { name: 'create_story_request', risk: 'danger', minRole: 'editor', surfaces: ['mcp', 'assistant'], description: 'Make a link asking a relative to tell a story about a person, one question a line. Whoever holds the link can only send a recording, which waits for review. In the chat the person sees the link and you never get it; a token gets it in the answer, and only a token whose edits apply at once (not one that goes to review).',
+    input: z.object({ personId: z.string(), tellerName: z.string().max(120).default(''), question: z.string().max(1200).default(''), days: z.number().int().min(1).max(365).default(60) }),
+    describe: (a, x) => [personNameOf(a, x.personId), x.tellerName].filter(Boolean).join(', '),
+    run: (a, x) => {
+      // A link is access in its own right: a draft a person has not seen yet cannot make one.
+      if (a.tokenId && a.review) throw new OpError(403, 'a token whose edits go to review cannot make a story link: ask a person to make it')
+      visiblePerson(a, x.personId)
+      const { token } = createRequest(a, { personId: x.personId, tellerName: x.tellerName, question: x.question, expiresInDays: x.days })
+      return { created: true, link: `/tell/${token}`, url: `${publicUrl()}/tell/${token}` }
+    },
+    forModel: nothingLeft },
+  { name: 'revoke_story_request', risk: 'write', minRole: 'editor', surfaces: ['mcp', 'assistant'], description: 'Close a story link so nobody can send a recording through it. Recordings already sent stay for review.', input: z.object({ id: z.string() }),
+    run: (a, x) => {
+      if (!listRequests(a).some((r) => r.id === x.id)) throw new OpError(404, 'no open story link with this id')
+      closeRequest(a, x.id)
+      return { ok: true }
+    } },
+  { name: 'find_duplicates', risk: 'read', minRole: 'editor', surfaces: ['mcp', 'assistant'], description: 'Pairs of cards that may be one person, best first, with why. Compare a pair with preview_merge. Merging is done by a person on the card.', input: z.object({}),
+    run: (a) => duplicateCandidates(a).map((d) => ({ a: personRef(a, d.a), b: personRef(a, d.b), score: d.score, why: d.why })) },
+  { name: 'preview_merge', risk: 'read', minRole: 'editor', surfaces: ['mcp', 'assistant'], description: 'What merging two cards would do: whether it is allowed (and if not, why), warnings, each field of both, and what each card holds. Changes nothing. Tell the person; the merge itself is theirs to do on the card.', input: z.object({ keepId: z.string(), dropId: z.string() }),
+    run: (a, x) => previewMerge(a, x.keepId, x.dropId) },
+  { name: 'list_similar_places', risk: 'read', minRole: 'editor', surfaces: ['mcp', 'assistant'], description: 'Pairs of place records that look like one place (a shared name and the same parent, or within 2 km). Merge a pair with merge_places.', input: z.object({}),
+    run: (a) => similarPlaces(listPlaces(a)).map(([p, q]) => ({ a: { id: p.id, name: p.name, kind: p.kind, parentId: p.parentId }, b: { id: q.id, name: q.name, kind: q.kind, parentId: q.parentId } })) },
+  { name: 'get_place_suggestions', risk: 'read', minRole: 'editor', surfaces: ['mcp', 'assistant'], description: 'Up to three candidates for the map point of a place that has none, from the GeoNames extract in the app, with why each ranks where it does. Setting the point is update_place with the lat and lon you choose.',
+    input: z.object({ placeId: z.string().optional(), name: z.string().optional() }),
+    run: (a, x) => {
+      if (!x.placeId && !x.name?.trim()) throw new OpError(400, 'pass placeId or name')
+      const loose = (s: string) => s.trim().toLowerCase().replace(/ё/g, 'е')
+      const { guesses, snapshot } = placePointGuesses(a)
+      const found = guesses.find((g) => (x.placeId ? g.placeId === x.placeId : loose(g.text) === loose(x.name ?? '')))
+      return { snapshot, candidates: (found?.candidates ?? []).slice(0, 3).map((c) => ({ geonameId: c.id, name: c.ru || c.name, country: c.cc, region: c.regionRu || c.region, lat: c.lat, lon: c.lon, matched: c.matched, why: c.why })), note: found ? undefined : snapshot ? 'This place has a point already, holds other places, or is unknown here.' : 'The GeoNames extract is not installed on this server.' }
+    } },
+]
+
 /** About a token's own drafts, so it means nothing to the assistant. */
 const NOT_FOR_ASSISTANT = new Set(['my_proposals'])
 const surfaces = (name: string): Surface[] => (NOT_FOR_ASSISTANT.has(name) ? ['mcp'] : ['mcp', 'assistant'])
@@ -409,8 +459,9 @@ export const TOOLS: ToolDef[] = ([
   { name: 'search_archive', risk: 'read', minRole: 'reader', surfaces: surfaces('search_archive'), input: z.object({ query: z.string().min(1), limit: z.number().int().min(1).max(50).default(20) }),
     description: 'Search everything written: people, facts, sources, page text and photo captions. Forgives typos and word endings. Use when you do not know where something is written.',
     run: (a, x) => searchArchive(a, x.query, x.limit) },
-  ...Object.entries(OPS).filter(([, d]) => !d.internal).map(([name, d]): Untyped => ({ name, description: d.description, input: (d.agentInput ?? d.input) as z.ZodObject, risk: d.risk, minRole: 'editor', surfaces: surfaces(name), run: (a, x) => dispatch(a, name, x), describe: (a, x) => describeOp(a, name, x) })),
+  ...Object.entries(OPS).filter(([, d]) => !d.internal).map(([name, d]): Untyped => ({ name, description: d.description, input: (d.agentInput ?? d.input) as z.ZodObject, risk: d.risk, minRole: d.ownerOnly ? 'owner' : 'editor', surfaces: d.ownerOnly ? ['assistant'] : surfaces(name), run: (a, x) => dispatch(a, name, x), describe: (a, x) => describeOp(a, name, x) })),
   ...ASSISTANT_ONLY,
+  ...PARITY,
   VIEW_PHOTO,
   ...ATTACHMENT_TOOLS,
 ] as Untyped[]).map(typed)

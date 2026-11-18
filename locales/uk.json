@@ -2123,5 +2123,18 @@
   "Follow {name}": "Слідкувати за {name}",
   "Follow the family": "Слідкувати за родиною",
   "The camera goes back to this person and stays with them": "Камера повертається до цієї людини і залишається з нею",
-  "The camera goes where people are moving; pick someone on the map to follow only them": "Камера рухається за переміщеннями людей; оберіть на мапі одну людину, щоб слідувати лише за нею"
+  "The camera goes where people are moving; pick someone on the map to follow only them": "Камера рухається за переміщеннями людей; оберіть на мапі одну людину, щоб слідувати лише за нею",
+  "Looking at story links": "Дивиться посилання для розповідей",
+  "Looking for duplicate cards": "Шукає дублікати серед карток",
+  "Comparing two cards": "Порівнює дві картки",
+  "Looking for similar places": "Шукає схожі місця",
+  "Looking for map points": "Підбирає точки на мапі",
+  "Close a story link": "Закрити посилання для розповіді",
+  "Closing a story link": "Закриває посилання для розповіді",
+  "Undo a change for one person": "Скасувати зміну в однієї людини",
+  "Roll the archive back to a change": "Відкотити архів до зміни",
+  "Undoing a change for one person": "Скасовує зміну в однієї людини",
+  "Rolling the archive back": "Відкочує архів",
+  "Merging places": "Об’єднує місця",
+  "Creating a story link": "Створює посилання для розповіді"
 }

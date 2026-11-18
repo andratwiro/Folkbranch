@@ -86,6 +86,8 @@ export interface Def<S extends z.ZodType = z.ZodType> {
   creates?: boolean
   /** Only for people's own suggestions: no model and no token is offered it. */
   internal?: boolean
+  /** As a tool: only for this role, and only the assistant (a token is never an owner). */
+  ownerOnly?: boolean
   /** Mass change: queued even for tokens allowed to write directly. */
   bulk?: boolean
   /** Never queued. */

@@ -2118,5 +2118,18 @@
   "Follow {name}": "Segueix {name}",
   "Follow the family": "Segueix la família",
   "The camera goes back to this person and stays with them": "La càmera torna a aquesta persona i es queda amb ella",
-  "The camera goes where people are moving; pick someone on the map to follow only them": "La càmera va on es mou la gent; tria algú al mapa per seguir només aquesta persona"
+  "The camera goes where people are moving; pick someone on the map to follow only them": "La càmera va on es mou la gent; tria algú al mapa per seguir només aquesta persona",
+  "Looking at story links": "Consultant els enllaços de relats",
+  "Looking for duplicate cards": "Cercant fitxes duplicades",
+  "Comparing two cards": "Comparant dues fitxes",
+  "Looking for similar places": "Cercant llocs semblants",
+  "Looking for map points": "Cercant punts al mapa",
+  "Close a story link": "Tancar un enllaç de relat",
+  "Closing a story link": "Tancant un enllaç de relat",
+  "Undo a change for one person": "Desfer un canvi d'una sola persona",
+  "Roll the archive back to a change": "Tornar l'arxiu a un canvi",
+  "Undoing a change for one person": "Desfent un canvi d'una sola persona",
+  "Rolling the archive back": "Tornant l'arxiu enrere",
+  "Merging places": "Fusionant llocs",
+  "Creating a story link": "Creant un enllaç de relat"
 }

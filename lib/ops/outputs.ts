@@ -105,6 +105,19 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   import_gedcom: write(importCount),
   import_kinship_case: write(z.object({ persons: z.number(), updated: z.number(), parents: z.number(), unions: z.number() })),
   undo: write(ok),
+  rollback_to: write(z.object({ count: z.number() })),
+  undo_person: write(z.object({ undone: z.boolean(), left: z.number() })),
+  merge_places: write(z.object({ id })),
+  list_story_requests: z.array(z.object({ id, personId: id, about: text, tellerName: text, question: text, received: z.number(), expiresAt: z.number().nullable(), createdAt: z.number(), waiting: z.number(), state: text })),
+  create_story_request: z.object({ created: z.literal(true), link: text, url: text }),
+  revoke_story_request: ok,
+  find_duplicates: z.array(z.object({ a: z.object({ id, name: text }), b: z.object({ id, name: text }), score: z.number(), why: z.array(text) })),
+  preview_merge: (() => {
+    const side = z.object({ id, name: text, updatedAt: z.number(), parents: z.number(), children: z.number(), unions: z.number(), pages: z.number(), photos: z.number(), stories: z.number(), contacts: z.number() })
+    return z.object({ blocked: text.nullable(), warnings: z.array(text), fields: z.array(z.object({ field: text, keep: text, drop: text })), keep: side, drop: side })
+  })(),
+  list_similar_places: z.array(z.object({ a: z.object({ id, name: text, kind: text, parentId: id.nullable() }), b: z.object({ id, name: text, kind: text, parentId: id.nullable() }) })),
+  get_place_suggestions: z.object({ snapshot: text.nullable(), candidates: z.array(z.object({ geonameId: z.number(), name: text, country: text, region: text, lat: z.number(), lon: z.number(), matched: text, why: z.array(text) })), note: text.optional() }),
 
   get_settings: z.object({ familyName: text, language: text }),
   update_settings: ok,

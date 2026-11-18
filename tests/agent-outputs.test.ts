@@ -95,6 +95,17 @@ async function cases(): Promise<[string, (made: Record<string, any>) => unknown,
     ['delete_person', (m) => ({ id: m.create_person.id })],
     ['undo', () => ({ historyId: getDb().select().from(schema.history).all().at(-1)!.id })],
     ['revoke_invite', (m) => ({ id: m.list_invites[0].id })],
+    ['create_story_request', () => ({ personId: f.maria.id, tellerName: 'Тётя Нина', question: 'Как вы познакомились?' })],
+    ['list_story_requests', () => ({})],
+    ['revoke_story_request', () => ({ id: getDb().select().from(schema.storyRequests).all()[0].id })],
+    ['find_duplicates', () => ({})],
+    ['preview_merge', () => ({ keepId: f.ivan.id, dropId: f.pyotr.id })],
+    ['list_similar_places', () => ({})],
+    ['get_place_suggestions', () => ({ name: 'Тула' })],
+    ['create_place', () => ({ name: 'Тула вторая' })],
+    ['merge_places', (m) => ({ keepId: m.create_place.id, dropId: getDb().select().from(schema.places).all().find((p) => p.name === 'Тула вторая')!.id })],
+    ['undo_person', () => ({ historyId: getDb().select().from(schema.history).all().filter((h) => !h.undoneAt && !h.undoOf && h.changes.includes(f.maria.id)).at(-1)!.id, personId: f.maria.id })],
+    ['rollback_to', () => ({ historyId: getDb().select().from(schema.history).all().filter((h) => !h.undoneAt && !h.undoOf).at(-1)!.id })],
   ]
 }
 

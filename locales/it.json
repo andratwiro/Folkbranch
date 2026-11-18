@@ -2118,5 +2118,18 @@
   "Follow {name}": "Segui {name}",
   "Follow the family": "Segui la famiglia",
   "The camera goes back to this person and stays with them": "La telecamera torna su questa persona e resta con lei",
-  "The camera goes where people are moving; pick someone on the map to follow only them": "La telecamera segue gli spostamenti delle persone; scegli qualcuno sulla mappa per seguire solo quella persona"
+  "The camera goes where people are moving; pick someone on the map to follow only them": "La telecamera segue gli spostamenti delle persone; scegli qualcuno sulla mappa per seguire solo quella persona",
+  "Looking at story links": "Guarda i link per i racconti",
+  "Looking for duplicate cards": "Cerca schede doppie",
+  "Comparing two cards": "Confronta due schede",
+  "Looking for similar places": "Cerca luoghi simili",
+  "Looking for map points": "Cerca punti sulla mappa",
+  "Close a story link": "Chiudi un link per un racconto",
+  "Closing a story link": "Chiude un link per un racconto",
+  "Undo a change for one person": "Annulla una modifica per una sola persona",
+  "Roll the archive back to a change": "Riporta l'archivio a una modifica",
+  "Undoing a change for one person": "Annulla una modifica per una sola persona",
+  "Rolling the archive back": "Riporta indietro l'archivio",
+  "Merging places": "Unisce i luoghi",
+  "Creating a story link": "Crea un link per un racconto"
 }
