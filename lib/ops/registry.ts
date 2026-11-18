@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { getDb, schema } from '../db'
 import { parseFamilyText, planFamilyText, type PlannedOp } from '../textformat'
 import * as claims from '../claims'
-import { personName, type Certainty, type ParentKind, type UnionKind } from '../types'
+import { personName, type Certainty, type ParentKind, type UnionEnd, type UnionKind } from '../types'
 import { newId, OpError, rollbackTo, undo, undoPart } from './core'
 import { importGedcom } from './gedcom'
 import { caseFiles, importCase } from './kinship-case'
@@ -177,7 +177,7 @@ export const OPS: Record<string, Def> = {
     input: z.object({
       type: relationType, to: z.string(), other: z.string(), otherParentId: z.string().nullish(),
       kind: z.enum(['birth', 'adopted', 'foster', 'step']).optional(), certainty: certainty.optional(),
-      unionKind: z.enum(['marriage', 'civil']).optional(), startDate: z.string().optional(), endDate: z.string().optional(),
+      unionKind: z.enum(['marriage', 'civil']).optional(), startDate: z.string().optional(), endDate: z.string().optional(), endKind: z.enum(['divorced', 'separated', 'widowed']).optional(),
     }),
     refs: { to: 'persons', other: 'persons' },
     prepare: (a, x) => {
@@ -186,14 +186,14 @@ export const OPS: Record<string, Def> = {
       const other = personFor(a, x.other)
       personFor(a, x.to)
       if (x.type === 'spouse') {
-        if (people.getGraph(a).unions.some((u) => (u.aId === x.to && u.bId === x.other) || (u.aId === x.other && u.bId === x.to))) throw new OpError(409, 'they are already spouses: nothing was changed. Use update_relation to change the dates or the state')
+        if (people.getGraph(a).unions.some((u) => (u.aId === x.to && u.bId === x.other) || (u.aId === x.other && u.bId === x.to))) throw new OpError(409, 'already married, nothing changed: they are already spouses. Use update_relation to change the dates or the state')
         assertSpouses(a, x.to, x.other)
       }
       else assertLink(a, x.type, x.to, { id: x.other, sex: other.sex, birthDate: other.birthDate, name: personName(other) }, x.kind)
       if (x.otherParentId && !isTemp(x.otherParentId)) personFor(a, x.otherParentId)
       return x
     },
-    apply: (a, x) => people.linkPeople(a, x.type, x.to, x.other, x.otherParentId, { kind: x.kind as ParentKind, certainty: x.certainty as Certainty, unionKind: x.unionKind as UnionKind, startDate: x.startDate, endDate: x.endDate }),
+    apply: (a, x) => people.linkPeople(a, x.type, x.to, x.other, x.otherParentId, { kind: x.kind as ParentKind, certainty: x.certainty as Certainty, unionKind: x.unionKind as UnionKind, startDate: x.startDate, endDate: x.endDate, endKind: x.endKind as UnionEnd | undefined }),
     describe: (x, c) => ({ text: `${c.name(x.other)} — ${tell(REL[x.type])}: ${c.name(x.to)}`, details: [x.startDate, x.kind && x.kind !== 'birth' && x.kind, x.certainty === 'assumed' && tell('assumption')].filter(Boolean) }),
   }),
   update_relation: def({

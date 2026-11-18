@@ -26,7 +26,13 @@ export interface Proposal {
   error: string | null
   createdAt: number
   ops: { op: string; text: string; details?: string[]; audio?: boolean }[]
+  /** The people the draft touches, by name and id; at most PEOPLE_SHOWN, then `morePeople` counts the rest. */
+  people: { id: string; name: string }[]
+  morePeople: number
+  operations: { op: string; count: number }[]
 }
+
+const PEOPLE_SHOWN = 20
 
 const TABLES = { persons: schema.persons, pages: schema.pages, media: schema.media, mediaTags: schema.mediaTags, history: schema.history }
 
@@ -232,10 +238,36 @@ const humanOnly = (actor: Actor) => {
   if (actor.tokenId) throw new OpError(403, 'a token cannot review proposals')
 }
 
-const toPublic = (r: typeof schema.proposals.$inferSelect): Proposal => ({
-  id: r.id, authorName: r.authorName, authorKind: r.authorKind, status: r.status, error: r.error, createdAt: r.createdAt,
-  ops: (JSON.parse(r.ops) as QueuedOp[]).map(({ op, text, details, args }) => ({ op, text, details, ...(op === 'create_story' && args.audio ? { audio: true } : {}) })),
-})
+/** Who a draft touches, so whoever accepts it sees the people before the changes: a new person's name, or a card's. */
+function touched(queued: QueuedOp[]) {
+  const ids = new Set<string>()
+  const counts = new Map<string, number>()
+  for (const q of queued) {
+    counts.set(q.op, (counts.get(q.op) ?? 0) + 1)
+    if (q.op === 'create_person' && q.tempId) ids.add(q.tempId)
+    // The people an operation names by a reference, plus a child's other parent, which no reference declares.
+    for (const [key, table] of [...Object.entries(OPS[q.op]?.refs ?? {}), ['otherParentId', 'persons']] as [string, string | undefined][]) {
+      if (table !== 'persons') continue
+      const v = q.args[key]
+      for (const x of Array.isArray(v) ? v : [v]) if (typeof x === 'string' && x) ids.add(x)
+    }
+  }
+  const all = [...ids]
+  return {
+    people: all.slice(0, PEOPLE_SHOWN).map((id) => ({ id, name: nameInDraft(id, queued) })),
+    morePeople: Math.max(0, all.length - PEOPLE_SHOWN),
+    operations: [...counts].map(([op, count]) => ({ op, count })),
+  }
+}
+
+const toPublic = (r: typeof schema.proposals.$inferSelect): Proposal => {
+  const queued = JSON.parse(r.ops) as QueuedOp[]
+  return {
+    id: r.id, authorName: r.authorName, authorKind: r.authorKind, status: r.status, error: r.error, createdAt: r.createdAt,
+    ops: queued.map(({ op, text, details, args }) => ({ op, text, details, ...(op === 'create_story' && args.audio ? { audio: true } : {}) })),
+    ...touched(queued),
+  }
+}
 
 export function listProposals(actor: Actor): Proposal[] {
   humanOnly(actor)

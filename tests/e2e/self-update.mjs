@@ -97,6 +97,8 @@ try {
   const people = copy.prepare('select count(*) as n from persons').get().n
   copy.close()
   ok('the copy from before the update is whole and holds everyone', integrity === 'ok' && people === before.persons.length, `${integrity} ${people}`)
+} catch (e) {
+  ok('the update run finished without an error', false, e.stack)
 } finally {
   spawnSync('sh', ['-c', './folkbranch stop'], { cwd: dir, env, encoding: 'utf8' })
   releases.close()

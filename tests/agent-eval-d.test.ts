@@ -49,7 +49,7 @@ describe('versions', () => {
 
 describe('links that change nothing', () => {
   it('say so, in words', async () => {
-    await expect(run(me(), 'add_relation', { type: 'spouse', to: f.ivan.id, other: f.maria.id })).rejects.toThrow(/already spouses: nothing was changed/)
+    await expect(run(me(), 'add_relation', { type: 'spouse', to: f.ivan.id, other: f.maria.id })).rejects.toThrow(/already married, nothing changed/)
     await expect(run(me(), 'add_relation', { type: 'spouse', to: f.ivan.id, other: f.ivan.id })).rejects.toThrow(/own spouse/)
     await expect(run(me(), 'add_relation', { type: 'son', to: f.ivan.id, other: f.ivan.id })).rejects.toThrow(/own child/)
   })
@@ -74,9 +74,12 @@ describe('the kind of a place', () => {
 
 describe('a spouse made with their union', () => {
   it('carries the dates and the kind of the union from create_person', async () => {
-    const made = await run(me(), 'create_person', { person: { givenName: 'Жена', surname: 'Союзная', sex: 'F', birthDate: '1895' }, relation: { type: 'spouse', to: f.pyotr.id, unionKind: 'civil', startDate: '1950', endDate: '1960' } })
+    const made = await run(me(), 'create_person', { person: { givenName: 'Жена', surname: 'Союзная', sex: 'F', birthDate: '1895' }, relation: { type: 'spouse', to: f.pyotr.id, unionKind: 'civil', startDate: '1950', endDate: '1960', endKind: 'separated' } })
     const g = getGraph(owner)
     const u = g.unions.find((x) => (x.aId === made.id && x.bId === f.pyotr.id) || (x.bId === made.id && x.aId === f.pyotr.id))!
-    expect(u).toMatchObject({ kind: 'civil', startDate: '1950', endDate: '1960' })
+    expect(u).toMatchObject({ kind: 'civil', startDate: '1950', endDate: '1960', endKind: 'separated' })
+    // The same pair again is refused with the reason, and an impossible date in a union is refused with the day named.
+    await expect(run(me(), 'add_relation', { type: 'spouse', to: f.pyotr.id, other: made.id })).rejects.toThrow(/already married, nothing changed/)
+    await expect(run(me(), 'create_person', { person: { givenName: 'Дата', surname: 'Союзная', sex: 'F' }, relation: { type: 'spouse', to: f.pyotr.id, startDate: '31.02.1900' } })).rejects.toThrow(/31\.02\.1900 is not a day/)
   })
 })

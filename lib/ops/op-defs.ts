@@ -59,7 +59,7 @@ export const agentCreate = personInput.omit(notForAgents).extend({ facts: agentF
 
 export const agentPatch = personInput.omit(notForAgents).extend({ facts: agentFacts.describe('Replaces the whole list: include the facts to keep. To add one fact, use add_fact.') }).strict()
 
-export const relationInput = z.object({ type: relationType.describe('What the new person is to `to`'), to: z.string(), otherParentId: z.string().nullish(), unionKind: z.enum(['marriage', 'civil']).optional().describe('For a spouse'), startDate: z.string().max(60).optional().describe('For a spouse: when the union began'), endDate: z.string().max(60).optional().describe('For a spouse: when it ended') })
+export const relationInput = z.object({ type: relationType.describe('New person is to `to`'), to: z.string(), otherParentId: z.string().nullish(), unionKind: z.enum(['marriage', 'civil']).optional().describe('For a spouse'), startDate: z.string().max(60).optional().describe('Spouse: union began'), endDate: z.string().max(60).optional().describe('Spouse: union ended'), endKind: z.enum(['divorced', 'separated', 'widowed']).optional() })
 
 export const box = z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), w: z.number().min(0).max(1), h: z.number().min(0).max(1) })
 

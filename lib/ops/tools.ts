@@ -78,7 +78,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
       const count = (key: keyof ReturnType<typeof summary>) => cards.reduce((n, c) => n + c[key], 0)
       return {
         family: getSetting('familyName') ?? '',
-        you: { role: a.role, writes: a.role === 'reader' ? 'not allowed' : a.assistant ? 'call the tool: the app asks the person when needed' : a.review ? 'go to review: a person accepts the draft first' : `apply at once, except ${a.trustBulk ? 'imports' : 'bulk tools and imports'} (${Object.entries(OPS).filter(([, d]) => d.bulk && !(a.trustBulk && d.trustable)).map(([n]) => n).join(', ')}), which wait for a person to accept the draft; the answer gives the draft id and my_proposals lists what is in it` },
+        you: { role: a.role, writes: a.role === 'reader' ? 'not allowed' : a.assistant ? 'call the tool: the app asks the person when needed' : a.review ? 'go to review: the owner accepts the draft first' : `apply at once, except ${a.trustBulk ? 'imports' : 'bulk tools and imports'} (${Object.entries(OPS).filter(([, d]) => d.bulk && !(a.trustBulk && d.trustable)).map(([n]) => n).join(', ')}), which go to review: the owner accepts that draft; the answer gives the draft id and my_proposals lists what is in it` },
         // What is hidden from you is not counted either: a number that drops by one would tell you someone is there.
         people: { total: visible.length, links: g.parentChild.filter((l) => seen.has(l.parentId) && seen.has(l.childId)).length, unions: g.unions.filter((u) => seen.has(u.aId) && seen.has(u.bId)).length },
         values: { documented: count('documented'), told: count('told'), unsourced: count('unsourced'), conflicts: count('conflict') },
@@ -303,7 +303,7 @@ const READS: Record<string, { description: string; input: z.ZodObject; run: (a: 
     run: (a, x) => listHistory(a, x.limit).map(({ userId: _u, ...entry }) => entry),
   },
   my_proposals: {
-    description: "This token's recent drafts and whether a person accepted them.",
+    description: "This token's drafts: each one's id, sender, people (first 20) and operations, and whether it was accepted.",
     input: z.object({}),
     run: (a) => myProposals(a),
   },

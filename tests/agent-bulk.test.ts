@@ -116,3 +116,19 @@ describe('what a running step says', () => {
     expect(stepLabel('get_people', 'ca')).not.toBe(stepLabel('get_people', 'en'))
   })
 })
+
+describe('what a draft holds', () => {
+  it('lists, before anyone accepts it, the people a token draft touches by name and id, first 20 and a count of the rest', async () => {
+    const tok: Actor = { ...editor, userId: 'token:tok-holds', tokenId: 'tok-holds', review: false }
+    const names = ['Аким', 'Борис', 'Василий', 'Герасим', 'Давид', 'Евсей', 'Жорж', 'Захар', 'Изот', 'Казимир', 'Ларион', 'Митрофан', 'Никандр', 'Осип', 'Прохор', 'Родион', 'Савва', 'Тимофей', 'Ульян', 'Фока', 'Харитон']
+    await run(tok, 'update_people', { changes: [{ id: f.nikolai.id, patch: { deathPlace: 'Тула 3' } }, { id: f.varvara.id, patch: { deathPlace: 'Тула 3' } }] })
+    expect((await run(tok, 'import_text', { text: names.map((n) => `${n} Списков b: 1900`).join('\n') })).status).toBe('pending_review')
+    const def = toolsFor(tok, 'mcp').find((t) => t.name === 'my_proposals')!
+    const [draft] = (await def.run(tok, def.input.parse({}))) as any[]
+    expect(draft).toMatchObject({ status: 'pending', authorName: expect.stringContaining(tok.name), morePeople: 3 })
+    expect(draft.people).toHaveLength(20)
+    expect(draft.people).toEqual(expect.arrayContaining([{ id: f.nikolai.id, name: 'Николай Соколов (1860 – 1930)' }, { id: f.varvara.id, name: 'Варвара Соколова (1865 – 1940)' }]))
+    expect(draft.people).toContainEqual({ id: expect.stringMatching(/^tmp_/), name: 'Аким Списков' })
+    expect(draft.operations).toEqual(expect.arrayContaining([{ op: 'update_person', count: 2 }, { op: 'create_person', count: 21 }]))
+  })
+})

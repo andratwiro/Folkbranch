@@ -221,13 +221,13 @@ export function createPerson(
     const id = insertPerson(c, { ...input, sex: input.sex ?? sex })
     // A reader's history leaves out entries naming nobody, so the new person must be named here.
     personIds.push(id)
-    if (relation) link(c, relation.type, relation.to, id, relation.otherParentId, { kind: relation.kind, certainty: relation.certainty, unionKind: relation.unionKind, startDate: relation.startDate, endDate: relation.endDate })
+    if (relation) link(c, relation.type, relation.to, id, relation.otherParentId, { kind: relation.kind, certainty: relation.certainty, unionKind: relation.unionKind, startDate: relation.startDate, endDate: relation.endDate, endKind: relation.endKind })
     return getPersonRow(id)
   })
 }
 
 /** Attaches two existing people; `other` takes the role named by `type` relative to `to`. */
-export interface LinkOptions { kind?: ParentKind; certainty?: Certainty; unionKind?: UnionKind; startDate?: string; endDate?: string }
+export interface LinkOptions { kind?: ParentKind; certainty?: Certainty; unionKind?: UnionKind; startDate?: string; endDate?: string; endKind?: UnionEnd }
 
 export function linkPeople(actor: Actor, type: QuickRelation, to: string, other: string, otherParentId?: string | null, opts: LinkOptions = {}) {
   requireRole(actor, 'editor')
@@ -237,7 +237,11 @@ export function linkPeople(actor: Actor, type: QuickRelation, to: string, other:
 
 function link(c: Changes, type: QuickRelation, to: string, other: string, otherParentId?: string | null, opts: LinkOptions = {}) {
   if (to === other) throw new OpError(400, 'same person')
-  if (type === 'spouse') return addUnion(c, to, other, opts.unionKind, opts.startDate, opts.endDate)
+  if (type === 'spouse') {
+    // The dates of a union are checked as the dates of a person are: a day that is not on the calendar is refused.
+    for (const d of [opts.startDate, opts.endDate]) { const bad = impossibleDate(d); if (bad) throw new OpError(400, bad) }
+    return addUnion(c, to, other, opts.unionKind, opts.startDate, opts.endDate, '', undefined, opts.endKind)
+  }
   if (type === 'father' || type === 'mother') {
     addParent(c, other, to, opts.kind, opts.certainty)
     // A second parent next to an existing one forms a family: the pair gets its dot.
