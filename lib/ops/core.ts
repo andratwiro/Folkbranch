@@ -302,7 +302,7 @@ function revertChanges(db: ReturnType<typeof getDb>, changes: Change[], c: Chang
 /** Takes back one stored entry. Runs inside the caller's transaction. */
 function undoEntry(actor: Actor, entry: HistoryRow, summary: string) {
   const db = getDb()
-  if (entry.undoneAt) throw new OpError(409, 'already undone')
+  if (entry.undoneAt) throw new OpError(409, `already undone: ${entry.summary}`)
   // A token may take back its own changes, never a person's.
   if (actor.tokenId && entry.tokenId !== actor.tokenId) throw new OpError(403, 'a token can undo only its own changes')
   const c = new Changes()
@@ -334,7 +334,7 @@ export function rollbackTo(actor: Actor, historyId: string, summary: string) {
     if (actor.role !== 'owner' || actor.tokenId) throw new OpError(403, 'only the owner can roll the archive back')
     const target = db.select().from(h).where(eq(h.id, historyId)).get()
     if (!target) throw new OpError(404, 'not found')
-    if (target.undoneAt) throw new OpError(409, 'already undone')
+    if (target.undoneAt) throw new OpError(409, `already undone: ${target.summary}`)
     if (target.undoOf) throw new OpError(409, 'a rollback is not a change to roll back to')
     // Same millisecond entries are ordered by when they were written.
     const rows = db.select().from(h).where(gte(h.at, target.at)).orderBy(desc(h.at), desc(sql`rowid`)).all()
@@ -382,7 +382,7 @@ export function undoPart(actor: Actor, historyId: string, personId: string, summ
     const rid = db.select({ id: sql<number>`rowid` }).from(h).where(eq(h.id, historyId)).get()?.id
     const entry = db.select().from(h).where(eq(h.id, historyId)).get()
     if (!entry || rid === undefined) throw new OpError(404, 'not found')
-    if (entry.undoneAt) throw new OpError(409, 'already undone')
+    if (entry.undoneAt) throw new OpError(409, `already undone: ${entry.summary}`)
     if (actor.tokenId && entry.tokenId !== actor.tokenId) throw new OpError(403, 'a token can undo only its own changes')
     const changes = JSON.parse(entry.changes) as Change[]
     const part = changes.filter((ch) => touchesPerson(db, ch, personId))

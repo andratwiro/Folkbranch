@@ -510,7 +510,12 @@ The answer lists each new person's id.`,
     description: 'Roll back a change from the history. A token can undo only its own changes.',
     input: z.object({ historyId: z.string() }),
     direct: true,
-    apply: (a, x) => undo(a, x.historyId, say('Undone')),
+    apply: (a, x) => {
+      const was = getDb().select({ summary: schema.history.summary }).from(schema.history).where(eq(schema.history.id, x.historyId)).get()?.summary
+      undo(a, x.historyId, say('Undone'))
+      // Said back, so a model (or a person) knows what is gone.
+      return { ok: true, ...(was ? { undone: was } : {}) }
+    },
     describe: () => ({ text: tell('Undone') }),
   }),
   rollback_to: def({
