@@ -9,6 +9,7 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 Chart editing and assistant work: links can be moved and marked as in a genogram, tidier chart lines, a faster and more visible assistant, and a link to ask a relative for a story.
 
 ### Fixed
+- The assistant makes one `update_people` call for a change to many people, as its instructions say: the tool is now sent with every request, so a small model no longer writes one `update_person` call per person (and an undo restores them all at once).
 - An assistant or an outside agent reading a person now sees how each union stands (together, separated, divorced or widowed), not only the dates: it could set the state but not read it.
 - On the map a person's faint line no longer runs on to an empty place after their life ends: it leaves with them.
 - On the chart, dropping a couple's dot on a child who had only one of them now adds the other parent (as mother or father by sex). Before, it did nothing and said the people were already linked. A child who has a parent outside the couple, or two parents already, is refused with a reason.
