@@ -2,10 +2,11 @@
 import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { EyeOff, Mic, Pencil, ScrollText, Trash2 } from 'lucide-react'
+import { EyeOff, Link2, Mic, Pencil, ScrollText, Trash2 } from 'lucide-react'
 import { api, useApp } from '@/lib/client'
 import { personName, type Person, type Story } from '@/lib/types'
 import { ReadText } from './person-fields'
+import { AskDialog, PersonRequests } from './story-ask'
 
 const StoryDialog = dynamic(() => import('./story-dialog').then((m) => m.StoryDialog), { ssr: false })
 const StoryFactDialog = dynamic(() => import('./story-dialog').then((m) => m.StoryFactDialog), { ssr: false })
@@ -34,6 +35,7 @@ export function StoriesTab({ person }: { person: Person }) {
   const key = ['stories', person.id]
   const { data: stories = [] } = useQuery({ queryKey: key, queryFn: () => api<Story[]>(`persons/${person.id}/stories`) })
   const [editing, setEditing] = useState<Story | 'new' | null>(null)
+  const [asking, setAsking] = useState(false)
   const [fact, setFact] = useState<Story | null>(null)
   const teller = (s: Story) => {
     const p = s.tellerId ? byId.get(s.tellerId) : null
@@ -53,7 +55,13 @@ export function StoriesTab({ person }: { person: Person }) {
   }
   return (
     <div className="px-4 py-4 flex flex-col gap-3">
-      {!me.guest && <button className="add-btn self-start" onClick={() => setEditing('new')}><Mic size={14} /> {t('Записать рассказ')}</button>}
+      {!me.guest && (
+        <div className="flex flex-wrap gap-2">
+          <button className="add-btn" onClick={() => setEditing('new')}><Mic size={14} /> {t('Записать рассказ')}</button>
+          {canEdit && <button className="add-btn" onClick={() => setAsking(true)}><Link2 size={14} /> {t('Попросить рассказать по ссылке')}</button>}
+        </div>
+      )}
+      {canEdit && <PersonRequests person={person} />}
       {<p className="text-xs text-ink-soft">{t('Рассказы хранятся отдельно от сведений: это чьи-то слова, а не проверенные факты.')}</p>}
       {!stories.length && <p className="text-sm text-ink-faint">{t('Рассказов пока нет')}</p>}
       {stories.map((s) => {
@@ -77,7 +85,8 @@ export function StoriesTab({ person }: { person: Person }) {
           </article>
         )
       })}
-      {editing && <StoryDialog person={person} story={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
+      {editing && <StoryDialog person={person} story={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onAsk={canEdit && editing === 'new' ? () => { setEditing(null); setAsking(true) } : undefined} />}
+      {asking && <AskDialog person={person} onClose={() => setAsking(false)} />}
       {fact && <StoryFactDialog story={fact} teller={teller(fact)} person={person} onClose={() => setFact(null)} />}
     </div>
   )

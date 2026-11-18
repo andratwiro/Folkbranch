@@ -34,6 +34,7 @@ const checks = [
   { file: 'tests/ui/settings-ai.mjs', port: 3594 },
   { file: 'tests/ui/assistant-panel.mjs', port: 3595, stub: true },
   { file: 'tests/e2e/map.mjs', port: 3592 },
+  { file: 'tests/ui/story-ask.mjs', port: 3594 },
   { file: 'tests/ui/map-reload.mjs', port: 3593, people: 2000, perf: true },
 ].filter((c) => (perf || !c.perf) && (!only.length || only.some((o) => c.file.includes(o))))
 

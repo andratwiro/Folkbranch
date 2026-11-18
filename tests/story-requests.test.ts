@@ -29,9 +29,18 @@ describe('asking for a story by a link', () => {
     expect(JSON.stringify(info)).not.toContain('Невидимый')
   })
 
-  it('is the owner\'s to make and to see', () => {
-    expect(() => requests.createRequest(editor, { personId: aboutId })).toThrow()
-    expect(() => requests.listRequests(editor)).toThrow()
+  it('is an editor\'s to make, see and close, and no reader\'s', () => {
+    const reader: Actor = { userId: 'r', name: 'Reader', role: 'reader', personId: null }
+    expect(() => requests.createRequest(reader, { personId: aboutId })).toThrow()
+    expect(() => requests.listRequests(reader)).toThrow()
+    expect(() => requests.closeRequest(reader, 'x')).toThrow()
+    const { token: mine } = requests.createRequest(editor, { personId: aboutId, tellerName: 'Дядя Коля' })
+    const row = requests.listRequests(editor).find((r) => r.tellerName === 'Дядя Коля')!
+    expect(row).toMatchObject({ personId: aboutId, about: 'Дед Рассказный', received: 0, waiting: [] })
+    // Only a hash is kept, so the link cannot be given back: a new one is made instead.
+    expect(JSON.stringify(row)).not.toContain(mine)
+    requests.closeRequest(editor, row.id)
+    expect(requests.requestInfo(mine)).toBeNull()
   })
 
   it('changes nothing until someone accepts it', async () => {
@@ -40,7 +49,10 @@ describe('asking for a story by a link', () => {
     expect(stories.listStories(owner, aboutId).length).toBe(before)
     const waiting = proposals.listProposals(owner).flatMap((p: { ops: { op: string }[] }) => p.ops).filter((o: { op: string }) => o.op === 'create_story')
     expect(waiting.length).toBe(1)
-    expect(requests.listRequests(owner)[0].received).toBe(1)
+    const row = requests.listRequests(owner).find((r) => r.tellerName === 'Бабушка Нина')!
+    expect(row.received).toBe(1)
+    // The card of the person lists it as waiting, with the draft to accept.
+    expect(row.waiting).toEqual([expect.objectContaining({ title: 'Как вы познакомились?' })])
   })
 
   it('takes a story once accepted, with the voice, and says who told it', () => {
@@ -55,7 +67,7 @@ describe('asking for a story by a link', () => {
     await expect(requests.submitRecording(token, { buf: Buffer.from('<script>'), name: 'x.html' }, null)).rejects.toThrow()
     await expect(requests.submitRecording('nope', { buf: SOUND, name: 'v' }, null)).rejects.toThrow()
     expect(requests.requestInfo('nope')).toBeNull()
-    requests.closeRequest(owner, requests.listRequests(owner)[0].id)
+    requests.closeRequest(owner, requests.listRequests(owner).find((r) => r.tellerName === 'Бабушка Нина')!.id)
     expect(requests.requestInfo(token)).toBeNull()
     await expect(requests.submitRecording(token, { buf: SOUND, name: 'v' }, null)).rejects.toThrow()
   })

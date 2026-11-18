@@ -2243,5 +2243,17 @@ const ca: Record<string, string> = {
   'шагов': 'passos',
   'Читает карточки': 'Llegint fitxes',
   'Добавить факт нескольким': 'Afegeix una dada a diverses persones',
+  'Попросить рассказать по ссылке': 'Demana un relat per enllaç',
+  'Расскажите о близком': "Explica'ns d'algú estimat",
+  'Запишите рассказ': 'Grava un relat',
+  'Поделиться': 'Comparteix',
+  'Ссылка готова. Отправьте её человеку: рассказ появится на карточке и будет ждать вашей проверки.': "L'enllaç és a punt. Envia'l a la persona: el seu relat apareixerà a la fitxa i esperarà la teva revisió.",
+  'Ждём рассказ': 'Esperem un relat',
+  'Ждём рассказ от': 'Esperem un relat de',
+  'прислал(а) запись': 'ha enviat un enregistrament',
+  'ссылка до': 'enllaç fins al',
+  'ждёт проверки': 'espera revisió',
+  'Саму ссылку показать второй раз нельзя: она хранится только в виде отпечатка. Новая ссылка делается за одно нажатие, старую можно закрыть.': "L'enllaç no es pot tornar a mostrar: només se'n guarda l'empremta. Un de nou es fa amb una pulsació i el vell es pot tancar.",
+  'Или попросить рассказать по ссылке': "O demana a algú que l'expliqui per enllaç",
 }
 export default ca

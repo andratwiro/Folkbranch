@@ -2243,5 +2243,17 @@ const es: Record<string, string> = {
   'шагов': 'pasos',
   'Читает карточки': 'Leyendo fichas',
   'Добавить факт нескольким': 'Añadir un dato a varias personas',
+  'Попросить рассказать по ссылке': 'Pedir un relato por enlace',
+  'Расскажите о близком': 'Cuéntanos de un ser querido',
+  'Запишите рассказ': 'Graba un relato',
+  'Поделиться': 'Compartir',
+  'Ссылка готова. Отправьте её человеку: рассказ появится на карточке и будет ждать вашей проверки.': 'El enlace está listo. Envíaselo a la persona: su relato aparecerá en la ficha y esperará tu revisión.',
+  'Ждём рассказ': 'Esperamos un relato',
+  'Ждём рассказ от': 'Esperamos un relato de',
+  'прислал(а) запись': 'envió una grabación',
+  'ссылка до': 'enlace hasta el',
+  'ждёт проверки': 'espera revisión',
+  'Саму ссылку показать второй раз нельзя: она хранится только в виде отпечатка. Новая ссылка делается за одно нажатие, старую можно закрыть.': 'El enlace no se puede mostrar una segunda vez: solo se guarda su huella. Uno nuevo se hace con una pulsación y el antiguo se puede cerrar.',
+  'Или попросить рассказать по ссылке': 'O pedir a alguien que lo cuente por enlace',
 }
 export default es

@@ -1,7 +1,7 @@
 // A link that asks someone to tell a story. Whoever holds it can only send a recording, which waits for review: they
 // read nothing from the archive beyond the name they were asked about, and they never get a session.
 import { createHash, randomBytes } from 'node:crypto'
-import { desc, eq, isNull, sql } from 'drizzle-orm'
+import { and, desc, eq, isNull, like, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDb, schema } from '../db'
 import { personName } from '../types'
@@ -32,7 +32,7 @@ const input = z.object({
 })
 
 export function createRequest(actor: Actor, raw: unknown) {
-  requireRole(actor, 'owner')
+  requireRole(actor, 'editor')
   const v = input.parse(raw)
   getPersonRow(v.personId)
   const token = randomBytes(24).toString('base64url')
@@ -41,16 +41,22 @@ export function createRequest(actor: Actor, raw: unknown) {
   return { token }
 }
 
+/** Open links, each with the recordings that came through it and still wait for review. The token is stored hashed, so a link cannot be shown again. */
 export function listRequests(actor: Actor) {
-  requireRole(actor, 'owner')
+  requireRole(actor, 'editor')
   const q = schema.storyRequests
+  const p = schema.proposals
+  const waiting = getDb().select().from(p).where(and(eq(p.status, 'pending'), like(p.authorId, 'request:%'))).orderBy(desc(p.createdAt)).all()
   return getDb().select().from(q).where(isNull(q.revokedAt)).orderBy(desc(q.createdAt)).all().filter(live).flatMap((r) => {
-    try { return [{ id: r.id, about: personName(getPersonRow(r.personId)), tellerName: r.tellerName, received: r.received, expiresAt: r.expiresAt }] } catch { return [] }
+    try {
+      const mine = waiting.filter((w) => w.authorId === `request:${r.id}`).map((w) => ({ proposalId: w.id, createdAt: w.createdAt, title: (JSON.parse(w.ops)[0]?.args?.title as string | undefined) ?? '' }))
+      return [{ id: r.id, personId: r.personId, about: personName(getPersonRow(r.personId)), tellerName: r.tellerName, question: r.question, received: r.received, expiresAt: r.expiresAt, createdAt: r.createdAt, waiting: mine }]
+    } catch { return [] }
   })
 }
 
 export function closeRequest(actor: Actor, id: string) {
-  requireRole(actor, 'owner')
+  requireRole(actor, 'editor')
   getDb().update(schema.storyRequests).set({ revokedAt: Date.now() }).where(eq(schema.storyRequests.id, id)).run()
 }
 
