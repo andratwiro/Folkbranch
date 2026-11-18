@@ -1543,7 +1543,6 @@
   "This month's face recognition limit set by the owner is used up": "W tym miesiącu wyczerpał się limit rozpoznawania twarzy ustawiony przez właściciela",
   "This month's transcription limit set by the owner has been used up": "W tym miesiącu wyczerpał się limit transkrypcji ustawiony przez właściciela",
   "This page was changed in another window or by another person. Which text should stay?": "Tę stronę zmieniono w innym oknie albo przez inną osobę. Który tekst zostawić?",
-  "This person already has a parent outside this couple. To replace them, remove that link first": "Ta osoba ma już rodzica spoza tej pary. Żeby go zastąpić, najpierw usuń ten związek",
   "This person already has two parents": "Ta osoba ma już dwoje rodziców",
   "This person has just been deleted.": "Tę osobę właśnie usunięto.",
   "This person has no sources yet": "Ta osoba nie ma jeszcze źródeł",
@@ -2084,5 +2083,14 @@
   "Follow {name}": "Śledź {name}",
   "Follow the family": "Śledź rodzinę",
   "The camera goes back to this person and stays with them": "Kamera wraca do tej osoby i pozostaje przy niej",
-  "The camera goes where people are moving; pick someone on the map to follow only them": "Kamera podąża za przemieszczeniami osób; wybierz kogoś na mapie, aby śledzić tylko tę osobę"
+  "The camera goes where people are moving; pick someone on the map to follow only them": "Kamera podąża za przemieszczeniami osób; wybierz kogoś na mapie, aby śledzić tylko tę osobę",
+  "Now a child of {a} and {b}": "Teraz dziecko {a} i {b}",
+  "Now a child of {a} only": "Teraz dziecko tylko {a}",
+  "This person is already the only parent": "Ta osoba jest już jedynym rodzicem",
+  "This person is already a child of both": "Ta osoba jest już dzieckiem obojga",
+  "Make a child of both": "Uczyń dzieckiem obojga",
+  "Make a child of {name} only": "Uczyń dzieckiem tylko {name}",
+  "Replace the parent of the same sex": "Zastąp rodzica tej samej płci",
+  "Set a child's parents": "Zmienić rodziców dziecka",
+  "Setting a child's parents": "Zmienia rodziców dziecka"
 }

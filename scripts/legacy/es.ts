@@ -2255,5 +2255,7 @@ const es: Record<string, string> = {
   'ждёт проверки': 'espera revisión',
   'Саму ссылку показать второй раз нельзя: она хранится только в виде отпечатка. Новая ссылка делается за одно нажатие, старую можно закрыть.': 'El enlace no se puede mostrar una segunda vez: solo se guarda su huella. Uno nuevo se hace con una pulsación y el antiguo se puede cerrar.',
   'Или попросить рассказать по ссылке': 'O pedir a alguien que lo cuente por enlace',
+  "Сменить родителей ребёнка": "Cambiar los progenitores de un hijo",
+  "Меняет родителей ребёнка": "Cambiando los progenitores de un hijo",
 }
 export default es

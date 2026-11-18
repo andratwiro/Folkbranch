@@ -81,6 +81,7 @@ export const OUTPUTS: Record<string, z.ZodType> = {
   add_relation: write(ok),
   update_relation: write(ok),
   move_relation: write(ok),
+  set_parents: write(ok),
   remove_relation: write(ok),
   remove_parent_links: write(ok),
   create_page: write(z.object({ id, title: text })),

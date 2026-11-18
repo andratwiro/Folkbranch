@@ -1963,7 +1963,6 @@
   "point from GeoNames": "punt de GeoNames",
   "Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it.": "Suggeriments a partir d'una llista de ciutats i pobles desada a la mateixa aplicació: els noms de llocs no s'envien enlloc. El punt només es posa quan el confirmes.",
   "steps": "passos",
-  "This person already has a parent outside this couple. To replace them, remove that link first": "Aquesta persona ja té un progenitor fora d'aquesta parella. Per substituir-lo, treu abans aquest vincle",
   "Adopted child": "Fill adoptat",
   "foster": "acollidor",
   "Foster child": "Fill en acolliment",
@@ -2079,5 +2078,14 @@
   "Follow {name}": "Segueix {name}",
   "Follow the family": "Segueix la família",
   "The camera goes back to this person and stays with them": "La càmera torna a aquesta persona i es queda amb ella",
-  "The camera goes where people are moving; pick someone on the map to follow only them": "La càmera va on es mou la gent; tria algú al mapa per seguir només aquesta persona"
+  "The camera goes where people are moving; pick someone on the map to follow only them": "La càmera va on es mou la gent; tria algú al mapa per seguir només aquesta persona",
+  "Now a child of {a} and {b}": "Ara és fill/a de {a} i {b}",
+  "Now a child of {a} only": "Ara és fill/a només de {a}",
+  "This person is already the only parent": "Aquesta persona ja és l'únic progenitor",
+  "This person is already a child of both": "Aquesta persona ja és filla de tots dos",
+  "Make a child of both": "Fer fill/a de tots dos",
+  "Make a child of {name} only": "Fer fill/a només de {name}",
+  "Replace the parent of the same sex": "Substituir el progenitor del mateix sexe",
+  "Set a child's parents": "Canviar els progenitors d'un fill",
+  "Setting a child's parents": "Canviant els progenitors d'un fill"
 }

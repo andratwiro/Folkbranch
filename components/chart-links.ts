@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { AVATAR_CY, type EdgePos, type Layout, type UnionPos } from '@/lib/graph/layout'
 import { api, lastChangeId, useApp } from '@/lib/client'
 import { personName } from '@/lib/types'
-import { relationFor as rules, type LinkSource } from '@/lib/graph/link-rules'
+import { dropOnCouple, relationFor as rules, type LinkSource, type LinkVerdict } from '@/lib/graph/link-rules'
 
 type Source = LinkSource
 /** Moving one end of a link that is already there: which link and end it is, once the person to move it to is known. */
@@ -19,13 +19,43 @@ export function useLinkDrawing(layout: Layout, toChart: (cx: number, cy: number)
   const rowOf = (id: string) => layout.cards.get(id)?.y ?? 0
   const nameOf = (id: string) => personName(byId.get(id)!) || t('Hidden_neuter')
 
-  const [draft, setDraft] = useState<{ x1: number; y1: number; x2: number; y2: number; target: string | null; label: string; cx: number; cy: number } | null>(null)
+  const [draft, setDraft] = useState<{ x1: number; y1: number; x2: number; y2: number; target: string | null; targetUnion: string | null; label: string; cx: number; cy: number } | null>(null)
 
   /** What the target becomes for the source, judged by where it stands on the chart. */
   const relationFor = (source: Source, target: string) => rules(
     { parents: family.parents, spouses: family.spouses, sexOf: (id) => byId.get(id)?.sex, rowOf, rootsBelow: !!app.rootsBelow },
     source, target,
   )
+
+  /** The dot of a couple under the pointer is a drop target for a person dragged from their card. */
+  const coupleOf = (unionId: string): [string, string] | null => {
+    const u = layout.unions.find((x) => x.union.id === unionId)
+    return u ? [u.union.aId, u.union.bId] : null
+  }
+  const verdictFor = (source: Source, hit: { person: string | null; union: string | null }): LinkVerdict => {
+    if (hit.union) {
+      const couple = coupleOf(hit.union)
+      return couple && 'person' in source ? dropOnCouple({ parents: family.parents, spouses: family.spouses, sexOf: (id) => byId.get(id)?.sex, rowOf, rootsBelow: !!app.rootsBelow }, source.person, couple) : null
+    }
+    return hit.person ? relationFor(source, hit.person) : null
+  }
+
+  /** Makes the child's parents exactly these, as one change with one undo. */
+  const setParentsAndTell = async (childId: string, parentIds: string[]) => {
+    try {
+      await api('relations/set-parents', { json: { childId, parentIds } })
+    } catch (e) {
+      app.notify(`${t('Could not save')}: ${(e as Error).message}`)
+      return
+    }
+    await qc.invalidateQueries({ queryKey: ['graph'] })
+    qc.invalidateQueries({ queryKey: ['history'] })
+    const id = await lastChangeId()
+    const text = parentIds.length === 2
+      ? t('Now a child of {a} and {b}').replace('{a}', () => nameOf(parentIds[0])).replace('{b}', () => nameOf(parentIds[1]))
+      : t('Now a child of {a} only').replace('{a}', () => nameOf(parentIds[0]))
+    app.notify(`${nameOf(childId)}: ${text}`, [{ label: t('Undo'), run: async () => { await api(`history/${id}/undo`, { json: {} }); await qc.invalidateQueries() } }])
+  }
 
   /** Runs a link change and offers to take it back; `extra` are other ways to read the same drag. */
   const linkAndTell = async (rel: { type: string; to: string; other: string; otherParentId?: string | null }, text: string, extra: { label: string; rel: typeof rel; text: string }[]) => {
@@ -48,10 +78,12 @@ export function useLinkDrawing(layout: Layout, toChart: (cx: number, cy: number)
     ])
   }
 
-  const finishLink = (source: Source, target: string) => {
-    const rel = relationFor(source, target)
+  const finishLink = (source: Source, hit: { person: string | null; union: string | null }) => {
+    const rel = verdictFor(source, hit)
     if (!rel) return app.notify(t('These people are already linked'))
     if ('refuse' in rel) return app.notify(t(rel.refuse))
+    if ('set' in rel) return setParentsAndTell(rel.set.childId, rel.set.parentIds)
+    const target = hit.person!
     const a = 'person' in source ? source.person : source.parents[0]
     const sex = byId.get(target)?.sex
     const say = (label: string) => `${nameOf(target)} — ${t(label)}: ${'person' in source ? nameOf(a) : `${nameOf(source.parents[0])}, ${nameOf(source.parents[1])}`}`
@@ -68,22 +100,29 @@ export function useLinkDrawing(layout: Layout, toChart: (cx: number, cy: number)
     if (!app.canEdit || e.button) return
     const startX = e.clientX, startY = e.clientY
     let active = false
-    const targetAt = (cx: number, cy: number) => {
-      const hit = document.elementsFromPoint(cx, cy).find((el) => el.closest('[data-person]'))
+    /** The person card or the couple's dot under the pointer, whichever is on top; a dot takes a drop only from a person. */
+    const targetAt = (cx: number, cy: number): { person: string | null; union: string | null } => {
+      const hit = document.elementsFromPoint(cx, cy).find((el) => el.closest('[data-person]') || ('person' in source && el.closest('[data-union]')))
       const id = hit?.closest<HTMLElement>('[data-person]')?.dataset.person
-      return id && !byId.get(id)?.hidden ? id : null
+      if (id) return { person: !byId.get(id)?.hidden ? id : null, union: null }
+      return { person: null, union: hit?.closest<HTMLElement>('[data-union]')?.dataset.union ?? null }
     }
     const move = (ev: PointerEvent) => {
       if (!active && Math.hypot(ev.clientX - startX, ev.clientY - startY) < 6) return
       active = true
       onDragStart()
       const p = toChart(ev.clientX, ev.clientY)
-      const target = targetAt(ev.clientX, ev.clientY)
-      const sameAsSource = target && 'person' in source && target === source.person
-      const rel = target && !sameAsSource ? relationFor(source, target) : null
+      const hit = targetAt(ev.clientX, ev.clientY)
+      const sameAsSource = !!hit.person && 'person' in source && hit.person === source.person
+      const over = (hit.person || hit.union) && !sameAsSource
+      const rel = over ? verdictFor(source, hit) : null
+      const label = !over ? t('Release to add someone new')
+        : !rel ? t('These people are already linked')
+        : 'refuse' in rel ? t(rel.refuse)
+        : t(rel.label).replace('{name}', () => ('set' in rel && rel.name ? nameOf(rel.name) : ''))
       setDraft({
-        x1: fromX, y1: fromY, x2: p.x, y2: p.y, target: sameAsSource ? null : target, cx: ev.clientX, cy: ev.clientY,
-        label: target && !sameAsSource ? (rel && !('refuse' in rel) ? t(rel.label) : rel ? t(rel.refuse) : t('These people are already linked')) : t('Release to add someone new'),
+        x1: fromX, y1: fromY, x2: p.x, y2: p.y, cx: ev.clientX, cy: ev.clientY, label,
+        target: over ? hit.person : null, targetUnion: over && rel && !('refuse' in rel) ? hit.union : null,
       })
     }
     const up = (ev: PointerEvent) => {
@@ -97,9 +136,9 @@ export function useLinkDrawing(layout: Layout, toChart: (cx: number, cy: number)
       window.addEventListener('click', swallow, { capture: true, once: true })
       setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 200)
       if (ev.type === 'pointercancel') return
-      const target = targetAt(ev.clientX, ev.clientY)
-      if (target && !('person' in source && target === source.person)) finishLink(source, target)
-      else if (!target) {
+      const hit = targetAt(ev.clientX, ev.clientY)
+      if ((hit.person || hit.union) && !('person' in source && hit.person === source.person)) finishLink(source, hit)
+      else if (!hit.person && !hit.union) {
         const dx = ev.clientX - startX, dy = ev.clientY - startY
         onEmpty(Math.abs(dy) > Math.abs(dx) ? (dy < 0 ? 'up' : 'down') : 'side')
       }
@@ -150,7 +189,7 @@ export function useLinkDrawing(layout: Layout, toChart: (cx: number, cy: number)
       const p = toChart(ev.clientX, ev.clientY)
       const target = targetAt(ev.clientX, ev.clientY)
       const plan = target ? h.plan(target) : null
-      setDraft({ x1: h.x, y1: h.y, x2: p.x, y2: p.y, target: plan && !('refuse' in plan) ? target : null, cx: ev.clientX, cy: ev.clientY,
+      setDraft({ x1: h.x, y1: h.y, x2: p.x, y2: p.y, target: plan && !('refuse' in plan) ? target : null, targetUnion: null, cx: ev.clientX, cy: ev.clientY,
         label: !target ? t('Release on a person to move the end of the link there') : plan && 'refuse' in plan ? t(plan.refuse) : `${t('Move to')}: ${nameOf(target)}` })
     }
     const up = async (ev: PointerEvent) => {

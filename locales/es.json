@@ -1963,7 +1963,6 @@
   "point from GeoNames": "punto de GeoNames",
   "Guesses from a list of towns and villages kept inside the app: place names are not sent anywhere. A point is set only when you confirm it.": "Sugerencias a partir de una lista de ciudades y pueblos guardada en la propia aplicación: los nombres de lugares no se envían a ninguna parte. El punto solo se pone cuando lo confirmas.",
   "steps": "pasos",
-  "This person already has a parent outside this couple. To replace them, remove that link first": "Esta persona ya tiene un progenitor fuera de esta pareja. Para sustituirlo, quita antes ese vínculo",
   "Adopted child": "Hijo adoptado",
   "foster": "acogedor",
   "Foster child": "Hijo en acogida",
@@ -2079,5 +2078,14 @@
   "Follow {name}": "Seguir a {name}",
   "Follow the family": "Seguir a la familia",
   "The camera goes back to this person and stays with them": "La cámara vuelve a esta persona y se queda con ella",
-  "The camera goes where people are moving; pick someone on the map to follow only them": "La cámara va adonde se mueve la gente; elige a alguien en el mapa para seguir solo a esa persona"
+  "The camera goes where people are moving; pick someone on the map to follow only them": "La cámara va adonde se mueve la gente; elige a alguien en el mapa para seguir solo a esa persona",
+  "Now a child of {a} and {b}": "Ahora es hijo/a de {a} y {b}",
+  "Now a child of {a} only": "Ahora es hijo/a solo de {a}",
+  "This person is already the only parent": "Esta persona ya es el único progenitor",
+  "This person is already a child of both": "Esta persona ya es hija de ambos",
+  "Make a child of both": "Hacer hijo/a de ambos",
+  "Make a child of {name} only": "Hacer hijo/a solo de {name}",
+  "Replace the parent of the same sex": "Sustituir al progenitor del mismo sexo",
+  "Set a child's parents": "Cambiar los progenitores de un hijo",
+  "Setting a child's parents": "Cambiando los progenitores de un hijo"
 }

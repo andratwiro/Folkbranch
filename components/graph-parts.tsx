@@ -182,11 +182,11 @@ export const HitAreas = memo(function HitAreas({ layout, edges, unions, groupHea
 /** Slashes across the line of a union that ended, as genograms draw them: two for a divorce, one for a separation. */
 export const endMarks = (x: number, y: number, n = 2) => (n === 1 ? [0] : [-3, 3]).map((d) => `M${x + d - 3.5} ${y + 7}L${x + d + 3.5} ${y - 7}`).join('')
 
-export const FamilyDots = memo(function FamilyDots({ unions, active, canEdit, acts }: { unions: UnionItem[]; active: Set<string> | null; canEdit: boolean; acts: Acts }) {
+export const FamilyDots = memo(function FamilyDots({ unions, active, canEdit, acts, drop }: { unions: UnionItem[]; active: Set<string> | null; canEdit: boolean; acts: Acts; drop: string | null }) {
   return unions.map((u) => {
     const hot = !!active && active.has(u.union.aId) && active.has(u.union.bId)
     return (
-      <g key={u.id} data-union={u.union.id} className={cn('dot-group link-start', canEdit && 'can-add')} onPointerDown={(e) => acts.current.startDot(e, u)} onClick={canEdit ? (e) => { e.stopPropagation(); acts.current.addChild(u) } : undefined} onMouseEnter={(ev) => acts.current.tipDot(ev)} onMouseLeave={() => acts.current.hideTip()}>
+      <g key={u.id} data-union={u.union.id} className={cn('dot-group link-start', canEdit && 'can-add', drop === u.union.id && 'drop-target')} onPointerDown={(e) => acts.current.startDot(e, u)} onClick={canEdit ? (e) => { e.stopPropagation(); acts.current.addChild(u) } : undefined} onMouseEnter={(ev) => acts.current.tipDot(ev)} onMouseLeave={() => acts.current.hideTip()}>
         <circle cx={u.x} cy={u.y} r={13} className="dot-hit" />
         <circle cx={u.x} cy={u.y} r={5} className={cn('dot', u.union.kind === 'civil' && 'open', hot && 'hot')} />
         {(unionEnd(u.union) === 'divorced' || unionEnd(u.union) === 'separated') && <path d={endMarks(u.endAt[0], u.endAt[1], unionEnd(u.union) === 'separated' ? 1 : 2)} className="union-end" data-union-end={u.union.id} data-end={unionEnd(u.union)} />}

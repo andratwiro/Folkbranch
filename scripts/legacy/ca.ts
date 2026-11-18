@@ -2255,5 +2255,7 @@ const ca: Record<string, string> = {
   'ждёт проверки': 'espera revisió',
   'Саму ссылку показать второй раз нельзя: она хранится только в виде отпечатка. Новая ссылка делается за одно нажатие, старую можно закрыть.': "L'enllaç no es pot tornar a mostrar: només se'n guarda l'empremta. Un de nou es fa amb una pulsació i el vell es pot tancar.",
   'Или попросить рассказать по ссылке': "O demana a algú que l'expliqui per enllaç",
+  "Сменить родителей ребёнка": "Canviar els progenitors d'un fill",
+  "Меняет родителей ребёнка": "Canviant els progenitors d'un fill",
 }
 export default ca

@@ -1543,7 +1543,6 @@
   "This month's face recognition limit set by the owner is used up": "Le plafond de reconnaissance faciale fixé par le propriétaire pour ce mois-ci est atteint",
   "This month's transcription limit set by the owner has been used up": "Le plafond de transcription fixé par le propriétaire pour ce mois-ci est atteint",
   "This page was changed in another window or by another person. Which text should stay?": "Cette page a été modifiée dans une autre fenêtre ou par une autre personne. Quel texte doit rester ?",
-  "This person already has a parent outside this couple. To replace them, remove that link first": "Cette personne a déjà un parent en dehors de ce couple. Pour le remplacer, supprime d’abord ce lien",
   "This person already has two parents": "Cette personne a déjà deux parents",
   "This person has just been deleted.": "Cette personne vient d’être supprimée.",
   "This person has no sources yet": "Cette personne n’a encore aucune source",
@@ -2079,5 +2078,14 @@
   "Follow {name}": "Suivre {name}",
   "Follow the family": "Suivre la famille",
   "The camera goes back to this person and stays with them": "La caméra revient à cette personne et reste avec elle",
-  "The camera goes where people are moving; pick someone on the map to follow only them": "La caméra suit les déplacements ; choisissez une personne sur la carte pour ne suivre qu'elle"
+  "The camera goes where people are moving; pick someone on the map to follow only them": "La caméra suit les déplacements ; choisissez une personne sur la carte pour ne suivre qu'elle",
+  "Now a child of {a} and {b}": "Désormais enfant de {a} et {b}",
+  "Now a child of {a} only": "Désormais enfant de {a} seulement",
+  "This person is already the only parent": "Cette personne est déjà le seul parent",
+  "This person is already a child of both": "Cette personne est déjà l'enfant des deux",
+  "Make a child of both": "Faire de lui l'enfant des deux",
+  "Make a child of {name} only": "Faire de lui l'enfant de {name} seulement",
+  "Replace the parent of the same sex": "Remplacer le parent du même sexe",
+  "Set a child's parents": "Changer les parents d’un enfant",
+  "Setting a child's parents": "Change les parents d’un enfant"
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { relationFor, type LinkWorld } from '../lib/graph/link-rules'
+import { dropOnCouple, relationFor, type LinkWorld } from '../lib/graph/link-rules'
 import type { Sex } from '../lib/types'
 
 // Invented family: Pavel (M) and Elena (F) are a couple; Ilya (M) has Pavel as his only parent; Anna (F) has both; Oleg (M) has an unrelated father Igor (M).
@@ -29,10 +29,41 @@ describe('dragging a couple\'s dot onto a person', () => {
     expect(relationFor(w, couple, 'anna')).toBeNull()
     expect(relationFor(w, couple, 'pavel')).toBeNull()
   })
-  it('refuses with a reason when the child has a parent outside the couple, or two others', () => {
-    expect(relationFor(w, couple, 'oleg')).toHaveProperty('refuse')
+  it('replaces any other parents with the couple, instead of refusing', () => {
+    expect(relationFor(w, couple, 'oleg')).toMatchObject({ set: { childId: 'oleg', parentIds: ['pavel', 'elena'] } })
     const two = world({ oleg: ['igor', 'mira'] })
-    expect(relationFor(two, couple, 'oleg')).toHaveProperty('refuse')
+    expect(relationFor(two, couple, 'oleg')).toMatchObject({ set: { childId: 'oleg', parentIds: ['pavel', 'elena'] } })
+  })
+})
+
+describe('changing whose child someone is, by dragging their handle', () => {
+  const rows = { pavel: 0, elena: 0, igor: 0, ilya: 1, anna: 1, oleg: 1, mira: 0 }
+  it('onto a parent they already have, with another parent: only that parent stays', () => {
+    expect(relationFor(w, { person: 'anna' }, 'pavel')).toMatchObject({ set: { childId: 'anna', parentIds: ['pavel'] }, label: 'Make a child of {name} only', name: 'pavel' })
+    expect(relationFor(w, { person: 'anna' }, 'elena')).toMatchObject({ set: { childId: 'anna', parentIds: ['elena'] } })
+  })
+  it('onto their only parent: nothing to change, and it says so', () => {
+    expect(relationFor(w, { person: 'ilya' }, 'pavel')).toEqual({ refuse: 'This person is already the only parent' })
+  })
+  it('onto the dot of a couple: both become the parents, the others go', () => {
+    expect(dropOnCouple(w, 'ilya', ['pavel', 'elena'])).toMatchObject({ set: { childId: 'ilya', parentIds: ['pavel', 'elena'] }, label: 'Make a child of both' })
+    expect(dropOnCouple(w, 'oleg', ['pavel', 'elena'])).toMatchObject({ set: { childId: 'oleg', parentIds: ['pavel', 'elena'] } })
+    expect(dropOnCouple(w, 'anna', ['pavel', 'elena'])).toEqual({ refuse: 'This person is already a child of both' })
+    expect(dropOnCouple(w, 'pavel', ['pavel', 'elena'])).toBeNull()
+  })
+  it('onto a third person with two parents: replaces the one of the same sex', () => {
+    const r = world({ anna: ['pavel', 'elena'] }, { ...rows, igor: 0 })
+    expect(relationFor(r, { person: 'anna' }, 'igor')).toMatchObject({ set: { childId: 'anna', parentIds: ['igor', 'elena'] } })
+    // A mother in the place of the mother.
+    expect(relationFor(r, { person: 'anna' }, 'mira')).toMatchObject({ set: { parentIds: ['mira', 'pavel'] } })
+  })
+  it('refuses when the new parent\'s sex is unknown, or both parents are of that sex', () => {
+    const sexless = { ...sexes }
+    delete sexless.igor
+    const r: LinkWorld = { ...world({ anna: ['pavel', 'elena'] }, { ...rows, igor: 0 }), sexOf: (id) => sexless[id] }
+    expect(relationFor(r, { person: 'anna' }, 'igor')).toHaveProperty('refuse')
+    const same = world({ anna: ['pavel', 'igor'] }, { ...rows, igor: 0 })
+    expect(relationFor(same, { person: 'anna' }, 'mira')).toHaveProperty('refuse')
   })
 })
 
@@ -42,12 +73,12 @@ describe('dragging from a person', () => {
     expect(relationFor(w, { person: 'elena' }, 'mira')).toMatchObject({ type: 'daughter', to: 'elena', other: 'mira', otherParentId: 'pavel' })
     expect(relationFor(w, { person: 'oleg' }, 'mira')).toMatchObject({ type: 'spouse' })
   })
-  it('refuses a third parent', () => {
-    const rows = { igor: -1, anna: 1 }
-    expect(relationFor(world({ anna: ['pavel', 'elena'] }, rows), { person: 'anna' }, 'igor')).toHaveProperty('refuse')
+  it('refuses a third parent when two parents already share the new one\'s sex', () => {
+    const rows = { igor: -1, anna: 1, pavel: 0, oleg: -1 }
+    expect(relationFor(world({ anna: ['pavel', 'igor'] }, rows), { person: 'anna' }, 'oleg')).toHaveProperty('refuse')
   })
   it('says nothing for people who are already linked', () => {
-    expect(relationFor(w, { person: 'ilya' }, 'pavel')).toBeNull()
+    expect(relationFor(w, { person: 'pavel' }, 'ilya')).toBeNull()
     expect(relationFor(w, { person: 'pavel' }, 'elena')).toBeNull()
   })
 })
