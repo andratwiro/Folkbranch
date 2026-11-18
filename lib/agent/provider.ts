@@ -6,6 +6,7 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import type { LanguageModel } from 'ai'
 import { PRESETS } from './presets'
+import { safeFetch } from '../ai/safe-url'
 
 type ProviderId = 'anthropic' | 'openrouter' | 'openai' | 'google' | 'yandex' | 'cloudru' | 'deepseek' | 'moonshot' | 'local'
 interface Provider {
@@ -20,6 +21,8 @@ interface Provider {
   cached?: Record<string, unknown>
   /** The service wants the model's reasoning sent back with the tool results, and refuses the request otherwise. */
   keepReasoning?: boolean
+  /** Added by the owner: its address, not ours, so it is only called through the guarded fetch. */
+  custom?: boolean
 }
 
 /** Two other tested models of the service: if the chosen one is gone or fails, OpenRouter tries them in turn. */
@@ -55,7 +58,17 @@ const PROVIDERS: Record<ProviderId, Provider> = {
 
 export const keyEnvOf = (id: ProviderId) => PROVIDERS[id].keyEnv ?? ''
 
-export interface ActiveProvider extends Provider { id: ProviderId; model: string; key: string; folder: string }
+export interface ActiveProvider extends Provider { id: ProviderId | (string & {}); model: string; key: string; folder: string }
+
+/** A provider the owner added: any OpenAI-protocol service. Its key goes to its own address and nowhere else. */
+export function customActive(p: { id: string; name: string; baseUrl: string; model: string }, key: string): ActiveProvider {
+  return {
+    id: p.id, label: p.name, custom: true, model: p.model, key, folder: '',
+    // The reasoning is sent back with tool results: services that need it refuse the request otherwise, and the rest ignore it.
+    keepReasoning: true,
+    create: (apiKey, model) => createOpenAICompatible({ name: 'custom', baseURL: p.baseUrl, apiKey: apiKey || undefined, fetch: safeFetch as typeof fetch })(model),
+  }
+}
 
 /** AGENT_PROVIDER decides; without it, the first provider with a key. Null when none can run. */
 export function activeProvider(env: Record<string, string | undefined> = process.env): ActiveProvider | null {

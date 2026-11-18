@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { chooseModel, providerStatus } from '../agent/provider-key'
 import { vaultKey } from '../ai/keys'
+import { customById } from '../ai/custom-providers'
 import { saveTranscription, speechSetup } from '../transcribe/service'
 import { STT_PRESETS } from '../transcribe/presets'
 import { faceSetup, saveFaces } from '../faces/service'
@@ -91,8 +92,8 @@ export async function importAiSettings(actor: Actor, raw: unknown) {
   if (a?.model) {
     const what = tell('Assistant: model')
     const now = providerStatus(actor)
-    // Another service is taken when its key is already on the list of keys; keys never travel in the file.
-    if (a.provider && a.provider !== now.provider && !vaultKey(a.provider)) skipped.push({ what, why: tell('Connect this provider first: keys do not go into the file') })
+    // Another service is taken when its key is already on the list of keys; keys never travel in the file. A provider of the owner's own is taken by its id alone: the file never names an address.
+    if (a.provider && a.provider !== now.provider && !vaultKey(a.provider) && !customById(a.provider)) skipped.push({ what, why: tell('Connect this provider first: keys do not go into the file') })
     else if (a.provider && a.provider !== now.provider) await attempt(what, () => chooseModel(actor, { provider: a.provider, ...(a.model && a.model !== 'auto' ? { model: a.model } : {}) }))
     else await attempt(what, () => chooseModel(actor, a.model === 'auto' ? { auto: true } : { model: a.model }))
   }
