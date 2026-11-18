@@ -1,8 +1,8 @@
 // The one list of the languages the interface speaks. The `Lang` type, the pickers, the zod enums, the loaders and the
 // tests all read it, so adding a language is one line here plus its file `locales/<code>.json` (docs/TRANSLATING.md).
 
-/** `source` is the language the phrases are written in; `reviewed` has been signed off by a native reader; `needs-review` is machine-translated and shown as "beta". */
-export type LangStatus = 'source' | 'reviewed' | 'needs-review'
+/** `source` is the language the phrases are written in; `reviewed` has been signed off by a native reader; `draft` is machine-translated and shown as "beta". */
+export type LangStatus = 'source' | 'reviewed' | 'draft'
 
 export type LanguageDef = {
   /** The language named in itself, as the picker shows it. */
@@ -32,14 +32,14 @@ export const LANGUAGES = {
   en: { name: 'English', openEnd: 'now', locale: 'en', dir: 'ltr', ...given, status: 'source', whisper: 'english' },
   es: { name: 'Español', openEnd: 'hoy', locale: 'es', dir: 'ltr', ...given, status: 'reviewed', whisper: 'spanish' },
   ca: { name: 'Català', openEnd: 'avui', locale: 'ca', dir: 'ltr', ...given, status: 'reviewed', whisper: 'catalan' },
-  'pt-BR': { aliases: ['pt'], name: 'Português (Brasil)', openEnd: 'hoje', locale: 'pt-BR', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'needs-review', whisper: 'portuguese', hidden: true },
-  fr: { name: 'Français', openEnd: 'aujourd’hui', locale: 'fr', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'needs-review', whisper: 'french', hidden: true },
-  de: { name: 'Deutsch', openEnd: 'heute', locale: 'de', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'needs-review', whisper: 'german', hidden: true },
-  it: { name: 'Italiano', openEnd: 'oggi', locale: 'it', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'needs-review', whisper: 'italian', hidden: true },
-  uk: { name: 'Українська', openEnd: 'дотепер', locale: 'uk', dir: 'ltr', nameOrder: 'given-first', patronymic: true, status: 'needs-review', whisper: 'ukrainian', hidden: true },
-  pl: { name: 'Polski', openEnd: 'obecnie', locale: 'pl', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'needs-review', whisper: 'polish', hidden: true },
+  'pt-BR': { aliases: ['pt'], name: 'Português (Brasil)', openEnd: 'hoje', locale: 'pt-BR', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'portuguese', hidden: true },
+  fr: { name: 'Français', openEnd: 'aujourd’hui', locale: 'fr', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'french', hidden: true },
+  de: { name: 'Deutsch', openEnd: 'heute', locale: 'de', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'german', hidden: true },
+  it: { name: 'Italiano', openEnd: 'oggi', locale: 'it', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'italian', hidden: true },
+  uk: { name: 'Українська', openEnd: 'дотепер', locale: 'uk', dir: 'ltr', nameOrder: 'given-first', patronymic: true, status: 'draft', whisper: 'ukrainian', hidden: true },
+  pl: { name: 'Polski', openEnd: 'obecnie', locale: 'pl', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'polish', hidden: true },
   // The pseudo-language: every phrase wrapped and accented, so a screen that still shows plain English is a phrase nobody wrapped in t().
-  xx: { name: 'Pseudo', openEnd: 'now', locale: 'en', dir: 'ltr', ...given, status: 'needs-review', hidden: true },
+  xx: { name: 'Pseudo', openEnd: 'now', locale: 'en', dir: 'ltr', ...given, status: 'draft', hidden: true },
 } as const satisfies Record<string, LanguageDef>
 
 /** Every code in the registry. */

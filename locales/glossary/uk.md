@@ -34,4 +34,4 @@ Fill this language's entry in `lib/kinship-words.ts`. In many languages a father
 
 ## Reviewed by
 
-Nobody yet. A machine-translated language stays marked `needs-review` (shown as "beta" in the picker) until a native reader has read the long sentences (settings, data storage, privacy) and the kinship words. Their name and the date go here.
+Nobody yet. A machine-translated language stays marked `draft` (shown as "beta" in the picker) until a native reader has read the long sentences (settings, data storage, privacy) and the kinship words. Their name and the date go here.

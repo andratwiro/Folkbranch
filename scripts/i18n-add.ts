@@ -22,7 +22,7 @@ const dir = flag('dir') === 'rtl' ? 'rtl' : 'ltr'
 
 const q = (v: string) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
 const parts = [`name: ${q(name)}`, `openEnd: ${q(flag('open-end') ?? 'now')}`, `locale: ${q(locale)}`, `dir: '${dir}'`,
-  `nameOrder: '${has('surname-first') ? 'surname-first' : 'given-first'}'`, `patronymic: ${has('patronymic')}`, `status: 'needs-review'`]
+  `nameOrder: '${has('surname-first') ? 'surname-first' : 'given-first'}'`, `patronymic: ${has('patronymic')}`, `status: 'draft'`]
 if (flag('whisper')) parts.push(`whisper: ${q(flag('whisper')!)}`)
 parts.push('hidden: true')
 const registry = path.join(root, 'lib/languages.ts')
@@ -47,4 +47,4 @@ if (!existsSync(glossary)) writeFileSync(glossary, readFileSync(path.join(glossa
 console.log(`Added ${code} (${name}): ${Object.keys(table).length} empty lines in locales/${code}.json, a glossary in locales/glossary/${code}.md,
 and a line in lib/languages.ts marked hidden (not in the pickers yet).
 Next: fill the glossary, translate the lines, run \`pnpm i18n:check\` until nothing is missing, set openEnd to the word for "now" in ranges
-(it must equal the line "now"), then remove \`hidden: true\`. Machine translation stays 'needs-review'.`)
+(it must equal the line "now"), then remove \`hidden: true\`. Machine translation stays 'draft'.`)

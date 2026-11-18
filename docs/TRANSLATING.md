@@ -21,7 +21,7 @@ Folkbranch is for families anywhere. The interface is written in English; every 
 5. Set `openEnd` in the registry to the word for "now" in a range of years ("1950–now") and make the line `"now"` in the file say the same; a test keeps them equal.
 6. Remove `hidden: true`. A language is listed in the picker only when it is complete.
 
-A machine-translated language keeps `status: 'needs-review'`: the picker marks it **beta** until a native reader has gone through the long sentences (settings, data storage, privacy) and the kinship words, and the registry says `reviewed`. Their name and the date go at the end of the glossary.
+A machine-translated language keeps `status: 'draft'`: the picker marks it **beta** until a native reader has gone through the long sentences (settings, data storage, privacy) and the kinship words, and the registry says `reviewed`. Their name and the date go at the end of the glossary.
 
 ## Right to left, fonts, names, relatives
 
