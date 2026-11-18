@@ -2,7 +2,7 @@
   "name": "folkbranch",
   "version": "1.8.0",
   "description": "Your family tree, photos and voice stories, kept together. Installs Folkbranch, open-source family tree software, on your own computer.",
-  "homepage": "https://github.com/danarkhipov/Folkbranch",
+  "homepage": "https://folkbranch.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/danarkhipov/Folkbranch.git"

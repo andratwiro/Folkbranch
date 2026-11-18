@@ -88,3 +88,10 @@ Replace `OWNER` and `REPO` with the repository's owner and name. `protection.jso
 `pnpm.auditConfig.ignoreGhsas` in `package.json` lists advisories that `pnpm audit` skips. Keep it empty when possible. An entry needs a reason here and a removal condition.
 
 - `GHSA-fc5q-39xc-vjpf` (picomatch ReDoS, 17 Nov 2026): no patched version exists. The package is reached only through `better-auth` → `vitest` → `vite`, test tooling that the running app never loads. Remove the entry when picomatch publishes a fix above 4.0.7 and the lockfile takes it.
+
+## The face of the project: README pictures, About text and social preview
+
+- **README pictures** are real screenshots of the app on the invented demo family, never drawings. Remake them for a release with `pnpm build && node scripts/readme-shots.mjs`: it writes `docs/images/hero-*.png`, `chart-*.png`, `map-*.png`, `story-phone-*.png` and `docs/brand/social-preview.png` (1280×640, well under GitHub's 1 MB limit) in English and Russian. Look at the pictures before committing them: no toast, no cut-off cards, nothing real.
+- **Social preview** is a setting, not a file in the repository: Settings → General → Social preview → Upload an image, with `docs/brand/social-preview.png`. The website's own `og:image` is a separate thing.
+- **About** (the line under the repository name): "Free, self-hosted family tree software. Preserve photos and voice stories, invite relatives by link, and keep your family history private." Website: https://folkbranch.com. Keep the topics short and about the use (`family-tree`, `genealogy`, `self-hosted`, `gedcom`, `family-history`) before the stack.
+- **The website** (folkbranch.com) is hosted apart from this repository. After each release its structured data (`softwareVersion`) and the version it shows must say the release that was published; compare them when a release goes out.
