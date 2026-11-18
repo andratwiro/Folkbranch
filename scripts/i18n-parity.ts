@@ -20,6 +20,14 @@ const added = JSON.parse(readFileSync(path.join(root, 'scripts/i18n-added.json')
 const keys: [string, string, string][] = JSON.parse(readFileSync(path.join(root, 'scripts/legacy/keys.json'), 'utf8'))
 
 const problems: string[] = []
+// Russian lines reworded in plain words since the codemod (no technical terms on screen); the key is the English phrase.
+const reworded: Record<string, string> = {
+  'Money is only what the provider itself stated. Where it states no price, you see the number of requests; the sum is in its account.': 'Деньги — только те, что назвал сам сервис. Где он цену не сообщает, видно число запросов, а сумму смотрите в его кабинете.',
+  'Providers and API keys': 'Сервисы и ключи',
+  'Server URL': 'Адрес сервера',
+  'Create an access token': 'Создать ключ доступа',
+  'The provider could not find the model set on the server. Set another in AGENT_MODEL and restart the server': 'Сервис не нашёл модель из настроек сервера. Укажите другую в AGENT_MODEL и перезапустите сервер',
+}
 let compared = 0
 let pruned = 0
 const ruFile = JSON.parse(readFileSync(path.join(root, 'locales/ru.json'), 'utf8')) as Record<string, string>
@@ -33,6 +41,7 @@ for (const [ru, id, text] of keys) {
     compared++
     // A Spanish or Catalan line written since (the assistant's step names had no line and showed English) is an improvement, not a change.
     if ((lang === 'es' || lang === 'ca') && was === text && added[lang]?.[id] === now) continue
+    if (lang === 'ru' && reworded[id] === now) continue
     if (was !== now) problems.push(`${lang} "${ru}": was "${was}", now "${now}" (key "${id}")`)
   }
 }

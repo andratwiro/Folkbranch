@@ -2,7 +2,7 @@
 import { startTransition, useEffect, useRef, useState } from 'react'
 import { translate } from '@/lib/i18n'
 import { useTable } from '@/lib/i18n-load'
-import { LANGS, langLabel, setLangCookie, setPageLang } from '@/lib/languages'
+import { LANGS, SOURCE_LANG, langLabel, setLangCookie, setPageLang } from '@/lib/languages'
 import type { Lang } from '@/lib/types'
 import { MailCode, OAuthButtons, TelegramButton, authPost } from './sign-in-buttons'
 import type { SignInMethods } from '@/lib/sign-in-methods'
@@ -48,7 +48,7 @@ export function SetupScreen({ needsCode, initialCode = '', initialLang, wrongAdd
         <div className="flex gap-1">
           {/* A transition: the old words stay on screen while a Spanish or Catalan table arrives. */}
           {/* English first, as before the language registry: a newcomer's first screen leads with it. */}
-          {[...LANGS].sort((a, b) => Number(b === 'en') - Number(a === 'en')).map((l) => <button type="button" key={l} onClick={() => { setLangCookie(l); startTransition(() => setLang(l)) }} className={lang === l ? 'bar-btn on' : 'bar-btn'}>{langLabel(l)}</button>)}
+          {[SOURCE_LANG, ...LANGS.filter((l) => l !== SOURCE_LANG)].map((l) => <button type="button" key={l} onClick={() => { setLangCookie(l); startTransition(() => setLang(l)) }} className={lang === l ? 'bar-btn on' : 'bar-btn'}>{langLabel(l)}</button>)}
         </div>
         <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Your name')}<input required autoFocus className={field} value={name} onChange={(e) => setName(e.target.value)} /></label>
         <label className="flex flex-col gap-1 text-xs text-ink-soft">{t('Family name')}<input required className={field} value={familyName} onChange={(e) => setFamilyName(e.target.value)} /></label>

@@ -375,9 +375,9 @@ function Stamped({ meta }: { meta: unknown }) {
   if (!s) return null
   const detail = stampDetail(s, lang, t)
   const line = stampLine(s, lang, t)
-  if (!detail) return <p className="answer-stamp text-[11.5px] text-ink-faint">{line}</p>
+  if (!detail) return <p className="answer-stamp text-xs text-ink-faint">{line}</p>
   return (
-    <details className="answer-stamp text-[11.5px] text-ink-faint">
+    <details className="answer-stamp text-xs text-ink-faint">
       <summary className="flex cursor-pointer list-none items-center gap-1">{line}<ChevronDown size={12} className="chev shrink-0" /></summary>
       <p className="mt-0.5">{detail}</p>
     </details>

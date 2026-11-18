@@ -31,24 +31,21 @@ type Go = (to: 'assistant' | 'speech' | 'faces' | 'smart' | 'agents') => void
 /** One card of rows, as in the system settings of a phone: a hairline between rows, nothing else. */
 const Card = ({ children }: { children: ReactNode }) => <div className="overflow-hidden rounded-xl border border-border bg-white divide-y divide-border">{children}</div>
 const Head = ({ children, right }: { children: ReactNode; right?: ReactNode }) => <div className="mb-2 flex items-baseline gap-2 px-0.5"><h3 className="text-[15px] font-semibold">{children}</h3>{right && <div className="ml-auto text-sm">{right}</div>}</div>
-const Chip = ({ children, warn }: { children: ReactNode; warn?: boolean }) => <span className={cn('flex-none rounded-full px-2 py-0.5 text-xs', warn ? 'bg-[#f8eedc] text-[#a8691b]' : 'bg-[#edf3ea] text-[#4d7a4a]')}>{children}</span>
+const Chip = ({ children, warn }: { children: ReactNode; warn?: boolean }) => <span className={cn('flex-none rounded-full px-2 py-0.5 text-xs', warn ? 'bg-[#f8eedc] text-[#8a5412]' : 'bg-[#edf3ea] text-[#3d683a]')}>{children}</span>
 
 /** A row: an icon, the name, one short line of what it uses, and what can be done; the whole row opens its page. */
 function Row({ icon, title, meta, right, onOpen, accent, control }: { icon: ReactNode; title: ReactNode; meta?: ReactNode; right?: ReactNode; onOpen?: () => void; accent?: boolean; control?: ReactNode }) {
-  const body = (
-    <>
-      <span className={cn('grid size-7 flex-none place-items-center rounded-lg bg-[#f4ede0]', accent ? 'text-accent' : 'text-[#a4502e]')}>{icon}</span>
-      <span className="flex min-w-0 flex-1 items-baseline gap-2.5">
-        <span className={cn('min-w-0 shrink-0 truncate font-medium max-sm:shrink', accent && 'text-[#a4502e]')}>{title}</span>
-        {meta && <span className="truncate text-[13.5px] text-ink-faint">{meta}</span>}
-      </span>
-    </>
-  )
+  const name = cn('min-w-0 font-medium', accent && 'text-[#a4502e]')
   return (
     <div className="px-4">
-      <div className="flex min-h-[52px] items-center gap-3">
-        {onOpen ? <button type="button" className="flex min-w-0 flex-1 items-center gap-3 self-stretch text-left" onClick={onOpen}>{body}</button> : <div className="flex min-w-0 flex-1 items-center gap-3">{body}</div>}
-        {right}
+      <div className="relative flex min-h-[52px] items-center gap-3">
+        <span className={cn('grid size-7 flex-none place-items-center rounded-lg bg-[#f4ede0]', accent ? 'text-accent' : 'text-[#a4502e]')}>{icon}</span>
+        <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2.5">
+          {/* The button holds the name alone; its covering layer makes the whole row open the page. */}
+          {onOpen ? <button type="button" className={cn(name, 'text-left after:absolute after:inset-0 after:content-[""]')} onClick={onOpen}>{title}</button> : <span className={name}>{title}</span>}
+          {meta && <span className="min-w-0 break-anywhere text-xs text-ink-faint">{meta}</span>}
+        </span>
+        {right && <span className="relative z-10 flex items-center gap-3">{right}</span>}
         {onOpen && <ChevronRight size={16} className="flex-none text-ink-faint" aria-hidden />}
       </div>
       {/* A picker sits under the name, in line with it, so neither is cut short. */}
@@ -235,7 +232,7 @@ export function AiOverview({ onGo }: { onGo: Go }) {
                 {k.usedBy.assistant && <Chip>{t('assistant')}</Chip>}
                 {k.usedBy.speech && <Chip>{t('speech')}</Chip>}
                 {!k.usedBy.assistant && !k.usedBy.speech && <span className="text-xs text-ink-faint">{t('not in use')}</span>}
-                <button type="button" className="grid size-7 flex-none place-items-center rounded-md text-ink-faint hover:bg-black/5 hover:text-destructive" aria-label={`${t('Remove the key')} ${t(k.label)}`} onClick={() => void removeKey(k)}><Trash2 size={14} /></button>
+                <TrashButton label={`${t('Remove the key')} ${t(k.label)}`} onClick={() => void removeKey(k)} />
               </>} />
           ))}
           {provider?.source === 'server' && <Row icon={<KeyRound size={15} />} title={provider.label} meta={t('key in the server settings')} right={<Chip>{t('assistant')}</Chip>} />}
@@ -247,8 +244,8 @@ export function AiOverview({ onGo }: { onGo: Go }) {
               right={<>
                 <Chip>{t('your provider')}</Chip>
                 {p.active ? <Chip>{t('assistant')}</Chip> : <button type="button" className="flex-none text-xs font-medium text-[#a4502e] disabled:opacity-40" disabled={p.keyNeeded} onClick={() => switchToOwn(p)}>{t('Use')}</button>}
-                <button type="button" className="flex-none text-xs font-medium text-[#a4502e]" onClick={() => setForm(p)} aria-label={`${t('Edit')} ${p.name}`}>{t('Edit')}</button>
-                <button type="button" className="grid size-7 flex-none place-items-center rounded-md text-ink-faint hover:bg-black/5 hover:text-destructive" aria-label={`${t('Remove the provider')} ${p.name}`} onClick={() => void removeOwn(p)}><Trash2 size={14} /></button>
+                <button type="button" className="flex-none text-xs font-medium text-[#a4502e]" onClick={() => setForm(p)} aria-label={`${t('Edit')} ${p.name}`} title={`${t('Edit')} ${p.name}`}>{t('Edit')}</button>
+                <TrashButton label={`${t('Remove the provider')} ${p.name}`} onClick={() => void removeOwn(p)} />
               </>} />
           ))}
           {form
@@ -266,7 +263,7 @@ export function AiOverview({ onGo }: { onGo: Go }) {
               meta={[k.role === 'reader' ? t('read only') : k.review ? t('edits for review') : t('edits applied at once'), k.expiresAt ? `${t('before')} ${new Date(k.expiresAt).toLocaleDateString(lang)}` : t('no expiry')].join(' · ')}
               right={<span className="flex-none text-xs tabular-nums text-ink-soft">{t('calls this month')}: {report?.tokens.find((x) => x.id === k.id)?.requests ?? 0}</span>} />
           ))}
-          <Row icon={<Plug size={15} />} title={t('Server URL')} meta={<span className="font-mono text-[12.5px]">{mcpUrl}</span>}
+          <Row icon={<Plug size={15} />} title={t('Server URL')} meta={<span className="font-mono text-xs">{mcpUrl}</span>}
             right={<button type="button" className="flex-none font-medium text-[#a4502e]" onClick={() => navigator.clipboard.writeText(mcpUrl).then(() => notify(t('Copied')))}>{t('Copy_infinitive')}</button>} />
           <Row icon={<Plus size={15} />} accent title={t('Create an access token')} meta={t('for Claude, ChatGPT, Cursor and others')} onOpen={() => onGo('agents')} />
         </Card>
@@ -295,14 +292,14 @@ function Usage({ icon, label, value, unit, sub, used, limitLabel }: { icon: Reac
   const share = used && used[1] > 0 ? Math.min(1, used[0] / used[1]) : null
   return (
     <div className="flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-white p-3.5">
-      <div className="flex items-center gap-2 text-[13px] text-ink-soft"><span className="grid size-6 place-items-center rounded-md bg-[#f4ede0] text-[#a4502e]">{icon}</span>{label}</div>
-      <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-1"><span className="break-anywhere font-serif text-[26px] leading-none tabular-nums">{value}</span>{unit && <span className="break-anywhere text-xs text-ink-faint">{unit}</span>}</div>
+      <div className="flex items-center gap-2 text-xs text-ink-soft"><span className="grid size-6 place-items-center rounded-md bg-[#f4ede0] text-[#a4502e]">{icon}</span>{label}</div>
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-1"><span className="break-anywhere font-serif text-[24px] leading-none tabular-nums">{value}</span>{unit && <span className="break-anywhere text-xs text-ink-faint">{unit}</span>}</div>
       {share !== null && (
         <div>
           <div className="h-1.5 overflow-hidden rounded-full bg-[#efe8da]" role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={used![1]} aria-valuenow={used![0]}>
             <div className={cn('h-full rounded-full', share > 0.8 ? 'bg-[#c98a2b]' : 'bg-[#7a9a6e]')} style={{ width: `${Math.max(share * 100, share > 0 ? 3 : 0)}%` }} />
           </div>
-          <div className="break-anywhere mt-1 text-[11.5px] text-ink-faint">{limitLabel}</div>
+          <div className="break-anywhere mt-1 text-xs text-ink-faint">{limitLabel}</div>
         </div>
       )}
       {sub && <div className="break-anywhere text-xs text-ink-faint">{sub}</div>}
@@ -310,9 +307,13 @@ function Usage({ icon, label, value, unit, sub, used, limitLabel }: { icon: Reac
   )
 }
 
+function TrashButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return <button type="button" className="grid size-7 flex-none place-items-center rounded-md text-ink-faint hover:bg-black/5 hover:text-destructive" aria-label={label} title={label} onClick={onClick}><Trash2 size={14} /></button>
+}
+
 function Toggle({ on, label, onChange }: { on: boolean; label: string; onChange: (on: boolean) => void }) {
   return (
-    <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)}
+    <button type="button" role="switch" aria-checked={on} aria-label={label} title={label} onClick={() => onChange(!on)}
       className={cn('relative h-[22px] w-[38px] flex-none rounded-full transition-colors', on ? 'bg-[#4d7a4a]' : 'bg-[#d8d0bf]')}>
       <span className={cn('absolute top-0.5 size-[18px] rounded-full bg-white shadow transition-[left]', on ? 'left-[18px]' : 'left-0.5')} />
     </button>

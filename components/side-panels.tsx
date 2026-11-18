@@ -75,7 +75,7 @@ export function HistoryList({ rows, onlyOne }: { rows: HistoryEntry[]; onlyOne?:
               {canEdit && !r.undoneAt && !r.undoOf && (
                 <div className="flex flex-none flex-col gap-1">
                   <Button size="sm" variant="outline" title={t('Roll back this change')} data-hint={t('Puts things back as they were before it. The rollback stays in the history too.')} disabled={undo.isPending} onClick={() => undo.mutate(r.id)}><Undo2 /> {t('Roll back')}</Button>
-                  <Button size="sm" variant="ghost" title={t('Roll back to this point')} aria-label={t('Roll back to this point')} disabled={rollback.isPending} onClick={() => askRollback(r, i)}><RotateCcw /> {t('Roll back to this point')}</Button>
+                  <Button size="sm" variant="ghost" aria-label={t('Roll back to this point')} disabled={rollback.isPending} onClick={() => askRollback(r, i)}><RotateCcw /> {t('Roll back to this point')}</Button>
                 </div>
               )}
             </div>
