@@ -41,7 +41,7 @@ describe('the viewer language on the server', () => {
     setSetting('language', 'en')
     expect(sayError(null, 'es-ES,es;q=0.9')).toBe('Este enlace no es válido')
     expect(sayError('folkbranch-lang=ru', 'es-ES,es;q=0.9')).toBe('Ссылка недействительна')
-    expect(sayError(null, 'de-DE')).toBe('This link is not valid')
+    expect(sayError(null, 'ja-JP')).toBe('This link is not valid')
     expect(historyLine(null, 'es-ES,es;q=0.9')).toBe('Persona eliminada: Ana')
     expect(historyLine('folkbranch-lang=ru', 'es-ES,es;q=0.9')).toBe('Удалён человек: Ana')
   })

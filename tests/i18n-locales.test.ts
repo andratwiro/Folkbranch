@@ -30,14 +30,14 @@ describe('the language registry', () => {
 
   it('keeps the four languages that were there, by the same codes, so old cookies and archive settings still work', () => {
     expect(LANGS.slice(0, 4)).toEqual(['ru', 'en', 'es', 'ca'])
-    for (const code of ['ru', 'en', 'es', 'ca']) expect(viewerLang(`folkbranch-lang=${code}`, 'de', 'en')).toBe(code)
+    for (const code of ['ru', 'en', 'es', 'ca']) expect(viewerLang(`folkbranch-lang=${code}`, 'ja', 'en')).toBe(code)
   })
 
   it('matches a browser tag by the whole tag, then by its first part', () => {
     expect(langOfTag('es-MX')).toBe('es')
     expect(langOfTag('CA_es')).toBe('ca')
     expect(langOfTag('nowhere')).toBeUndefined()
-    expect(matchLanguage('xx, de;q=0.5, ru;q=0.4')).toBe('ru')
+    expect(matchLanguage('xx, ja;q=0.5, ru;q=0.4')).toBe('ru')
   })
 
   it('names, per language, the word an open range of years ends with, equal to its "now" line', () => {
@@ -102,7 +102,7 @@ describe('English is the key', () => {
 
 describe('the checks', () => {
   const asked = new Set(['Delete person «{name}»?', 'Save', '{count} years'])
-  const base = { lang: 'de', locale: 'de', en: { '{count} years_one': '{count} year' }, asked, sameOk: () => false }
+  const base = { lang: 'ja', locale: 'ja', en: { '{count} years_one': '{count} year' }, asked, sameOk: () => false }
   const good = { 'Delete person «{name}»?': 'Person «{name}» löschen?', Save: 'Speichern', '{count} years_one': '{count} Jahr', '{count} years_other': '{count} Jahre' }
 
   it('passes a complete table', () => {

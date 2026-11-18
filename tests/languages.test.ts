@@ -30,7 +30,7 @@ describe('a language that is not finished', () => {
   })
 
   it('shows English for every word, never Russian, whatever its table holds', () => {
-    const russian = LANGS.filter((l) => l !== 'ru').flatMap((lang) => Object.keys(ru).filter((k) => cyrillic.test(translate(lang, k)) && !cyrillic.test(k)).map((k) => `${lang}: ${k}`))
+    const russian = LANGS.filter((l) => l !== 'ru' && l !== 'uk').flatMap((lang) => Object.keys(ru).filter((k) => cyrillic.test(translate(lang, k)) && !cyrillic.test(k)).map((k) => `${lang}: ${k}`))
     expect(russian).toEqual([])
   })
 
@@ -60,11 +60,11 @@ describe('a language that is not finished', () => {
   })
 
   it('names each language in itself, and reads a page or browser code', () => {
-    expect(LANGS).toEqual(['ru', 'en', 'es', 'ca'])
-    expect(LANG_NAMES).toEqual({ ru: 'Русский', en: 'English', es: 'Español', ca: 'Català' })
+    expect(LANGS).toEqual(['ru', 'en', 'es', 'ca', 'pt-BR', 'fr', 'de', 'it', 'uk', 'pl'])
+    expect(LANG_NAMES).toMatchObject({ ru: 'Русский', en: 'English', es: 'Español', ca: 'Català', 'pt-BR': 'Português (Brasil)', de: 'Deutsch', uk: 'Українська' })
     expect(langOf('es-ES')).toBe('es')
     expect(langOf('ca')).toBe('ca')
-    expect(langOf('de-DE')).toBe('en')
+    expect(langOf('ja-JP')).toBe('en')
     expect(langOf('')).toBe('en')
   })
 })

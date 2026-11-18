@@ -32,12 +32,12 @@ export const LANGUAGES = {
   en: { name: 'English', openEnd: 'now', locale: 'en', dir: 'ltr', ...given, status: 'source', whisper: 'english' },
   es: { name: 'Español', openEnd: 'hoy', locale: 'es', dir: 'ltr', ...given, status: 'reviewed', whisper: 'spanish' },
   ca: { name: 'Català', openEnd: 'avui', locale: 'ca', dir: 'ltr', ...given, status: 'reviewed', whisper: 'catalan' },
-  'pt-BR': { aliases: ['pt'], name: 'Português (Brasil)', openEnd: 'hoje', locale: 'pt-BR', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'portuguese', hidden: true },
-  fr: { name: 'Français', openEnd: 'aujourd’hui', locale: 'fr', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'french', hidden: true },
-  de: { name: 'Deutsch', openEnd: 'heute', locale: 'de', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'german', hidden: true },
-  it: { name: 'Italiano', openEnd: 'oggi', locale: 'it', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'italian', hidden: true },
-  uk: { name: 'Українська', openEnd: 'дотепер', locale: 'uk', dir: 'ltr', nameOrder: 'given-first', patronymic: true, status: 'draft', whisper: 'ukrainian', hidden: true },
-  pl: { name: 'Polski', openEnd: 'obecnie', locale: 'pl', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'polish', hidden: true },
+  'pt-BR': { aliases: ['pt'], name: 'Português (Brasil)', openEnd: 'hoje', locale: 'pt-BR', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'portuguese' },
+  fr: { name: 'Français', openEnd: 'aujourd’hui', locale: 'fr', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'french' },
+  de: { name: 'Deutsch', openEnd: 'heute', locale: 'de', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'german' },
+  it: { name: 'Italiano', openEnd: 'oggi', locale: 'it', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'italian' },
+  uk: { name: 'Українська', openEnd: 'дотепер', locale: 'uk', dir: 'ltr', nameOrder: 'given-first', patronymic: true, status: 'draft', whisper: 'ukrainian' },
+  pl: { name: 'Polski', openEnd: 'obecnie', locale: 'pl', dir: 'ltr', nameOrder: 'given-first', patronymic: false, status: 'draft', whisper: 'polish' },
   // The pseudo-language: every phrase wrapped and accented, so a screen that still shows plain English is a phrase nobody wrapped in t().
   xx: { name: 'Pseudo', openEnd: 'now', locale: 'en', dir: 'ltr', ...given, status: 'draft', hidden: true },
 } as const satisfies Record<string, LanguageDef>
