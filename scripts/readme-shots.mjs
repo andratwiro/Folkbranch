@@ -43,6 +43,9 @@ for (const [i, lang] of ['en', 'ru'].entries()) {
     // The same family with a person's card open beside it.
     await page.goto(`${app.B}/?p=${hub}`)
     await sleep(3000)
+    // The card takes the right third; slide the chart right a little so nobody at the left edge is cut off.
+    await page.mouse.move(300, 1060); await page.mouse.down(); await page.mouse.move(380, 1060, { steps: 8 }); await page.mouse.up()
+    await sleep(600)
     await page.screenshot({ path: P(`card-${lang}.png`) })
     // The family on the map, at a moment with many people placed.
     await page.goto(`${app.B}/?view=map&y=1975`)
