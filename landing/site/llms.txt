@@ -1,0 +1,22 @@
+# Folkbranch
+
+> Free, open-source, self-hosted family archive: a family tree, photos with face recognition, voice stories from relatives by link, and an AI assistant. One SQLite file on the owner's computer or server.
+
+- [Install guide for AI agents](https://github.com/danarkhipov/folkbranch/blob/main/skills/folkbranch/SKILL.md): ask whether this computer or a server, install, open, connect over MCP.
+- [Source code and README](https://github.com/danarkhipov/folkbranch)
+- [Self-hosting guide](https://github.com/danarkhipov/folkbranch/blob/main/docs/SELF_HOSTING.md)
+- [Deploying on Railway, Render, Fly.io](https://github.com/danarkhipov/folkbranch/blob/main/docs/DEPLOY.md)
+- [Folkbranch website](https://folkbranch.com/): what it does, how it compares, FAQ
+- [Русская версия сайта](https://folkbranch.com/ru/)
+- [Releases and changelog](https://github.com/danarkhipov/folkbranch/releases)
+
+## Facts
+
+- Licence: AGPL-3.0. Price: free, no paid plan; you pay only for a server if you rent one.
+- Data: one SQLite file and a photos folder on the owner's computer or server. Daily database copy, full download any time.
+- GEDCOM 5.5.1 and 7.0 import, GEDCOM export; Excel, CSV and plain-text import.
+- Relatives answer questions by voice through a link, without an account.
+- Runs on macOS and Linux with one command, on Windows and servers with Docker; an AI agent (Claude Code, Codex, Cursor) can install it from the guide above.
+- Languages: English, Russian, Spanish, Catalan, and in beta Portuguese, French, German, Italian, Ukrainian, Polish.
+
+Current release: 1.8.0 (https://github.com/danarkhipov/Folkbranch/releases/tag/v1.8.0). Page updated 2026-11-19.
