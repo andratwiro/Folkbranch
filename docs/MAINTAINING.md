@@ -12,7 +12,7 @@ Commands marked "run by the maintainer" are examples for the repository owner. A
 | One approving review from the code owners; dismiss stale approvals | One reviewer is enough, and an old approval does not survive a new push | Same ruleset: "Require a pull request before merging" |
 | Required status checks (see the list below); branch up to date before merge | A merge needs every check to pass on the current code | Same ruleset: "Require status checks to pass" |
 | Block force pushes and branch deletion | Protected history cannot be rewritten or removed | Same ruleset |
-| Squash merge only | Each pull request becomes one commit, titled with its PR title | Settings > General > Pull Requests |
+| Merge methods per branch: `develop` takes squash or rebase, `main` takes merge or rebase | A feature pull request becomes one commit titled with its PR title; a release keeps every commit and its author | The branch rulesets ("Require a pull request", allowed merge methods) |
 | Tag ruleset for `v*`; only the maintainer creates tags | Only a version tag starts a release | Settings > Rules > Rulesets, target "Tag" |
 | Secret scanning and push protection | Stops tokens and keys from entering the history | Settings > Advanced Security (shown as Code security) |
 | Dependabot alerts and Dependabot security updates | Vulnerable dependencies are reported and updated | Settings > Advanced Security (shown as Code security) |
@@ -91,7 +91,7 @@ Replace `OWNER` and `REPO` with the repository's owner and name. `protection.jso
 
 ## The face of the project: README pictures, About text and social preview
 
-- **README pictures** are real screenshots of the app on the invented demo family, never drawings. Remake them for a release with `pnpm build && node scripts/readme-shots.mjs`: it writes `docs/images/hero-*.png`, `chart-*.png`, `map-*.png`, `story-phone-*.png` and `docs/brand/social-preview.png` (1280×640, well under GitHub's 1 MB limit) in English and Russian. Look at the pictures before committing them: no toast, no cut-off cards, nothing real.
+- **README pictures** are real screenshots of the app on the invented demo family, never drawings. Remake them for a release with `pnpm build && node scripts/readme-shots.mjs`: it writes `chart-*.png`, `map-*.png`, `story-phone-*.png` and `docs/brand/social-preview.png` (the `hero-*.png` pictures are made separately) (1280×640, well under GitHub's 1 MB limit) in English and Russian. Look at the pictures before committing them: no toast, no cut-off cards, nothing real.
 - **Social preview** is a setting, not a file in the repository: Settings → General → Social preview → Upload an image, with `docs/brand/social-preview.png`. The website's own `og:image` is a separate thing.
 - **About** (the line under the repository name): "Free, self-hosted family tree software. Preserve photos and voice stories, invite relatives by link, and keep your family history private." Website: https://folkbranch.com. Keep the topics short and about the use (`family-tree`, `genealogy`, `self-hosted`, `gedcom`, `family-history`) before the stack.
-- **The website** (folkbranch.com) is hosted apart from this repository. After each release its structured data (`softwareVersion`) and the version it shows must say the release that was published; compare them when a release goes out.
+- **The website** (folkbranch.com) lives in `landing/` (see its README). After each release update its structured data (`softwareVersion`), the version and date in its footer, `sitemap.xml` and `llms.txt`; `tests/landing.test.ts` fails when the version or the markup drifts. Deploy it with `railway up` from that folder.
