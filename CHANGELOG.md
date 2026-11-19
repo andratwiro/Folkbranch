@@ -6,7 +6,23 @@ All notable changes are listed here, newest first. Versions follow [Semantic Ver
 
 ## 1.8.0 - 2026-11-18
 
-Chart editing and assistant work: links can be moved and marked as in a genogram, tidier chart lines, a faster and more visible assistant, and a link to ask a relative for a story.
+Folkbranch 1.8.0 lets you correct the family chart with your hands instead of deleting and re-entering people, makes the map tell the truth when you rewind it, and opens the app to more languages. The assistant does bulk edits in one step and can be pointed at any AI service you choose.
+
+### Highlights
+
+- **Fix a wrong link by dragging it.** Click a line on the chart and drag its end onto the right person: the wrong parent becomes the right one, one step in History, one Undo.
+- **Change whose child someone is in one move.** Drag a child's handle onto a parent, or onto the dot between two parents, and the card says what will happen before you let go.
+- **A chart that reads like a genogram.** Unmarried partners are dashed, a divorce has two slashes, a separation one, and adopted, foster and step children each have their own line, with a legend on the chart.
+- **A map you can trust when you rewind.** Each traveller has one line, and a person's lines leave with their death year and come back when you turn the clock back. A new switch keeps the people who have died on the map, faded, where they lived.
+- **Ask a relative for a story with a link** straight from their card, and hear what came back in place.
+- **More languages.** Portuguese, French, German, Italian, Ukrainian and Polish arrive as a beta, and adding another is one file.
+- **Your own AI provider.** Connect any OpenAI-compatible service from Settings > AI; the assistant uses fewer tokens and makes one call for a change to many people.
+- **Safer for readers and agents.** Hidden living relatives stay hidden everywhere an agent or a reader can look, and mistakes in a request are explained in plain words.
+
+### Upgrading
+
+- Run the install command again (`curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh`), or `docker compose pull && docker compose up -d`. Your archive and photos stay where they are.
+- One additive migration (how a union ended) runs by itself; the server copies the database first, and nothing needs to be configured.
 
 ### Fixed
 - The assistant makes one `update_people` call for a change to many people, as its instructions say: the tool is now sent with every request, so a small model no longer writes one `update_person` call per person (and an undo restores them all at once).

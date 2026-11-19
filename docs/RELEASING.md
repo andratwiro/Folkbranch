@@ -33,6 +33,7 @@ Done by the maintainer, from a clean `main`. Agents prepare the commit and stop:
 
 1. `develop` is green: `pnpm check`, `pnpm check:ui`, the browser tests, and a check by hand of what is new.
 2. In `CHANGELOG.md` rename **Unreleased** to `## X.Y.Z - YYYY-MM-DD` and put a new empty **Unreleased** above it. Read the section once as a user: is anything missing, is anything internal?
+   Start the section with a short opening paragraph for people who do not read changelogs (what changes in how they use the app), then `### Highlights` (a few bullets, each with a bold lead and one sentence) and `### Upgrading` (what to do, and what happens to their data), then the usual groups. `scripts/release-notes.mjs` turns this into the release page: the opening, the highlights, how to upgrade, everything that changed, the merged pull requests, the contributors and the link to the full comparison. Try it before tagging: `node scripts/release-notes.mjs X.Y.Z`.
 3. Set `version` to `X.Y.Z` in `package.json` and `npm/package.json`. `tests/release.test.ts` fails when they differ or the changelog has no section for that version.
 4. Commit `chore(release): X.Y.Z`, merge `develop` into `main`.
 5. Tag `vX.Y.Z` on that commit and push the tag. `.github/workflows/release.yml` then builds the images (`ghcr.io/danarkhipov/folkbranch`, `X.Y.Z`, `X.Y` and `latest`) and the bundles for each platform, and publishes the GitHub release with the changelog section as its notes. Never write the notes by hand in GitHub: edit `CHANGELOG.md` and run the workflow again.
