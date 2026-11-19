@@ -77,8 +77,9 @@ body { margin: 0; width: 1280px; height: 640px; background: #f6f2ea; font-family
 h1 { font: 600 54px/1.08 Lit, serif; margin: 44px 0 20px }
 p { font-size: 25px; line-height: 1.35; margin: 0; color: #5d554a }
 .w { position: absolute; left: 64px; bottom: 54px; font-size: 24px; letter-spacing: .02em; color: #8a3a1c }
-.s { position: absolute; left: 560px; top: 64px; width: 780px; height: 540px; border-radius: 14px 0 0 14px; overflow: hidden; box-shadow: 0 10px 40px #2a262033; border: 1px solid #d9d2c3 }
-.s img { width: 780px; display: block }`
+/* The whole window inside the picture with room on every side: a screen cut off at the edge reads as a broken image. */
+.s { position: absolute; left: 520px; top: 80px; width: 700px; height: 481px; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 40px #2a262033; border: 1px solid #d9d2c3 }
+.s img { width: 700px; display: block }`
 const page = await (await br.newContext({ viewport: { width: 1280, height: 640 } })).newPage()
 await page.setContent(`<style>${css}</style><div class=t><div class=logo><img src="${uri(path.join(root, 'docs/brand/logo.svg'), 'image/svg+xml')}" width=44 height=44>Folkbranch</div><h1>Your family's story, together</h1><p>Family tree, photos and voice stories on your own computer or server.</p></div><div class=w>Free · Private · Open source</div><div class=s><img src="${uri(P('card-en.png'), 'image/png')}"></div>`)
 await sleep(800)
