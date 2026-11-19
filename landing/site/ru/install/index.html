@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Как установить Folkbranch: Mac, Linux, Windows, сервер</title>
+<meta name="description" content="Установите Folkbranch одной командой на Mac или Linux, через Docker на Windows, на сервер с автоматическим HTTPS или на Railway. Копии и обновления.">
+<link rel="canonical" href="https://folkbranch.com/ru/install/">
+<link rel="alternate" hreflang="en" href="https://folkbranch.com/install/">
+<link rel="alternate" hreflang="ru" href="https://folkbranch.com/ru/install/">
+<link rel="alternate" hreflang="x-default" href="https://folkbranch.com/install/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#14110d">
+<meta name="color-scheme" content="only light">
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/literata-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/literata-cyrillic-wght-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/golos-text-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Folkbranch">
+<meta property="og:title" content="Как установить Folkbranch: Mac, Linux, Windows, сервер">
+<meta property="og:description" content="Установите Folkbranch одной командой на Mac или Linux, через Docker на Windows, на сервер с автоматическим HTTPS или на Railway. Копии и обновления.">
+<meta property="og:url" content="https://folkbranch.com/ru/install/">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:image" content="https://folkbranch.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Folkbranch: семейное дерево с фотографиями и страницей человека">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Как установить Folkbranch: Mac, Linux, Windows, сервер">
+<meta name="twitter:description" content="Установите Folkbranch одной командой на Mac или Linux, через Docker на Windows, на сервер с автоматическим HTTPS или на Railway. Копии и обновления.">
+<meta name="twitter:image" content="https://folkbranch.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Folkbranch: семейное дерево с фотографиями и страницей человека">
+<style>@font-face{font-family:'Literata';font-style:normal;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Literata';font-style:normal;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-cyrillic-wght-normal.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Literata';font-style:italic;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-latin-wght-italic.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Literata';font-style:italic;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-cyrillic-wght-italic.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Golos Text';font-style:normal;font-weight:400 900;font-display:swap;src:url(/assets/fonts/golos-text-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Golos Text';font-style:normal;font-weight:400 900;font-display:swap;src:url(/assets/fonts/golos-text-cyrillic-wght-normal.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:#14110d}
+img{max-width:100%}
+a{color:#f0b39a}a:hover{color:#ffd6c4}
+:focus-visible{outline:2px solid #f0b39a;outline-offset:3px;border-radius:4px}
+summary::-webkit-details-marker{display:none}
+.faq-mark svg{transition:transform .2s}details[open]>summary .faq-mark svg{transform:rotate(45deg)}
+a[href="#install"]:hover,a[href="#features"]:hover,[data-copy]:hover{filter:brightness(1.08)}
+.navlink:hover{color:#efe8db!important}
+@media (max-width:720px){.navlink{display:none}}
+@media (prefers-reduced-motion:reduce){.faq-mark svg{transition:none}}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.copied{background:#a4502e!important;color:#fffdf8!important}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+:root{color-scheme:only light;--sec:112px}
+h1,h2{hyphens:manual;overflow-wrap:break-word}
+.rail::-webkit-scrollbar{display:none}
+@media (max-width:720px){
+:root{--sec:64px}
+.top{flex-wrap:nowrap!important;padding:14px 16px!important}
+.topnav{flex-wrap:nowrap!important;gap:10px!important}
+.eyebrow{align-items:flex-start!important;font-size:17px!important}.eyebrow svg{margin-top:4px;flex:none}
+.rail{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:12px!important;margin:0 -24px;padding:2px 24px 6px;scroll-padding:0 24px}
+.rail>*{flex:0 0 82%!important;scroll-snap-align:start;min-height:0!important}
+.rail-feat>*{flex-basis:86%!important}
+.featwrap{gap:16px!important}
+.also{padding:20px!important;gap:12px!important}
+.chip{font-size:13.5px!important;padding:6px 11px!important;gap:6px!important}
+.scatter-arrow{transform:rotate(90deg);margin:-8px auto!important}.scatter-arrow svg{width:36px;height:36px}
+.cmpwrap{overflow:visible!important;padding:4px 10px 8px!important}
+.cmp{min-width:0!important;display:block}
+.cmp thead,.cmp tbody{display:block}
+.cmp tr{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))}
+.cmp th[scope=row]{grid-column:1/-1;position:static!important;background:none!important;padding:12px 4px 2px!important;font-size:14.5px}
+.cmp thead th:first-child{display:none}
+.cmp thead th{white-space:normal!important;font-size:11.5px!important;line-height:1.15;padding:10px 2px!important;display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0!important}
+.cmp thead th:nth-child(2){font-size:12px!important}
+.cmp td{padding:2px 0 10px!important}
+.cmp td>span:first-child{width:28px!important;height:28px!important}
+}
+@media (max-width:520px){.nav-gh{display:none!important}}
+@media (max-width:440px){.topnav a[href="#install"]{padding:0 12px!important;min-height:36px!important;font-size:13px!important}.topnav>span:last-child>*{padding:4px 8px!important}.top>span:first-child{gap:8px!important}.top>span:first-child>span:last-child{font-size:18px!important}}
+@media (max-width:370px){.top>span:first-child>span:last-child{display:none}}
+
+.doc{max-width:820px;margin:0 auto;padding:8px 24px 96px}
+.crumbs ol{list-style:none;margin:0 0 30px;padding:0;display:flex;flex-wrap:wrap;gap:4px 8px;font-size:14px;color:#a89d8a}
+.crumbs li+li::before{content:"\203A";margin-right:8px;color:#7d6e5c}
+.crumbs a{color:#b9ae9b}
+.kicker{margin:0 0 14px;font-family:Literata,Georgia,serif;font-style:italic;font-size:19px;color:#f0b39a}
+.doc h1{margin:0 0 22px;font-family:Literata,Georgia,serif;font-weight:400;font-size:clamp(32px,5.2vw,54px);line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+.lead{margin:0 0 12px;font-size:20px;line-height:1.55;color:#c8bdaa;text-wrap:pretty}
+.doc h2{margin:56px 0 14px;padding-top:34px;border-top:1px solid #2a241c;font-family:Literata,Georgia,serif;font-weight:400;font-size:clamp(25px,3.4vw,34px);line-height:1.2;letter-spacing:-.01em;text-wrap:balance}
+.doc h3{margin:28px 0 8px;font-family:Literata,Georgia,serif;font-weight:500;font-size:20px;line-height:1.3;color:#efe8db}
+.doc p,.doc li{color:#d7ccb9;text-wrap:pretty}
+.doc p{margin:0 0 16px}
+.doc ul,.doc ol{margin:0 0 18px;padding-left:1.3em}
+.doc li{margin:7px 0}
+.doc strong{color:#efe8db;font-weight:600}
+.doc pre{margin:14px 0 20px;padding:14px 16px;background:#1d1913;border:1px solid #2a241c;border-radius:14px;color:#efe8db;font-size:14.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.doc :not(pre)>code{padding:1px 6px;background:#1d1913;border:1px solid #2a241c;border-radius:6px;font-size:.88em;overflow-wrap:anywhere}
+.doc .note{margin:0 0 18px;padding:14px 18px;background:#1d1913;border-left:3px solid #f0b39a;border-radius:0 12px 12px 0}
+.doc .note p{margin:0}
+.t{width:100%;margin:18px 0;border-collapse:collapse;font-size:15px;line-height:1.45}
+.t th,.t td{padding:11px 12px;text-align:left;vertical-align:top;border-top:1px solid #2a241c;color:#d7ccb9}
+.t thead th{border-top:0;font-family:Literata,Georgia,serif;font-size:16px;font-weight:600;color:#f0b39a}
+.t tbody th{width:20%;font-weight:500;color:#efe8db}
+@media (max-width:720px){
+.t,.t tbody,.t tr,.t tbody th,.t td{display:block;width:auto}
+.t thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.t tr{padding:12px 0;border-top:1px solid #2a241c}
+.t tbody th,.t td{padding:3px 0;border:0}
+.t tbody th{width:auto;font-size:16px}
+.t td::before{content:attr(data-label) ": ";font-weight:600;color:#f0b39a}
+.doc{padding:4px 16px 72px}
+.doc h2{margin-top:44px;padding-top:28px}
+.lead{font-size:18.5px}
+}
+.faq h3{margin-top:24px}
+.more{margin:56px 0 0;padding:24px 24px 8px;background:#1d1913;border:1px solid #2a241c;border-radius:20px}
+.more h2{margin:0 0 12px;padding:0;border:0;font-size:24px}
+.more ul{list-style:none;padding:0}
+.more li{margin:10px 0}
+.more li span{display:block;color:#a89d8a;font-size:15px}
+.fnav{display:flex;gap:6px 18px;flex-wrap:wrap}
+@media (max-width:440px){.topnav a[href$="/install/"]{padding:0 12px!important;min-height:36px!important;font-size:13px!important}.topnav>span:last-child>*{padding:4px 8px!important}.top>a:first-child{gap:8px!important}.top>a:first-child>span:last-child{font-size:18px!important}}
+@media (max-width:370px){.top>a:first-child>span:last-child{display:none}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "SoftwareApplication", "@id": "https://folkbranch.com/#software", "name": "Folkbranch", "url": "https://folkbranch.com/", "applicationCategory": "LifestyleApplication", "operatingSystem": "macOS, Linux, Windows", "softwareVersion": "1.8.0", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "TechArticle", "@id": "https://folkbranch.com/ru/install/#webpage", "url": "https://folkbranch.com/ru/install/", "name": "Как установить Folkbranch: Mac, Linux, Windows, сервер", "headline": "Как установить Folkbranch", "description": "Установите Folkbranch одной командой на Mac или Linux, через Docker на Windows, на сервер с автоматическим HTTPS или на Railway. Копии и обновления.", "inLanguage": "ru", "isPartOf": {"@id": "https://folkbranch.com/#website"}, "about": {"@id": "https://folkbranch.com/#software"}, "publisher": {"@id": "https://folkbranch.com/#org"}, "image": "https://folkbranch.com/assets/social-preview.png", "breadcrumb": {"@id": "https://folkbranch.com/ru/install/#breadcrumb"}, "datePublished": "2026-11-19", "dateModified": "2026-11-19"}, {"@type": "BreadcrumbList", "@id": "https://folkbranch.com/ru/install/#breadcrumb", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Главная", "item": "https://folkbranch.com/ru/"}, {"@type": "ListItem", "position": 2, "name": "Установка", "item": "https://folkbranch.com/ru/install/"}]}, {"@type": "FAQPage", "@id": "https://folkbranch.com/ru/install/#faq", "mainEntity": [{"@type": "Question", "name": "Работает ли Folkbranch на Windows?", "acceptedAnswer": {"@type": "Answer", "text": "На Windows надёжный путь — Docker. Установщик для PowerShell, install.ps1, при каждом выпуске собирается и запускается на сервере сборки с Windows, но на настоящем компьютере с Windows его ещё никто не пробовал. Установка одной строкой проверена на Mac и Linux."}}, {"@type": "Question", "name": "Нужен ли сервер?", "acceptedAnswer": {"@type": "Answer", "text": "Нет. На своём компьютере он запускается одной командой и открывается в браузере. Сервер нужен, только если родные должны заходить в архив откуда угодно. Без него команда ./folkbranch share даёт приложению временный адрес в интернете."}}, {"@type": "Question", "name": "Сколько памяти нужно?", "acceptedAnswer": {"@type": "Answer", "text": "Около 70 МБ; при семье в тысячу двадцать человек и нескольких смотрящих — около 130 МБ. Хватит Linux-сервера с 512 МБ памяти."}}, {"@type": "Question", "name": "Как обновить Folkbranch?", "acceptedAnswer": {"@type": "Answer", "text": "Запустите команду установки ещё раз. Настройки и данные сохранятся, база обновится при запуске. Сначала сделайте копию."}}]}]}</script>
+</head>
+<body>
+<a href="#main" style="position:absolute;left:-9999px;top:8px;background:#f0b39a;color:#14110d;padding:8px 12px;border-radius:8px" onfocus="this.style.left='8px'" onblur="this.style.left='-9999px'">Перейти к содержимому</a>
+<div style="font-family: 'Golos Text', system-ui, sans-serif; color: #efe8db; background: #14110d; overflow: hidden; font-size: 17px; line-height: 1.6">
+
+  <header class="top" style="max-width: 1200px; margin: 0 auto; padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+    <a href="/ru/" style="display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none"><span style="width: 32px; height: 32px; border-radius: 8px; background: #efe8db; display: flex; align-items: center; justify-content: center"><img src="/assets/logo.svg" width="64" height="64" alt="" style="width: 22px; height: 22px"></span><span style="font-family: Literata, Georgia, serif; font-size: 20px; font-weight: 600">Folkbranch</span></a>
+    <nav class="topnav" aria-label="Main" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 15px">
+      <a class="navlink" href="/ru/alternatives/" style="color: #b9ae9b; text-decoration: none">Сравнение</a><a class="navlink" href="/ru/gedcom/" style="color: #b9ae9b; text-decoration: none">GEDCOM</a><a class="navlink" href="/ru/privacy/" style="color: #b9ae9b; text-decoration: none">Приватность</a>
+      <a href="https://github.com/danarkhipov/folkbranch" aria-label="GitHub" class="nav-gh" style="display: inline-flex; align-items: center; gap: 6px; color: #b9ae9b; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>GitHub</a>
+      <a href="/ru/install/" style="display: inline-flex; align-items: center; min-height: 38px; padding: 0 16px; border-radius: 999px; background: #f0b39a; color: #14110d; text-decoration: none; font-size: 14px; font-weight: 600">Установить</a>
+      <span style="display: inline-flex; border: 1px solid #7d6e5c; border-radius: 999px; padding: 3px; font-size: 13px; font-weight: 600"><a href="/install/" hreflang="en" lang="en" style="padding: 4px 10px; color: #b9ae9b; text-decoration: none">EN</a><span style="padding: 4px 10px; border-radius: 999px; background: #efe8db; color: #14110d">RU</span></span>
+    </nav>
+  </header>
+<main id="main" tabindex="-1" class="doc">
+<nav class="crumbs" aria-label="Хлебные крошки"><ol><li><a href="/ru/">Главная</a></li><li aria-current="page">Установка</li></ol></nav>
+<article>
+<p class="kicker">Инструкция по установке</p>
+<h1>Как установить Folkbranch</h1>
+<p class="lead">Folkbranch — бесплатная программа для семейного древа, которую вы запускаете у себя. На Mac или Linux это одна команда; на сервере HTTPS настраивается сам; на Windows надёжный путь — Docker; а всё это может сделать за вас ваш ИИ. Выберите один способ ниже.</p>
+
+<h2 id="before">Прежде чем начать</h2>
+<p>Архив ставит и ведёт один человек в семье. Родные только открывают ссылку в браузере. Выберите один способ ниже; если не уверены, берите первый: он заодно загружает вымышленную демо-семью, которую можно посмотреть.</p>
+
+<h2 id="mac">Mac или Linux: одна команда</h2>
+<pre>curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh</pre>
+<p>Ни Docker, ни Node не нужны: свой Node команда приносит сама и сверяет его с опубликованными контрольными суммами. Она напишет ссылку. Откройте её, назовите семью и, если хотите сначала осмотреться, загрузите вымышленную демо-семью. Хотите сперва прочитать скрипт? <a href="https://github.com/danarkhipov/folkbranch/blob/main/install.sh">install.sh</a> короткий, а в <a href="https://github.com/danarkhipov/folkbranch/releases/latest">релизах</a> лежат архивы и их контрольные суммы.</p>
+<ul>
+<li>Всё попадает в <code>~/folkbranch</code> (другая папка — через <code>--dir</code>): приложение, ваш архив в <code>data</code>, настройки в <code>.env</code> и журнал.</li>
+<li>Другой порт: <code>... | sh -s -- --port 8080</code>. Приложение слушает только этот компьютер.</li>
+<li>Без Docker оно не запускается вместе с компьютером. После перезагрузки выполните <code>cd ~/folkbranch &amp;&amp; ./folkbranch open</code>.</li>
+<li>Если Node уже есть, то же самое делает <code>npx folkbranch</code>; запустите его снова, чтобы открыть приложение.</li>
+<li>Чтобы удалить, выполните <code>./folkbranch stop</code> и удалите папку. Вместе с ней уйдёт архив, поэтому сначала скачайте копию.</li>
+</ul>
+
+<h2 id="windows">Windows: через Docker</h2>
+<p>На Windows надёжный путь — Docker Desktop. Файл <code>docker-compose.yml</code> из репозитория запускает опубликованный образ с томом в <code>/data</code>:</p>
+<ol>
+<li>Установите Docker с плагином Compose.</li>
+<li>Скопируйте из репозитория <code>docker-compose.yml</code> и <code>.env.example</code>, а затем <code>.env.example</code> в <code>.env</code>.</li>
+<li>В <code>.env</code> укажите в <code>BETTER_AUTH_URL</code> адрес, по которому будут открывать архив, а в <code>BETTER_AUTH_SECRET</code> — длинное случайное значение.</li>
+<li>Выполните <code>docker compose up -d</code>.</li>
+<li>Откройте приложение и перейдите по ссылке для первого входа из <code>docker compose logs folkbranch</code>.</li>
+</ol>
+<p>Том <code>folkbranch-data</code> хранит архив: <code>docker compose down</code> его сохраняет, а <code>docker compose down -v</code> удаляет. Есть и установщик для PowerShell, <code>irm https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.ps1 | iex</code>, но на настоящем компьютере с Windows его ещё не пробовали. Можно также <a href="#ai">попросить ИИ</a> настроить Docker за вас.</p>
+
+<h2 id="server">Сервер со своим доменом</h2>
+<p>Любой Linux-сервер с systemd и 512 МБ памяти: Ubuntu 22.04 и новее, Debian 12 и новее, AlmaLinux, Rocky или Red Hat 9, Fedora, Amazon Linux 2023. Docker и домен не нужны:</p>
+<pre>curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sudo sh -s -- --server</pre>
+<p>Команда напишет ссылку, по которой вы назовёте семью, например <code>https://203.0.113.5/setup?code=...</code>. Откройте порты 80 и 443 в панели хостинга, если у неё свой брандмауэр. Приложение и Caddy работают как службы, стартуют вместе с сервером, а HTTPS настраивается сам: сертификат Let’s Encrypt продлевается автоматически.</p>
+<p><strong>Свой домен.</strong> Направьте его DNS на сервер и запустите ту же команду с <code>--domain family.example.com</code>, сразу или позже. Архив останется, но ссылки, созданные раньше, перестанут работать, когда сменится адрес.</p>
+<p><strong>Уже есть nginx или другой веб-сервер?</strong> Добавьте <code>--no-caddy</code> вместе с доменом и направьте домен на <code>127.0.0.1:3000</code>. Если на сервере уже есть Docker, <code>--domain family.example.com</code> без <code>--server</code> запустит образ вместе с Caddy.</p>
+
+<h2 id="railway">Railway</h2>
+<p>Репозиторий готов для Railway: одна служба, том в <code>/data</code> и проверка работоспособности. Тариф Hobby начинается примерно с 5 долларов в месяц; смотрите страницу цен Railway. Понадобится Railway CLI.</p>
+<pre>railway login
+railway init --name folkbranch
+railway config apply
+railway variable set --service folkbranch "BETTER_AUTH_SECRET=$(openssl rand -hex 32)"
+railway domain --service folkbranch
+railway up --service folkbranch
+railway logs --service folkbranch</pre>
+<p>В журнале появится ссылка, по которой вы займёте пустой архив. Том в <code>/data</code> обязателен: без него приложение откажется запускаться, лишь бы не потерять данные. Держите одну реплику, потому что SQLite и фото лежат на одном томе. Render, Fly.io, VPS с Docker Compose и панели вроде Coolify описаны на странице <a href="https://github.com/danarkhipov/folkbranch/blob/main/docs/DEPLOY.md">DEPLOY.md</a> (на английском).</p>
+
+<h2 id="ai">Пусть установит ваш ИИ</h2>
+<p>Вставьте эту строку в Claude Code, Codex или Cursor:</p>
+<pre>Установи Folkbranch по инструкции https://github.com/danarkhipov/folkbranch/blob/main/skills/folkbranch/SKILL.md</pre>
+<p>Агент прочитает открытую инструкцию, спросит, ставить на этот компьютер или на сервер, установит, откроет архив и подключится сам. Перед всем, что требует пароля или денег, он остановится. В Claude Code можно ещё добавить плагин командами <code>/plugin marketplace add danarkhipov/folkbranch</code> и <code>/plugin install folkbranch@folkbranch</code> и попросить «Установи Folkbranch».</p>
+
+<h2 id="backups">Копии и обновления</h2>
+<ul>
+<li><strong>Ежедневная копия.</strong> Сервер сам копирует базу каждый день, а также перед каждым обновлением, которое её меняет. Эти копии лежат на том же диске.</li>
+<li><strong>Копия в другом месте.</strong> Скачайте полную копию в <strong>Настройки → Данные и резервные копии</strong> или выполните <code>./folkbranch backup</code> и унесите файл с машины. С Docker Compose: <code>docker compose exec folkbranch node folkbranch.mjs backup</code>, затем <code>docker compose cp folkbranch:/data/backups ./backups</code>.</li>
+<li><strong>Обновление.</strong> Запустите команду установки ещё раз, при любом типе установки; для Docker Compose — <code>docker compose pull &amp;&amp; docker compose up -d</code>. Настройки и данные сохраняются. Когда выходит новая версия, владелец видит уведомление, а при обычной установке на своём компьютере ещё и кнопку <strong>Обновить сейчас</strong>, которая сначала сохраняет проверенную копию базы.</li>
+</ul>
+<p>Все подробности — в <a href="https://github.com/danarkhipov/folkbranch/blob/main/docs/SELF_HOSTING.md">руководстве по самостоятельному размещению</a> (на английском). Переезжаете из другой программы? Читайте, <a href="/ru/gedcom/">как импортировать GEDCOM</a>; беспокоит, кто что увидит, — <a href="/ru/privacy/">про приватность</a>.</p>
+
+<section class="faq" aria-labelledby="faq"><h2 id="faq">Вопросы</h2><h3>Работает ли Folkbranch на Windows?</h3><p>На Windows надёжный путь — Docker. Установщик для PowerShell, install.ps1, при каждом выпуске собирается и запускается на сервере сборки с Windows, но на настоящем компьютере с Windows его ещё никто не пробовал. Установка одной строкой проверена на Mac и Linux.</p><h3>Нужен ли сервер?</h3><p>Нет. На своём компьютере он запускается одной командой и открывается в браузере. Сервер нужен, только если родные должны заходить в архив откуда угодно. Без него команда ./folkbranch share даёт приложению временный адрес в интернете.</p><h3>Сколько памяти нужно?</h3><p>Около 70 МБ; при семье в тысячу двадцать человек и нескольких смотрящих — около 130 МБ. Хватит Linux-сервера с 512 МБ памяти.</p><h3>Как обновить Folkbranch?</h3><p>Запустите команду установки ещё раз. Настройки и данные сохранятся, база обновится при запуске. Сначала сделайте копию.</p></section>
+</article>
+<aside class="more" aria-labelledby="more"><h2 id="more">Читайте дальше</h2><ul><li><a href="/ru/gedcom/">Импорт и экспорт GEDCOM</a><span>Принести дерево из другой программы.</span></li><li><a href="/ru/privacy/">Приватность</a><span>Где лежат данные и кто видит живых.</span></li><li><a href="/ru/alternatives/">Folkbranch и другие программы</a><span>Ancestry, MyHeritage, Gramps Web и webtrees.</span></li>
+<li><a href="https://github.com/danarkhipov/folkbranch">Исходный код и README на GitHub</a><span>Код, обсуждения и инструкция по установке для ИИ-агентов.</span></li>
+<li><a href="https://github.com/danarkhipov/folkbranch/releases/latest">Последний релиз: v1.8.0</a><span>Архивы, контрольные суммы и список изменений.</span></li></ul></aside>
+</main>
+  <footer style="border-top: 1px solid #2a241c; max-width: 1200px; margin: 0 auto; padding: 28px 24px 40px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; color: #8f8472"><span>Folkbranch · бесплатно, открытый код AGPL-3.0 · без рекламы и cookies · <a href="https://github.com/danarkhipov/folkbranch/releases">v1.8.0</a> · обновлено 19 ноября 2026</span><nav class="fnav" aria-label="Руководства"><span>Руководства:</span><a href="/ru/alternatives/">Сравнение</a><a href="/ru/gedcom/">GEDCOM</a><a href="/ru/install/">Установка</a><a href="/ru/privacy/">Приватность</a></nav><span style="display: flex; gap: 18px"><a href="https://github.com/danarkhipov/folkbranch">GitHub</a><a href="/install/" hreflang="en" lang="en">In English</a></span></footer>
+</div>
+<script>document.addEventListener('click',function(e){var a=e.target.closest('a[hreflang]');if(a)try{localStorage.setItem('fb-lang',a.getAttribute('hreflang'))}catch(_){}});</script>
+</body>
+</html>

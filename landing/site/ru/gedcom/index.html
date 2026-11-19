@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Импорт и экспорт GEDCOM 5.5.1 и 7.0 · Folkbranch</title>
+<meta name="description" content="Как перенести семейное древо из GEDCOM 5.5.1, 7.0, Gramps, Excel или CSV и забрать его обратно. Что переносится, что нет и что будет с фотографиями.">
+<link rel="canonical" href="https://folkbranch.com/ru/gedcom/">
+<link rel="alternate" hreflang="en" href="https://folkbranch.com/gedcom/">
+<link rel="alternate" hreflang="ru" href="https://folkbranch.com/ru/gedcom/">
+<link rel="alternate" hreflang="x-default" href="https://folkbranch.com/gedcom/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#14110d">
+<meta name="color-scheme" content="only light">
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/literata-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/literata-cyrillic-wght-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/golos-text-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Folkbranch">
+<meta property="og:title" content="Импорт и экспорт GEDCOM 5.5.1 и 7.0 · Folkbranch">
+<meta property="og:description" content="Как перенести семейное древо из GEDCOM 5.5.1, 7.0, Gramps, Excel или CSV и забрать его обратно. Что переносится, что нет и что будет с фотографиями.">
+<meta property="og:url" content="https://folkbranch.com/ru/gedcom/">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:image" content="https://folkbranch.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Folkbranch: семейное дерево с фотографиями и страницей человека">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Импорт и экспорт GEDCOM 5.5.1 и 7.0 · Folkbranch">
+<meta name="twitter:description" content="Как перенести семейное древо из GEDCOM 5.5.1, 7.0, Gramps, Excel или CSV и забрать его обратно. Что переносится, что нет и что будет с фотографиями.">
+<meta name="twitter:image" content="https://folkbranch.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Folkbranch: семейное дерево с фотографиями и страницей человека">
+<style>@font-face{font-family:'Literata';font-style:normal;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Literata';font-style:normal;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-cyrillic-wght-normal.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Literata';font-style:italic;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-latin-wght-italic.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Literata';font-style:italic;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-cyrillic-wght-italic.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Golos Text';font-style:normal;font-weight:400 900;font-display:swap;src:url(/assets/fonts/golos-text-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Golos Text';font-style:normal;font-weight:400 900;font-display:swap;src:url(/assets/fonts/golos-text-cyrillic-wght-normal.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:#14110d}
+img{max-width:100%}
+a{color:#f0b39a}a:hover{color:#ffd6c4}
+:focus-visible{outline:2px solid #f0b39a;outline-offset:3px;border-radius:4px}
+summary::-webkit-details-marker{display:none}
+.faq-mark svg{transition:transform .2s}details[open]>summary .faq-mark svg{transform:rotate(45deg)}
+a[href="#install"]:hover,a[href="#features"]:hover,[data-copy]:hover{filter:brightness(1.08)}
+.navlink:hover{color:#efe8db!important}
+@media (max-width:720px){.navlink{display:none}}
+@media (prefers-reduced-motion:reduce){.faq-mark svg{transition:none}}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.copied{background:#a4502e!important;color:#fffdf8!important}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+:root{color-scheme:only light;--sec:112px}
+h1,h2{hyphens:manual;overflow-wrap:break-word}
+.rail::-webkit-scrollbar{display:none}
+@media (max-width:720px){
+:root{--sec:64px}
+.top{flex-wrap:nowrap!important;padding:14px 16px!important}
+.topnav{flex-wrap:nowrap!important;gap:10px!important}
+.eyebrow{align-items:flex-start!important;font-size:17px!important}.eyebrow svg{margin-top:4px;flex:none}
+.rail{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:12px!important;margin:0 -24px;padding:2px 24px 6px;scroll-padding:0 24px}
+.rail>*{flex:0 0 82%!important;scroll-snap-align:start;min-height:0!important}
+.rail-feat>*{flex-basis:86%!important}
+.featwrap{gap:16px!important}
+.also{padding:20px!important;gap:12px!important}
+.chip{font-size:13.5px!important;padding:6px 11px!important;gap:6px!important}
+.scatter-arrow{transform:rotate(90deg);margin:-8px auto!important}.scatter-arrow svg{width:36px;height:36px}
+.cmpwrap{overflow:visible!important;padding:4px 10px 8px!important}
+.cmp{min-width:0!important;display:block}
+.cmp thead,.cmp tbody{display:block}
+.cmp tr{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))}
+.cmp th[scope=row]{grid-column:1/-1;position:static!important;background:none!important;padding:12px 4px 2px!important;font-size:14.5px}
+.cmp thead th:first-child{display:none}
+.cmp thead th{white-space:normal!important;font-size:11.5px!important;line-height:1.15;padding:10px 2px!important;display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0!important}
+.cmp thead th:nth-child(2){font-size:12px!important}
+.cmp td{padding:2px 0 10px!important}
+.cmp td>span:first-child{width:28px!important;height:28px!important}
+}
+@media (max-width:520px){.nav-gh{display:none!important}}
+@media (max-width:440px){.topnav a[href="#install"]{padding:0 12px!important;min-height:36px!important;font-size:13px!important}.topnav>span:last-child>*{padding:4px 8px!important}.top>span:first-child{gap:8px!important}.top>span:first-child>span:last-child{font-size:18px!important}}
+@media (max-width:370px){.top>span:first-child>span:last-child{display:none}}
+
+.doc{max-width:820px;margin:0 auto;padding:8px 24px 96px}
+.crumbs ol{list-style:none;margin:0 0 30px;padding:0;display:flex;flex-wrap:wrap;gap:4px 8px;font-size:14px;color:#a89d8a}
+.crumbs li+li::before{content:"\203A";margin-right:8px;color:#7d6e5c}
+.crumbs a{color:#b9ae9b}
+.kicker{margin:0 0 14px;font-family:Literata,Georgia,serif;font-style:italic;font-size:19px;color:#f0b39a}
+.doc h1{margin:0 0 22px;font-family:Literata,Georgia,serif;font-weight:400;font-size:clamp(32px,5.2vw,54px);line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+.lead{margin:0 0 12px;font-size:20px;line-height:1.55;color:#c8bdaa;text-wrap:pretty}
+.doc h2{margin:56px 0 14px;padding-top:34px;border-top:1px solid #2a241c;font-family:Literata,Georgia,serif;font-weight:400;font-size:clamp(25px,3.4vw,34px);line-height:1.2;letter-spacing:-.01em;text-wrap:balance}
+.doc h3{margin:28px 0 8px;font-family:Literata,Georgia,serif;font-weight:500;font-size:20px;line-height:1.3;color:#efe8db}
+.doc p,.doc li{color:#d7ccb9;text-wrap:pretty}
+.doc p{margin:0 0 16px}
+.doc ul,.doc ol{margin:0 0 18px;padding-left:1.3em}
+.doc li{margin:7px 0}
+.doc strong{color:#efe8db;font-weight:600}
+.doc pre{margin:14px 0 20px;padding:14px 16px;background:#1d1913;border:1px solid #2a241c;border-radius:14px;color:#efe8db;font-size:14.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.doc :not(pre)>code{padding:1px 6px;background:#1d1913;border:1px solid #2a241c;border-radius:6px;font-size:.88em;overflow-wrap:anywhere}
+.doc .note{margin:0 0 18px;padding:14px 18px;background:#1d1913;border-left:3px solid #f0b39a;border-radius:0 12px 12px 0}
+.doc .note p{margin:0}
+.t{width:100%;margin:18px 0;border-collapse:collapse;font-size:15px;line-height:1.45}
+.t th,.t td{padding:11px 12px;text-align:left;vertical-align:top;border-top:1px solid #2a241c;color:#d7ccb9}
+.t thead th{border-top:0;font-family:Literata,Georgia,serif;font-size:16px;font-weight:600;color:#f0b39a}
+.t tbody th{width:20%;font-weight:500;color:#efe8db}
+@media (max-width:720px){
+.t,.t tbody,.t tr,.t tbody th,.t td{display:block;width:auto}
+.t thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.t tr{padding:12px 0;border-top:1px solid #2a241c}
+.t tbody th,.t td{padding:3px 0;border:0}
+.t tbody th{width:auto;font-size:16px}
+.t td::before{content:attr(data-label) ": ";font-weight:600;color:#f0b39a}
+.doc{padding:4px 16px 72px}
+.doc h2{margin-top:44px;padding-top:28px}
+.lead{font-size:18.5px}
+}
+.faq h3{margin-top:24px}
+.more{margin:56px 0 0;padding:24px 24px 8px;background:#1d1913;border:1px solid #2a241c;border-radius:20px}
+.more h2{margin:0 0 12px;padding:0;border:0;font-size:24px}
+.more ul{list-style:none;padding:0}
+.more li{margin:10px 0}
+.more li span{display:block;color:#a89d8a;font-size:15px}
+.fnav{display:flex;gap:6px 18px;flex-wrap:wrap}
+@media (max-width:440px){.topnav a[href$="/install/"]{padding:0 12px!important;min-height:36px!important;font-size:13px!important}.topnav>span:last-child>*{padding:4px 8px!important}.top>a:first-child{gap:8px!important}.top>a:first-child>span:last-child{font-size:18px!important}}
+@media (max-width:370px){.top>a:first-child>span:last-child{display:none}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "SoftwareApplication", "@id": "https://folkbranch.com/#software", "name": "Folkbranch", "url": "https://folkbranch.com/", "applicationCategory": "LifestyleApplication", "operatingSystem": "macOS, Linux, Windows", "softwareVersion": "1.8.0", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "TechArticle", "@id": "https://folkbranch.com/ru/gedcom/#webpage", "url": "https://folkbranch.com/ru/gedcom/", "name": "Импорт и экспорт GEDCOM 5.5.1 и 7.0 · Folkbranch", "headline": "Импорт и экспорт GEDCOM: как перенести семейное древо", "description": "Как перенести семейное древо из GEDCOM 5.5.1, 7.0, Gramps, Excel или CSV и забрать его обратно. Что переносится, что нет и что будет с фотографиями.", "inLanguage": "ru", "isPartOf": {"@id": "https://folkbranch.com/#website"}, "about": {"@id": "https://folkbranch.com/#software"}, "publisher": {"@id": "https://folkbranch.com/#org"}, "image": "https://folkbranch.com/assets/social-preview.png", "breadcrumb": {"@id": "https://folkbranch.com/ru/gedcom/#breadcrumb"}, "datePublished": "2026-11-19", "dateModified": "2026-11-19"}, {"@type": "BreadcrumbList", "@id": "https://folkbranch.com/ru/gedcom/#breadcrumb", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Главная", "item": "https://folkbranch.com/ru/"}, {"@type": "ListItem", "position": 2, "name": "GEDCOM", "item": "https://folkbranch.com/ru/gedcom/"}]}, {"@type": "FAQPage", "@id": "https://folkbranch.com/ru/gedcom/#faq", "mainEntity": [{"@type": "Question", "name": "Какие версии GEDCOM поддерживает Folkbranch?", "acceptedAnswer": {"@type": "Answer", "text": "Импорт понимает GEDCOM 5.5.1 и 7.0. Экспорт пишет 5.5.1."}}, {"@type": "Question", "name": "Попадают ли фотографии в файл GEDCOM?", "acceptedAnswer": {"@type": "Answer", "text": "Нет. В файле GEDCOM только названия фотографий и других файлов. В Folkbranch можно бросить картинки вместе с файлом: каждая привяжется к своим людям по ссылкам из самого файла, по id человека в имени файла или по имени. Иначе фото загружают каждому человеку потом."}}, {"@type": "Question", "name": "Можно ли отменить импорт?", "acceptedAnswer": {"@type": "Answer", "text": "Да. Перед любыми изменениями вы видите, что в файле, а одна отмена откатывает весь импорт."}}, {"@type": "Question", "name": "Можно ли переехать из Ancestry, MyHeritage или Gramps?", "acceptedAnswer": {"@type": "Answer", "text": "Да. Выгрузите из программы файл GEDCOM и импортируйте его. Файлы Gramps (.gramps и Gramps XML) можно импортировать и напрямую. Folkbranch умеет выгружать GEDCOM обратно, так что вы никуда не привязаны."}}]}]}</script>
+</head>
+<body>
+<a href="#main" style="position:absolute;left:-9999px;top:8px;background:#f0b39a;color:#14110d;padding:8px 12px;border-radius:8px" onfocus="this.style.left='8px'" onblur="this.style.left='-9999px'">Перейти к содержимому</a>
+<div style="font-family: 'Golos Text', system-ui, sans-serif; color: #efe8db; background: #14110d; overflow: hidden; font-size: 17px; line-height: 1.6">
+
+  <header class="top" style="max-width: 1200px; margin: 0 auto; padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+    <a href="/ru/" style="display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none"><span style="width: 32px; height: 32px; border-radius: 8px; background: #efe8db; display: flex; align-items: center; justify-content: center"><img src="/assets/logo.svg" width="64" height="64" alt="" style="width: 22px; height: 22px"></span><span style="font-family: Literata, Georgia, serif; font-size: 20px; font-weight: 600">Folkbranch</span></a>
+    <nav class="topnav" aria-label="Main" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 15px">
+      <a class="navlink" href="/ru/alternatives/" style="color: #b9ae9b; text-decoration: none">Сравнение</a><a class="navlink" href="/ru/gedcom/" style="color: #b9ae9b; text-decoration: none">GEDCOM</a><a class="navlink" href="/ru/privacy/" style="color: #b9ae9b; text-decoration: none">Приватность</a>
+      <a href="https://github.com/danarkhipov/folkbranch" aria-label="GitHub" class="nav-gh" style="display: inline-flex; align-items: center; gap: 6px; color: #b9ae9b; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>GitHub</a>
+      <a href="/ru/install/" style="display: inline-flex; align-items: center; min-height: 38px; padding: 0 16px; border-radius: 999px; background: #f0b39a; color: #14110d; text-decoration: none; font-size: 14px; font-weight: 600">Установить</a>
+      <span style="display: inline-flex; border: 1px solid #7d6e5c; border-radius: 999px; padding: 3px; font-size: 13px; font-weight: 600"><a href="/gedcom/" hreflang="en" lang="en" style="padding: 4px 10px; color: #b9ae9b; text-decoration: none">EN</a><span style="padding: 4px 10px; border-radius: 999px; background: #efe8db; color: #14110d">RU</span></span>
+    </nav>
+  </header>
+<main id="main" tabindex="-1" class="doc">
+<nav class="crumbs" aria-label="Хлебные крошки"><ol><li><a href="/ru/">Главная</a></li><li aria-current="page">GEDCOM</li></ol></nav>
+<article>
+<p class="kicker">Перенос дерева</p>
+<h1>Импорт и экспорт GEDCOM: как перенести семейное древо</h1>
+<p class="lead">Folkbranch читает GEDCOM 5.5.1 и 7.0, файлы Gramps, Excel, CSV и обычный текст, а выгружает GEDCOM 5.5.1. До любых изменений вы видите, что в файле, а один шаг отмены откатывает весь импорт. Здесь: что переносится, что нет и как выгрузить дерево из программы, которой вы пользуетесь сейчас.</p>
+
+<h2 id="in">Что можно загрузить</h2>
+<p>Нажмите кнопку со стрелкой в верхней панели, бросьте файл на схему или откройте <strong>Настройки → Данные и резервные копии → Добавить людей из файла</strong>. Folkbranch читает:</p>
+<ul>
+<li><strong>GEDCOM</strong> версий 5.5.1 и 7.0.</li>
+<li><strong>Файлы Gramps</strong>: <code>.gramps</code> и Gramps XML, сохранённый как <code>.xml</code>, с людьми, браками, детьми, событиями, заметками, источниками и местами.</li>
+<li><strong>Excel</strong> (<code>.xlsx</code>), <strong>CSV и TSV</strong> и <strong>JSON</strong>: их читает браузер.</li>
+<li><strong>Обычный текст</strong> в коротком текстовом формате Folkbranch: строка на человека.</li>
+</ul>
+<p>Импорт детерминированный, никакая модель ИИ в нём не участвует. До любых изменений вы видите предпросмотр: что в файле и сколько таких имён уже есть в архиве. Одна отмена откатывает весь импорт.</p>
+
+<h2 id="export-from">Как выгрузить GEDCOM из вашей программы</h2>
+<p>В каждой программе это называется чуть по-своему, но суть одна: найдите в меню или настройках дерева пункт <em>Экспорт</em> или <em>Скачать</em> и выберите GEDCOM.</p>
+<ul>
+<li><strong>Gramps:</strong> Family Trees → Export → GEDCOM.</li>
+<li><strong>webtrees:</strong> Control panel → Family trees → Export, формат GEDCOM.</li>
+<li><strong>Ancestry, MyHeritage, Geni:</strong> в настройках дерева у каждого есть выгрузка в GEDCOM.</li>
+<li><strong>Другие программы:</strong> ищите такой же пункт; подойдёт любая из двух версий GEDCOM, которые читает Folkbranch.</li>
+</ul>
+<p>Потом импортируйте файл, как описано выше. Если вы ещё выбираете программу, посмотрите, <a href="/ru/alternatives/">как Folkbranch выглядит рядом с другими</a>.</p>
+
+<h2 id="carries">Что переносится</h2>
+<p>Это проверено на файлах, какие пишут Gramps 6 и webtrees 2.2:</p>
+<ul>
+<li>Имена с отчеством, отдельно вынесенным из имени, фамилия при рождении и другие имена.</li>
+<li>Даты в любом виде, какой знает GEDCOM: точные, примерные, между, до, после, и периоды вроде проживания с 1900 по 1910 год.</li>
+<li>Рождение, смерть и их места; крещение, погребение, профессия, проживание, образование, вероисповедание, перепись, эмиграция и другие события как факты.</li>
+<li>Заметки, в том числе общие, как страница с биографией. Источники с архивом и листом и с оценкой того, насколько надёжна каждая ссылка.</li>
+<li>Семьи, браки, разводы, усыновлённые и приёмные дети. Развод на схеме нарисован как союз, перечёркнутый двумя штрихами, а раздельное проживание — одним.</li>
+<li>Крёстные и свидетели: как факт с именем человека и как участники события, например крещения.</li>
+<li>Отметки «детей нет» и «в браке не состоял(а)», а из файлов Gramps, RootsMagic, Legacy, MacFamilyTree и webtrees ещё и точки мест на карте.</li>
+<li>Люди, помеченные в файле как закрытые, остаются скрытыми от читателей.</li>
+</ul>
+
+<h2 id="not-carry">Что не переносится</h2>
+<ul>
+<li><strong>Фотографии и другие файлы.</strong> В GEDCOM записаны только их названия. Бросьте картинки вместе с файлом или загрузите их каждому человеку потом. Предпросмотр говорит, сколько ссылок на файлы нашёл.</li>
+<li><strong>Места как записи</strong> с прежними названиями и архивы с адресом живут только в Folkbranch и в его полной копии. В GEDCOM едет название места.</li>
+<li><strong>Исследовательские заметки вне людей и семей</strong>, например задачи Gramps или истории и новости webtrees.</li>
+</ul>
+<p>Всё остальное, что в файле программа не прочитает, предпросмотр перечисляет по именам тегов GEDCOM, и вы решаете, продолжать ли.</p>
+
+<h2 id="out">Как забрать дерево обратно</h2>
+<p><strong>Настройки → Данные и резервные копии → Скачать файл .ged</strong> записывает всех людей с источниками и фактами в GEDCOM 5.5.1, и его читают Gramps, webtrees и другие программы. Что стоит знать:</p>
+<ul>
+<li>Связь ребёнка записывается как <code>PEDI adopted</code> или <code>PEDI foster</code>; развод — как <code>DIV</code>, а раздельное проживание — как событие типа Separation, потому что в GEDCOM для него нет тега.</li>
+<li>В GEDCOM нет тега для пасынка или падчерицы, поэтому в другой программе такой ребёнок вернётся как родной.</li>
+<li>При выгрузке можно скрыть живых, а тот, кого вы закрыли, помечен закрытым и в файле.</li>
+<li>В выгрузку GEDCOM пока не входят страницы и фотографии. Полная копия архива со страницами и фото скачивается отдельно, на том же экране.</li>
+</ul>
+
+<h2 id="tables">Таблица или список вместо GEDCOM</h2>
+<p>Таблица Excel или CSV превращается в тот же текстовый формат, поэтому поиск дублей, вопросы о неоднозначных именах и отмена работают так же, как для GEDCOM. Столбцы узнаются по заголовкам на английском и русском, и их можно поправить вручную. Родного в ячейке можно указать по имени или по номеру строки. Одинаковые имена внутри одного файла считаются одним человеком, и окно об этом предупреждает.</p>
+<p>Ещё не установили? <a href="/ru/install/">Инструкция по установке</a> займёт несколько минут на Mac или Linux.</p>
+
+<section class="faq" aria-labelledby="faq"><h2 id="faq">Вопросы</h2><h3>Какие версии GEDCOM поддерживает Folkbranch?</h3><p>Импорт понимает GEDCOM 5.5.1 и 7.0. Экспорт пишет 5.5.1.</p><h3>Попадают ли фотографии в файл GEDCOM?</h3><p>Нет. В файле GEDCOM только названия фотографий и других файлов. В Folkbranch можно бросить картинки вместе с файлом: каждая привяжется к своим людям по ссылкам из самого файла, по id человека в имени файла или по имени. Иначе фото загружают каждому человеку потом.</p><h3>Можно ли отменить импорт?</h3><p>Да. Перед любыми изменениями вы видите, что в файле, а одна отмена откатывает весь импорт.</p><h3>Можно ли переехать из Ancestry, MyHeritage или Gramps?</h3><p>Да. Выгрузите из программы файл GEDCOM и импортируйте его. Файлы Gramps (.gramps и Gramps XML) можно импортировать и напрямую. Folkbranch умеет выгружать GEDCOM обратно, так что вы никуда не привязаны.</p></section>
+</article>
+<aside class="more" aria-labelledby="more"><h2 id="more">Читайте дальше</h2><ul><li><a href="/ru/alternatives/">Folkbranch и другие программы</a><span>Ancestry, MyHeritage, Gramps Web и webtrees рядом.</span></li><li><a href="/ru/install/">Установка</a><span>Одна команда на Mac или Linux, Docker, сервер или Railway.</span></li><li><a href="/ru/privacy/">Приватность</a><span>Как скрыты живые и закрытые люди.</span></li>
+<li><a href="https://github.com/danarkhipov/folkbranch">Исходный код и README на GitHub</a><span>Код, обсуждения и инструкция по установке для ИИ-агентов.</span></li>
+<li><a href="https://github.com/danarkhipov/folkbranch/releases/latest">Последний релиз: v1.8.0</a><span>Архивы, контрольные суммы и список изменений.</span></li></ul></aside>
+</main>
+  <footer style="border-top: 1px solid #2a241c; max-width: 1200px; margin: 0 auto; padding: 28px 24px 40px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; color: #8f8472"><span>Folkbranch · бесплатно, открытый код AGPL-3.0 · без рекламы и cookies · <a href="https://github.com/danarkhipov/folkbranch/releases">v1.8.0</a> · обновлено 19 ноября 2026</span><nav class="fnav" aria-label="Руководства"><span>Руководства:</span><a href="/ru/alternatives/">Сравнение</a><a href="/ru/gedcom/">GEDCOM</a><a href="/ru/install/">Установка</a><a href="/ru/privacy/">Приватность</a></nav><span style="display: flex; gap: 18px"><a href="https://github.com/danarkhipov/folkbranch">GitHub</a><a href="/gedcom/" hreflang="en" lang="en">In English</a></span></footer>
+</div>
+<script>document.addEventListener('click',function(e){var a=e.target.closest('a[hreflang]');if(a)try{localStorage.setItem('fb-lang',a.getAttribute('hreflang'))}catch(_){}});</script>
+</body>
+</html>

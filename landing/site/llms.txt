@@ -7,7 +7,12 @@
 - [Self-hosting guide](https://github.com/danarkhipov/folkbranch/blob/main/docs/SELF_HOSTING.md)
 - [Deploying on Railway, Render, Fly.io](https://github.com/danarkhipov/folkbranch/blob/main/docs/DEPLOY.md)
 - [Folkbranch website](https://folkbranch.com/): what it does, how it compares, FAQ
+- [Folkbranch compared with Ancestry, MyHeritage, Gramps Web and webtrees](https://folkbranch.com/alternatives/): what each is for, fairly
+- [Import and export GEDCOM](https://folkbranch.com/gedcom/): GEDCOM 5.5.1 and 7.0, Gramps, Excel and CSV; what carries over
+- [How to install Folkbranch](https://folkbranch.com/install/): Mac, Linux, Windows with Docker, a server with HTTPS, Railway; backups and updates
+- [Privacy in Folkbranch](https://folkbranch.com/privacy/): where data lives, no telemetry, roles, the living kept hidden
 - [Русская версия сайта](https://folkbranch.com/ru/)
+- Руководства по-русски: [сравнение](https://folkbranch.com/ru/alternatives/), [GEDCOM](https://folkbranch.com/ru/gedcom/), [установка](https://folkbranch.com/ru/install/), [приватность](https://folkbranch.com/ru/privacy/)
 - [Releases and changelog](https://github.com/danarkhipov/folkbranch/releases)
 
 ## Facts

@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to install Folkbranch on Mac, Linux, Windows, server</title>
+<meta name="description" content="Install Folkbranch with one command on Mac or Linux, with Docker on Windows, on a server with automatic HTTPS, or on Railway. Plus backups and updates.">
+<link rel="canonical" href="https://folkbranch.com/install/">
+<link rel="alternate" hreflang="en" href="https://folkbranch.com/install/">
+<link rel="alternate" hreflang="ru" href="https://folkbranch.com/ru/install/">
+<link rel="alternate" hreflang="x-default" href="https://folkbranch.com/install/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#14110d">
+<meta name="color-scheme" content="only light">
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/literata-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/literata-latin-wght-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/golos-text-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Folkbranch">
+<meta property="og:title" content="How to install Folkbranch on Mac, Linux, Windows, server">
+<meta property="og:description" content="Install Folkbranch with one command on Mac or Linux, with Docker on Windows, on a server with automatic HTTPS, or on Railway. Plus backups and updates.">
+<meta property="og:url" content="https://folkbranch.com/install/">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://folkbranch.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Folkbranch: a family tree with photos and a person’s page">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How to install Folkbranch on Mac, Linux, Windows, server">
+<meta name="twitter:description" content="Install Folkbranch with one command on Mac or Linux, with Docker on Windows, on a server with automatic HTTPS, or on Railway. Plus backups and updates.">
+<meta name="twitter:image" content="https://folkbranch.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Folkbranch: a family tree with photos and a person’s page">
+<style>@font-face{font-family:'Literata';font-style:normal;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Literata';font-style:normal;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-cyrillic-wght-normal.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Literata';font-style:italic;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-latin-wght-italic.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Literata';font-style:italic;font-weight:200 900;font-display:swap;src:url(/assets/fonts/literata-cyrillic-wght-italic.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Golos Text';font-style:normal;font-weight:400 900;font-display:swap;src:url(/assets/fonts/golos-text-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2190-2199,U+2212}
+@font-face{font-family:'Golos Text';font-style:normal;font-weight:400 900;font-display:swap;src:url(/assets/fonts/golos-text-cyrillic-wght-normal.woff2) format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:#14110d}
+img{max-width:100%}
+a{color:#f0b39a}a:hover{color:#ffd6c4}
+:focus-visible{outline:2px solid #f0b39a;outline-offset:3px;border-radius:4px}
+summary::-webkit-details-marker{display:none}
+.faq-mark svg{transition:transform .2s}details[open]>summary .faq-mark svg{transform:rotate(45deg)}
+a[href="#install"]:hover,a[href="#features"]:hover,[data-copy]:hover{filter:brightness(1.08)}
+.navlink:hover{color:#efe8db!important}
+@media (max-width:720px){.navlink{display:none}}
+@media (prefers-reduced-motion:reduce){.faq-mark svg{transition:none}}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.copied{background:#a4502e!important;color:#fffdf8!important}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+:root{color-scheme:only light;--sec:112px}
+h1,h2{hyphens:manual;overflow-wrap:break-word}
+.rail::-webkit-scrollbar{display:none}
+@media (max-width:720px){
+:root{--sec:64px}
+.top{flex-wrap:nowrap!important;padding:14px 16px!important}
+.topnav{flex-wrap:nowrap!important;gap:10px!important}
+.eyebrow{align-items:flex-start!important;font-size:17px!important}.eyebrow svg{margin-top:4px;flex:none}
+.rail{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:12px!important;margin:0 -24px;padding:2px 24px 6px;scroll-padding:0 24px}
+.rail>*{flex:0 0 82%!important;scroll-snap-align:start;min-height:0!important}
+.rail-feat>*{flex-basis:86%!important}
+.featwrap{gap:16px!important}
+.also{padding:20px!important;gap:12px!important}
+.chip{font-size:13.5px!important;padding:6px 11px!important;gap:6px!important}
+.scatter-arrow{transform:rotate(90deg);margin:-8px auto!important}.scatter-arrow svg{width:36px;height:36px}
+.cmpwrap{overflow:visible!important;padding:4px 10px 8px!important}
+.cmp{min-width:0!important;display:block}
+.cmp thead,.cmp tbody{display:block}
+.cmp tr{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))}
+.cmp th[scope=row]{grid-column:1/-1;position:static!important;background:none!important;padding:12px 4px 2px!important;font-size:14.5px}
+.cmp thead th:first-child{display:none}
+.cmp thead th{white-space:normal!important;font-size:11.5px!important;line-height:1.15;padding:10px 2px!important;display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0!important}
+.cmp thead th:nth-child(2){font-size:12px!important}
+.cmp td{padding:2px 0 10px!important}
+.cmp td>span:first-child{width:28px!important;height:28px!important}
+}
+@media (max-width:520px){.nav-gh{display:none!important}}
+@media (max-width:440px){.topnav a[href="#install"]{padding:0 12px!important;min-height:36px!important;font-size:13px!important}.topnav>span:last-child>*{padding:4px 8px!important}.top>span:first-child{gap:8px!important}.top>span:first-child>span:last-child{font-size:18px!important}}
+@media (max-width:370px){.top>span:first-child>span:last-child{display:none}}
+
+.doc{max-width:820px;margin:0 auto;padding:8px 24px 96px}
+.crumbs ol{list-style:none;margin:0 0 30px;padding:0;display:flex;flex-wrap:wrap;gap:4px 8px;font-size:14px;color:#a89d8a}
+.crumbs li+li::before{content:"\203A";margin-right:8px;color:#7d6e5c}
+.crumbs a{color:#b9ae9b}
+.kicker{margin:0 0 14px;font-family:Literata,Georgia,serif;font-style:italic;font-size:19px;color:#f0b39a}
+.doc h1{margin:0 0 22px;font-family:Literata,Georgia,serif;font-weight:400;font-size:clamp(32px,5.2vw,54px);line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+.lead{margin:0 0 12px;font-size:20px;line-height:1.55;color:#c8bdaa;text-wrap:pretty}
+.doc h2{margin:56px 0 14px;padding-top:34px;border-top:1px solid #2a241c;font-family:Literata,Georgia,serif;font-weight:400;font-size:clamp(25px,3.4vw,34px);line-height:1.2;letter-spacing:-.01em;text-wrap:balance}
+.doc h3{margin:28px 0 8px;font-family:Literata,Georgia,serif;font-weight:500;font-size:20px;line-height:1.3;color:#efe8db}
+.doc p,.doc li{color:#d7ccb9;text-wrap:pretty}
+.doc p{margin:0 0 16px}
+.doc ul,.doc ol{margin:0 0 18px;padding-left:1.3em}
+.doc li{margin:7px 0}
+.doc strong{color:#efe8db;font-weight:600}
+.doc pre{margin:14px 0 20px;padding:14px 16px;background:#1d1913;border:1px solid #2a241c;border-radius:14px;color:#efe8db;font-size:14.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.doc :not(pre)>code{padding:1px 6px;background:#1d1913;border:1px solid #2a241c;border-radius:6px;font-size:.88em;overflow-wrap:anywhere}
+.doc .note{margin:0 0 18px;padding:14px 18px;background:#1d1913;border-left:3px solid #f0b39a;border-radius:0 12px 12px 0}
+.doc .note p{margin:0}
+.t{width:100%;margin:18px 0;border-collapse:collapse;font-size:15px;line-height:1.45}
+.t th,.t td{padding:11px 12px;text-align:left;vertical-align:top;border-top:1px solid #2a241c;color:#d7ccb9}
+.t thead th{border-top:0;font-family:Literata,Georgia,serif;font-size:16px;font-weight:600;color:#f0b39a}
+.t tbody th{width:20%;font-weight:500;color:#efe8db}
+@media (max-width:720px){
+.t,.t tbody,.t tr,.t tbody th,.t td{display:block;width:auto}
+.t thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.t tr{padding:12px 0;border-top:1px solid #2a241c}
+.t tbody th,.t td{padding:3px 0;border:0}
+.t tbody th{width:auto;font-size:16px}
+.t td::before{content:attr(data-label) ": ";font-weight:600;color:#f0b39a}
+.doc{padding:4px 16px 72px}
+.doc h2{margin-top:44px;padding-top:28px}
+.lead{font-size:18.5px}
+}
+.faq h3{margin-top:24px}
+.more{margin:56px 0 0;padding:24px 24px 8px;background:#1d1913;border:1px solid #2a241c;border-radius:20px}
+.more h2{margin:0 0 12px;padding:0;border:0;font-size:24px}
+.more ul{list-style:none;padding:0}
+.more li{margin:10px 0}
+.more li span{display:block;color:#a89d8a;font-size:15px}
+.fnav{display:flex;gap:6px 18px;flex-wrap:wrap}
+@media (max-width:440px){.topnav a[href$="/install/"]{padding:0 12px!important;min-height:36px!important;font-size:13px!important}.topnav>span:last-child>*{padding:4px 8px!important}.top>a:first-child{gap:8px!important}.top>a:first-child>span:last-child{font-size:18px!important}}
+@media (max-width:370px){.top>a:first-child>span:last-child{display:none}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "SoftwareApplication", "@id": "https://folkbranch.com/#software", "name": "Folkbranch", "url": "https://folkbranch.com/", "applicationCategory": "LifestyleApplication", "operatingSystem": "macOS, Linux, Windows", "softwareVersion": "1.8.0", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "TechArticle", "@id": "https://folkbranch.com/install/#webpage", "url": "https://folkbranch.com/install/", "name": "How to install Folkbranch on Mac, Linux, Windows, server", "headline": "How to install Folkbranch", "description": "Install Folkbranch with one command on Mac or Linux, with Docker on Windows, on a server with automatic HTTPS, or on Railway. Plus backups and updates.", "inLanguage": "en", "isPartOf": {"@id": "https://folkbranch.com/#website"}, "about": {"@id": "https://folkbranch.com/#software"}, "publisher": {"@id": "https://folkbranch.com/#org"}, "image": "https://folkbranch.com/assets/social-preview.png", "breadcrumb": {"@id": "https://folkbranch.com/install/#breadcrumb"}, "datePublished": "2026-11-19", "dateModified": "2026-11-19"}, {"@type": "BreadcrumbList", "@id": "https://folkbranch.com/install/#breadcrumb", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://folkbranch.com/"}, {"@type": "ListItem", "position": 2, "name": "Install", "item": "https://folkbranch.com/install/"}]}, {"@type": "FAQPage", "@id": "https://folkbranch.com/install/#faq", "mainEntity": [{"@type": "Question", "name": "Does Folkbranch run on Windows?", "acceptedAnswer": {"@type": "Answer", "text": "On Windows, Docker is the proven way. A PowerShell installer, install.ps1, is built and started on a Windows build server with every release, but nobody has tried it on a real Windows computer yet. The one-line install is tested on Mac and Linux."}}, {"@type": "Question", "name": "Do I need a server?", "acceptedAnswer": {"@type": "Answer", "text": "No. On your own computer it runs with one command and you open it in the browser. A server is only needed if relatives should reach the archive from anywhere. Without one, ./folkbranch share gives the app a temporary address on the internet."}}, {"@type": "Question", "name": "How much memory does it need?", "acceptedAnswer": {"@type": "Answer", "text": "It runs in about 70 MB of memory, and stays near 130 MB with a family of a thousand and twenty people looking. A Linux server with 512 MB of memory is enough."}}, {"@type": "Question", "name": "How do I update Folkbranch?", "acceptedAnswer": {"@type": "Answer", "text": "Run the install command again. Settings and data are kept, and the database migrates on start. Take a backup first."}}]}]}</script>
+</head>
+<body>
+<a href="#main" style="position:absolute;left:-9999px;top:8px;background:#f0b39a;color:#14110d;padding:8px 12px;border-radius:8px" onfocus="this.style.left='8px'" onblur="this.style.left='-9999px'">Skip to content</a>
+<div style="font-family: 'Golos Text', system-ui, sans-serif; color: #efe8db; background: #14110d; overflow: hidden; font-size: 17px; line-height: 1.6">
+
+  <header class="top" style="max-width: 1200px; margin: 0 auto; padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none"><span style="width: 32px; height: 32px; border-radius: 8px; background: #efe8db; display: flex; align-items: center; justify-content: center"><img src="/assets/logo.svg" width="64" height="64" alt="" style="width: 22px; height: 22px"></span><span style="font-family: Literata, Georgia, serif; font-size: 20px; font-weight: 600">Folkbranch</span></a>
+    <nav class="topnav" aria-label="Main" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 15px">
+      <a class="navlink" href="/alternatives/" style="color: #b9ae9b; text-decoration: none">Compare</a><a class="navlink" href="/gedcom/" style="color: #b9ae9b; text-decoration: none">GEDCOM</a><a class="navlink" href="/privacy/" style="color: #b9ae9b; text-decoration: none">Privacy</a>
+      <a href="https://github.com/danarkhipov/folkbranch" aria-label="GitHub" class="nav-gh" style="display: inline-flex; align-items: center; gap: 6px; color: #b9ae9b; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>GitHub</a>
+      <a href="/install/" style="display: inline-flex; align-items: center; min-height: 38px; padding: 0 16px; border-radius: 999px; background: #f0b39a; color: #14110d; text-decoration: none; font-size: 14px; font-weight: 600">Install</a>
+      <span style="display: inline-flex; border: 1px solid #7d6e5c; border-radius: 999px; padding: 3px; font-size: 13px; font-weight: 600"><span style="padding: 4px 10px; border-radius: 999px; background: #efe8db; color: #14110d">EN</span><a href="/ru/install/" hreflang="ru" lang="ru" style="padding: 4px 10px; color: #b9ae9b; text-decoration: none">RU</a></span>
+    </nav>
+  </header>
+<main id="main" tabindex="-1" class="doc">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Install</li></ol></nav>
+<article>
+<p class="kicker">Install guide</p>
+<h1>How to install Folkbranch</h1>
+<p class="lead">Folkbranch is free, self-hosted family tree software. On a Mac or Linux computer it is one command; on a server it sets up HTTPS by itself; on Windows Docker is the proven way; and your own AI can do all of it for you. Pick one way below.</p>
+
+<h2 id="before">Before you start</h2>
+<p>One person in the family keeps the archive and installs it. Relatives only open a link in a browser. Pick one way below; if you are not sure, take the first, since it also loads an invented demo family you can look at.</p>
+
+<h2 id="mac">Mac or Linux: one command</h2>
+<pre>curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sh</pre>
+<p>No Docker and no Node needed: the command brings its own, checked against Node’s published checksums. It prints a link; open it, name your family, and load the invented demo family if you want to look around first. Want to read the script before running it? <a href="https://github.com/danarkhipov/folkbranch/blob/main/install.sh">install.sh</a> is short, and the <a href="https://github.com/danarkhipov/folkbranch/releases/latest">releases</a> hold the archives and their checksums.</p>
+<ul>
+<li>Everything goes to <code>~/folkbranch</code> (<code>--dir</code> for another folder): the app, your archive in <code>data</code>, settings in <code>.env</code> and the log.</li>
+<li>Add <code>--port 8080</code> for another port: <code>... | sh -s -- --port 8080</code>. The app listens on this computer only.</li>
+<li>Without Docker it does not start when the computer does. After a reboot, run <code>cd ~/folkbranch &amp;&amp; ./folkbranch open</code>.</li>
+<li>With Node at hand, <code>npx folkbranch</code> runs the same installer; run it again to open the app.</li>
+<li>To remove it, run <code>./folkbranch stop</code> and delete the folder. That deletes the archive too, so download a copy first.</li>
+</ul>
+
+<h2 id="windows">Windows: Docker</h2>
+<p>Docker Desktop is the proven way on Windows. The repository’s <code>docker-compose.yml</code> runs the published image with a volume at <code>/data</code>:</p>
+<ol>
+<li>Install Docker with the Compose plugin.</li>
+<li>Copy <code>docker-compose.yml</code> and <code>.env.example</code> from the repository, then copy <code>.env.example</code> to <code>.env</code>.</li>
+<li>In <code>.env</code> set <code>BETTER_AUTH_URL</code> to the address people open and <code>BETTER_AUTH_SECRET</code> to a long random value.</li>
+<li>Run <code>docker compose up -d</code>.</li>
+<li>Open the app and use the claim link from <code>docker compose logs folkbranch</code>.</li>
+</ol>
+<p>The volume <code>folkbranch-data</code> holds the archive: <code>docker compose down</code> keeps it, <code>docker compose down -v</code> deletes it. There is also a PowerShell installer, <code>irm https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.ps1 | iex</code>, but it has not been tried on a real Windows computer yet. Or <a href="#ai">ask your AI</a> to set Docker up for you.</p>
+
+<h2 id="server">A server with your own domain</h2>
+<p>Any Linux server with systemd and 512 MB of memory: Ubuntu 22.04 or newer, Debian 12 or newer, AlmaLinux, Rocky or Red Hat 9, Fedora, or Amazon Linux 2023. No Docker and no domain are needed:</p>
+<pre>curl -fsSL https://raw.githubusercontent.com/danarkhipov/folkbranch/main/install.sh | sudo sh -s -- --server</pre>
+<p>It prints a link to name your family, for example <code>https://203.0.113.5/setup?code=...</code>. Open ports 80 and 443 in your hosting panel if it has its own firewall. The app and Caddy each run as a service that starts with the server, and HTTPS sets itself up with a certificate from Let’s Encrypt that renews by itself.</p>
+<p><strong>Your own domain.</strong> Point its DNS at the server, then run the same command with <code>--domain family.example.com</code>, now or later. The archive stays, but links made earlier stop working when the address changes.</p>
+<p><strong>Already have nginx or another web server?</strong> Add <code>--no-caddy</code> with your domain and proxy that domain to <code>127.0.0.1:3000</code>. On a server that already has Docker, <code>--domain family.example.com</code> without <code>--server</code> runs the image with Caddy next to it.</p>
+
+<h2 id="railway">Railway</h2>
+<p>The repository is ready for Railway: one service with a volume at <code>/data</code> and a health check. The Hobby plan starts at about $5 a month; check Railway’s price page. You need the Railway CLI.</p>
+<pre>railway login
+railway init --name folkbranch
+railway config apply
+railway variable set --service folkbranch "BETTER_AUTH_SECRET=$(openssl rand -hex 32)"
+railway domain --service folkbranch
+railway up --service folkbranch
+railway logs --service folkbranch</pre>
+<p>The logs print the link that claims the empty archive. The volume at <code>/data</code> is mandatory: without it the app refuses to start rather than lose your data. Run one replica only, because SQLite and the photos live on that one volume. Render, Fly.io, a VPS with Docker Compose and panels such as Coolify have a page each in the <a href="https://github.com/danarkhipov/folkbranch/blob/main/docs/DEPLOY.md">deploying guide</a>.</p>
+
+<h2 id="ai">Let your AI install it</h2>
+<p>Paste this line into Claude Code, Codex or Cursor:</p>
+<pre>Install Folkbranch for me by following https://github.com/danarkhipov/folkbranch/blob/main/skills/folkbranch/SKILL.md</pre>
+<p>It reads the open install guide, asks whether to install on this computer or on a server, installs, opens the archive and connects itself. It stops before anything that needs your password or money. In Claude Code you can also add the plugin with <code>/plugin marketplace add danarkhipov/folkbranch</code> and <code>/plugin install folkbranch@folkbranch</code>, then ask “Install Folkbranch”.</p>
+
+<h2 id="backups">Backups and updates</h2>
+<ul>
+<li><strong>Daily copy.</strong> The server copies the database by itself each day, and before each update that changes it. Those copies are on the same disk.</li>
+<li><strong>A copy you keep elsewhere.</strong> Download a full copy under <strong>Settings → Data and backups</strong>, or run <code>./folkbranch backup</code> and move the file off the machine. With Docker Compose: <code>docker compose exec folkbranch node folkbranch.mjs backup</code>, then <code>docker compose cp folkbranch:/data/backups ./backups</code>.</li>
+<li><strong>Updating.</strong> Run the install command again, in any kind of install; with Docker Compose, <code>docker compose pull &amp;&amp; docker compose up -d</code>. Settings and data are kept. When a release is out the owner sees a notice, and on a plain install on your own computer an <strong>Update now</strong> button that saves a checked copy of the database first.</li>
+</ul>
+<p>The full details are in the <a href="https://github.com/danarkhipov/folkbranch/blob/main/docs/SELF_HOSTING.md">self-hosting guide</a>. Coming from another program? Read <a href="/gedcom/">how to import GEDCOM</a>; worried about who can see what, <a href="/privacy/">read about privacy</a>.</p>
+
+<section class="faq" aria-labelledby="faq"><h2 id="faq">Questions</h2><h3>Does Folkbranch run on Windows?</h3><p>On Windows, Docker is the proven way. A PowerShell installer, install.ps1, is built and started on a Windows build server with every release, but nobody has tried it on a real Windows computer yet. The one-line install is tested on Mac and Linux.</p><h3>Do I need a server?</h3><p>No. On your own computer it runs with one command and you open it in the browser. A server is only needed if relatives should reach the archive from anywhere. Without one, ./folkbranch share gives the app a temporary address on the internet.</p><h3>How much memory does it need?</h3><p>It runs in about 70 MB of memory, and stays near 130 MB with a family of a thousand and twenty people looking. A Linux server with 512 MB of memory is enough.</p><h3>How do I update Folkbranch?</h3><p>Run the install command again. Settings and data are kept, and the database migrates on start. Take a backup first.</p></section>
+</article>
+<aside class="more" aria-labelledby="more"><h2 id="more">Keep reading</h2><ul><li><a href="/gedcom/">Import and export GEDCOM</a><span>Bring a tree in from another program.</span></li><li><a href="/privacy/">Privacy</a><span>Where the data lives and who can see the living.</span></li><li><a href="/alternatives/">Folkbranch compared with other software</a><span>Ancestry, MyHeritage, Gramps Web and webtrees.</span></li>
+<li><a href="https://github.com/danarkhipov/folkbranch">Source code and README on GitHub</a><span>The code, the issues and the install guide for AI agents.</span></li>
+<li><a href="https://github.com/danarkhipov/folkbranch/releases/latest">Latest release: v1.8.0</a><span>Downloads, checksums and the changelog.</span></li></ul></aside>
+</main>
+  <footer style="border-top: 1px solid #2a241c; max-width: 1200px; margin: 0 auto; padding: 28px 24px 40px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; color: #8f8472"><span>Folkbranch · free and open source, AGPL-3.0 · no ads, no cookies · <a href="https://github.com/danarkhipov/folkbranch/releases">v1.8.0</a> · updated 19 Nov 2026</span><nav class="fnav" aria-label="Guides"><span>Guides:</span><a href="/alternatives/">Alternatives</a><a href="/gedcom/">GEDCOM</a><a href="/install/">Install</a><a href="/privacy/">Privacy</a></nav><span style="display: flex; gap: 18px"><a href="https://github.com/danarkhipov/folkbranch">GitHub</a><a href="/ru/install/" hreflang="ru" lang="ru">По-русски</a></span></footer>
+</div>
+<script>document.addEventListener('click',function(e){var a=e.target.closest('a[hreflang]');if(a)try{localStorage.setItem('fb-lang',a.getAttribute('hreflang'))}catch(_){}});</script>
+</body>
+</html>
